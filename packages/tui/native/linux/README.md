@@ -21,3 +21,4 @@ node --test test/native-clipboard-linux.test.ts
 ```
 
 Tests use isolated X11 servers, not the desktop clipboard. They skip when dependencies are missing.
+

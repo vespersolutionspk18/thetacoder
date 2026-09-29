@@ -1,4 +1,3 @@
-import type { JsonRepresentation } from "@earendil-works/chord";
 import type {
 	Api,
 	AssistantMessage,
@@ -12,7 +11,8 @@ import type {
 	RetryPolicy,
 	ToolResultMessage,
 	Usage,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
+import type { JsonRepresentation } from "@theta/chord";
 import type { AgentMessage, AgentToolResult, QueueMode, ThinkingLevel } from "../types.ts";
 import type { BranchPreparation, BranchSummaryResult } from "./compaction/branch-summarization.ts";
 import type { CompactionPreparation, CompactionSettings, CompactResult } from "./compaction/compaction.ts";
@@ -620,3 +620,4 @@ export interface AgentHarnessConstructor {
 
 /** Runtime constructor for attaching the durable harness to one open session. */
 export const AgentHarness = { create: createAgentHarness } satisfies AgentHarnessConstructor;
+

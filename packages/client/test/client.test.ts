@@ -1,11 +1,11 @@
-import { BACKGROUND_CONTEXT } from "@earendil-works/chord/context";
+import { BACKGROUND_CONTEXT } from "@theta/chord/context";
 import {
 	encodeCbor,
 	encodeFrame,
 	encodeServerMessage,
 	PROTOCOL_VERSION,
 	ProtocolValidationError,
-} from "@earendil-works/pi-protocol";
+} from "@theta/protocol";
 import { describe, expect, test, vi } from "vitest";
 import {
 	type ByteTransportFactory,
@@ -26,7 +26,7 @@ async function connectClient(server: MemoryByteServer, expectedServerId = server
 async function attachClient(client: Client, server: MemoryByteServer, sessionId: string): Promise<void> {
 	const expectedMessages = server.messages.length + 1;
 	const attaching = client.request(serverTarget, {
-		serviceId: "pi.session-management",
+		serviceId: "theta.session-management",
 		member: "attach",
 		args: [sessionId],
 	});
@@ -69,7 +69,7 @@ describe("Client service operations", () => {
 		expect(server.messages[1]).toMatchObject({
 			type: "request",
 			target: serverTarget,
-			call: { serviceId: "pi.session-management", member: "attach", args: ["session-1"] },
+			call: { serviceId: "theta.session-management", member: "attach", args: ["session-1"] },
 		});
 
 		server.send({ type: "attachment", attachment: null });
@@ -86,7 +86,7 @@ describe("Client service operations", () => {
 		const transport = createClientServiceTransport(client, () => client.attachment);
 		const updates: Array<{ readonly type: string; readonly ops?: readonly unknown[] }> = [];
 		const opening = transport.subscribe(
-			"pi.models",
+			"theta.models",
 			"singleton",
 			(update) => {
 				updates.push(update);
@@ -100,7 +100,7 @@ describe("Client service operations", () => {
 			call: {
 				serviceId: "$chord.service",
 				member: "subscribe",
-				args: ["service-1", "pi.models", "singleton"],
+				args: ["service-1", "theta.models", "singleton"],
 			},
 		});
 		server.send({
@@ -115,7 +115,7 @@ describe("Client service operations", () => {
 			id: "request-2",
 			ok: true,
 			result: {
-				serviceId: "pi.models",
+				serviceId: "theta.models",
 				mode: "singleton",
 				instances: [{ members: [{ name: "state", kind: "state", sequence: 0, ops: [["r", { revision: 0 }]] }] }],
 			},
@@ -382,3 +382,4 @@ describe("Client connection lifecycle", () => {
 		expect(server.clientCloseCount).toBe(1);
 	});
 });
+

@@ -1,4 +1,4 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
+import type { AssistantMessage } from "@theta/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createHarness, type Harness } from "../harness.ts";
 
@@ -78,3 +78,4 @@ describe("issue #8328 zero-usage auto-compaction", () => {
 		expect(runAutoCompactionSpy).not.toHaveBeenCalled();
 	});
 });
+

@@ -1,4 +1,4 @@
-import type { AgentToolResult } from "@earendil-works/pi-agent-core";
+import type { AgentToolResult } from "@theta/agent-core";
 import {
 	Box,
 	type Component,
@@ -10,7 +10,7 @@ import {
 	Text,
 	type TUI,
 	type TuiMouseEvent,
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 import type { ToolDefinition, ToolRenderContext, ToolRenderResultOptions } from "../../../core/extensions/types.ts";
 import type { Theme } from "../theme/theme.ts";
 
@@ -419,3 +419,4 @@ export class ToolExecutionComponent extends Container {
 		return text;
 	}
 }
+

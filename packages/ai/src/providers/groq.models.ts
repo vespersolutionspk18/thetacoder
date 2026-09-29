@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const GROQ_MODELS: ModelCatalog<typeof values, "groq"> =
 	flattenModelCatalog("groq", values);
+

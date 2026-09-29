@@ -1,4 +1,4 @@
-import type { Component } from "@earendil-works/pi-tui";
+import type { Component } from "@theta/tui";
 import { theme } from "../theme/theme.ts";
 
 /**
@@ -23,3 +23,4 @@ export class DynamicBorder implements Component {
 		return [this.color("─".repeat(Math.max(1, width)))];
 	}
 }
+

@@ -43,25 +43,26 @@ export function projectForkCurrentStateWrite(
 	isEntryCopied: (entryId: string) => boolean,
 ): CommittedValueSetWrite | CommittedListAppendWrite | undefined {
 	switch (write.namespace) {
-		case "pi.session.name":
+		case "theta.session.name":
 			return write;
-		case "pi.entry.label":
+		case "theta.entry.label":
 			return isEntryCopied(write.key) ? write : undefined;
-		case "pi.branch.tip":
+		case "theta.branch.tip":
 			if (plan.scope === "tree") return write;
 			return write.key === plan.branch ? { ...write, value: plan.destinationTip } : undefined;
-		case "pi.lane.config":
+		case "theta.lane.config":
 			return plan.scope === "tree" || write.key === plan.branch ? write : undefined;
-		case "pi.lane.state":
+		case "theta.lane.state":
 			return plan.scope === "tree" || write.key === plan.branch
 				? { ...write, value: { currentOperationId: null, lastOperationId: null, inbox: [] } }
 				: undefined;
-		case "pi.result":
+		case "theta.result":
 			return undefined;
 	}
-	if (write.namespace.startsWith("pi.op.") || write.namespace.startsWith("pi.pending.")) return undefined;
-	if (write.namespace === "pi" || write.namespace.startsWith("pi.")) {
+	if (write.namespace.startsWith("theta.op.") || write.namespace.startsWith("theta.pending.")) return undefined;
+	if (write.namespace === "theta" || write.namespace.startsWith("theta.")) {
 		throw new Error(`Unknown reserved fork namespace: ${write.namespace}`);
 	}
 	return plan.scope === "tree" ? write : undefined;
 }
+

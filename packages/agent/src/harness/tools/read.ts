@@ -1,5 +1,6 @@
-import type { ImageContent, TextContent } from "@earendil-works/pi-ai";
+import type { ImageContent, TextContent } from "@theta/ai";
 import { type Static, Type } from "typebox";
+import type { ToolOutcome } from "../../types.ts";
 import type { Context } from "../context.ts";
 import type { AgentHarnessTool } from "../types.ts";
 import { getOrThrow } from "../types.ts";
@@ -10,6 +11,7 @@ import {
 	type TruncationResult,
 	truncateHead,
 } from "../utils/truncate.ts";
+import { contentIdentity } from "./edit-diff.ts";
 import { detectSupportedImageMimeType, encodeBase64 } from "./image.ts";
 import { resolveReadToolPath } from "./path-utils.ts";
 import type { ExecutionToolContext } from "./tool-context.ts";
@@ -24,6 +26,14 @@ export type ReadToolInput = Static<typeof readSchema>;
 
 export interface ReadToolDetails {
 	truncation?: TruncationResult;
+	/**
+	 * Content identity of the text actually delivered to the model (post-truncation).
+	 * Pass this back as `expectedVersion` on a matching `edit` or `write` so the tool can
+	 * detect concurrent modifications and reject stale operations.
+	 */
+	contentIdentity?: string;
+	/** Structured outcome synthesized by the agent loop. */
+	outcome?: ToolOutcome;
 }
 
 export type ReadImageProcessorResult =
@@ -100,6 +110,11 @@ export function createReadTool<TContext extends ExecutionToolContext = Execution
 			}
 
 			const textContent = new TextDecoder().decode(bytes);
+			// Content identity is computed from the raw on-disk bytes (post-truncation of
+			// the model's window) so the model can pass it back as `expectedVersion` on
+			// a subsequent edit/write. Pass this back as `expectedVersion` on a matching
+			// `edit` or `write` to detect concurrent modifications.
+			const identity = await contentIdentity(textContent);
 			const allLines = textContent.split("\n");
 			const totalFileLines = allLines.length;
 			const startLine = offset ? Math.max(0, offset - 1) : 0;
@@ -124,7 +139,7 @@ export function createReadTool<TContext extends ExecutionToolContext = Execution
 			if (truncation.firstLineExceedsLimit) {
 				const firstLineSize = formatSize(new TextEncoder().encode(allLines[startLine]).byteLength);
 				outputText = `[Line ${startLineDisplay} is ${firstLineSize}, exceeds ${formatSize(DEFAULT_MAX_BYTES)} limit. Use bash: sed -n '${startLineDisplay}p' ${path} | head -c ${DEFAULT_MAX_BYTES}]`;
-				details = { truncation };
+				details = { truncation, contentIdentity: identity };
 			} else if (truncation.truncated) {
 				const endLineDisplay = startLineDisplay + truncation.outputLines - 1;
 				const nextOffset = endLineDisplay + 1;
@@ -134,16 +149,19 @@ export function createReadTool<TContext extends ExecutionToolContext = Execution
 				} else {
 					outputText += `\n\n[Showing lines ${startLineDisplay}-${endLineDisplay} of ${totalFileLines} (${formatSize(DEFAULT_MAX_BYTES)} limit). Use offset=${nextOffset} to continue.]`;
 				}
-				details = { truncation };
+				details = { truncation, contentIdentity: identity };
 			} else if (userLimitedLines !== undefined && startLine + userLimitedLines < allLines.length) {
 				const remaining = allLines.length - (startLine + userLimitedLines);
 				const nextOffset = startLine + userLimitedLines + 1;
 				outputText = `${truncation.content}\n\n[${remaining} more lines in file. Use offset=${nextOffset} to continue.]`;
+				details = { contentIdentity: identity };
 			} else {
 				outputText = truncation.content;
+				details = { contentIdentity: identity };
 			}
 
 			return { content: [{ type: "text", text: outputText }], details };
 		},
 	};
 }
+

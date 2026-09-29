@@ -115,3 +115,4 @@ export function findWordForward(text: string, cursor: number, options?: WordNavi
 
 	return newCursor;
 }
+

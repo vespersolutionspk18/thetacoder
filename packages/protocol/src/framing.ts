@@ -149,3 +149,4 @@ export class FrameDecoder {
 		throw new FrameError(message);
 	}
 }
+

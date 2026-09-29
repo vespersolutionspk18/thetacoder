@@ -4,7 +4,7 @@ import {
 	fauxAssistantMessage,
 	type Model,
 	type Provider,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, type Harness } from "../harness.ts";
 
@@ -112,3 +112,4 @@ describe("issue #6768 Copilot compaction base URL", () => {
 		expect(requestBaseUrl).toBe(ENTERPRISE_BASE_URL);
 	});
 });
+

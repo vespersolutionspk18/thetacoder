@@ -1,4 +1,4 @@
-import type { Model } from "@earendil-works/pi-ai";
+import type { Model } from "@theta/ai";
 import {
 	Container,
 	type Focusable,
@@ -9,7 +9,7 @@ import {
 	matchesKey,
 	Spacer,
 	Text,
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 import { getModelSearchText } from "../model-search.ts";
 import { theme } from "../theme/theme.ts";
 import { DynamicBorder } from "./dynamic-border.ts";
@@ -399,3 +399,4 @@ export class ScopedModelsSelectorComponent extends Container implements Focusabl
 		return this.searchInput;
 	}
 }
+

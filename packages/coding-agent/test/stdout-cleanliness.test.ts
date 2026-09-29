@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 function createTempDir(): string {
-	const dir = mkdtempSync(join(tmpdir(), "pi-stdout-clean-"));
+	const dir = mkdtempSync(join(tmpdir(), "theta-stdout-clean-"));
 	tempDirs.push(dir);
 	return dir;
 }
@@ -31,7 +31,7 @@ async function runCli(args: string[]): Promise<{ stdout: string; stderr: string;
 	const tempRoot = createTempDir();
 	const agentDir = join(tempRoot, "agent");
 	const projectDir = join(tempRoot, "project");
-	const projectConfigDir = join(projectDir, ".pi");
+	const projectConfigDir = join(projectDir, ".theta");
 	mkdirSync(agentDir, { recursive: true });
 	mkdirSync(projectConfigDir, { recursive: true });
 
@@ -105,3 +105,4 @@ describe("stdout cleanliness in non-interactive modes", () => {
 		expect(result.stderr).toContain("Usage:");
 	});
 });
+

@@ -50,7 +50,7 @@ import { stream as streamGoogleVertex } from "../src/api/google-vertex.ts";
 import { getModel } from "../src/compat.ts";
 import type { Context, Model } from "../src/types.ts";
 
-const PI_USER_AGENT = `pi (${platform()} ${release()}; ${arch()})`;
+const PI_USER_AGENT = `theta (${platform()} ${release()}; ${arch()})`;
 const model = getModel("google-vertex", "gemini-3-flash-preview");
 const context: Context = {
 	messages: [{ role: "user", content: "hello", timestamp: Date.now() }],
@@ -240,3 +240,4 @@ describe("google-vertex api key resolution", () => {
 		});
 	});
 });
+

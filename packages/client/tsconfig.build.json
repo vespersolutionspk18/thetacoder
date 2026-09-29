@@ -4,9 +4,10 @@
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"paths": {
-			"@earendil-works/pi-protocol": ["../protocol/dist/index.d.ts"]
+			"@theta/protocol": ["../protocol/dist/index.d.ts"]
 		}
 	},
 	"include": ["src/**/*.ts"],
 	"exclude": ["node_modules", "dist", "**/*.d.ts", "src/**/*.d.ts"]
 }
+

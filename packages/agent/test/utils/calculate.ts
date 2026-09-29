@@ -1,4 +1,4 @@
-import type { Usage } from "@earendil-works/pi-ai";
+import type { Usage } from "@theta/ai";
 import { type Static, Type } from "typebox";
 import type { AgentTool, AgentToolResult } from "../../src/types.ts";
 
@@ -38,3 +38,4 @@ export function createCalculateToolWithUsage(usage: Usage): AgentTool<typeof cal
 		execute: async (_toolCallId: string, args: CalculateParams) => ({ ...calculate(args.expression), usage }),
 	};
 }
+

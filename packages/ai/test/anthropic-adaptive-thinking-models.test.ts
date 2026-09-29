@@ -38,3 +38,4 @@ describe("Anthropic adaptive thinking model metadata", () => {
 		);
 	});
 });
+

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
+	"$schema": "https://raw.githubusercontent.com/earendil-works/theta/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
 	"name": "light",
 	"vars": {
 		"teal": "#5a8080",
@@ -88,3 +88,4 @@
 		"infoBg": "#fffae6"
 	}
 }
+

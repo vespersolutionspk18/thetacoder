@@ -6,7 +6,7 @@ import {
 	fauxProvider,
 	type MutableModels,
 	type Provider,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { HarnessEvent, WatchHandle } from "../../../src/harness/agent-harness.ts";
 import { DEFAULT_COMPACTION_SETTINGS } from "../../../src/harness/compaction/compaction.ts";
@@ -48,7 +48,7 @@ class FrameBlockingMemoryStorage extends MemoryStorage {
 			this.blockNextFrame &&
 			writes.some(
 				(write) =>
-					write.kind === "list" && write.op === "append" && write.namespace === "pi.pending.assistant_frame",
+					write.kind === "list" && write.op === "append" && write.namespace === "theta.pending.assistant_frame",
 			)
 		) {
 			this.blockNextFrame = false;
@@ -183,7 +183,7 @@ function writesOperationState(writes: readonly Write[], status: string): boolean
 		(write) =>
 			write.kind === "value" &&
 			write.op === "set" &&
-			write.namespace === "pi.op.state" &&
+			write.namespace === "theta.op.state" &&
 			typeof write.value === "object" &&
 			write.value !== null &&
 			"at" in write.value &&
@@ -461,9 +461,9 @@ describe("runtime assistant generation", () => {
 		).toEqual([
 			"entry",
 			"usage",
-			"value:set:pi.branch.tip",
-			"list:delete:pi.pending.assistant_frame",
-			"value:set:pi.op.state",
+			"value:set:theta.branch.tip",
+			"list:delete:theta.pending.assistant_frame",
+			"value:set:theta.op.state",
 		]);
 		expect(fixture.events.map((event) => event.type)).toEqual(
 			expect.arrayContaining([
@@ -525,7 +525,7 @@ describe("runtime assistant generation", () => {
 			.getCommitAttempts()
 			.flatMap((writes) =>
 				writes.flatMap((write) =>
-					write.kind === "list" && write.op === "append" && write.namespace === "pi.pending.assistant_frame"
+					write.kind === "list" && write.op === "append" && write.namespace === "theta.pending.assistant_frame"
 						? [write.value]
 						: [],
 				),
@@ -788,3 +788,4 @@ describe("runtime assistant generation", () => {
 		await expectProjectionRestores(fixture);
 	});
 });
+

@@ -1,16 +1,16 @@
-# @earendil-works/pi-session-backend-sqlite-node
+# @theta/session-backend-sqlite-node
 
-Node `node:sqlite` Session backend for `@earendil-works/pi-agent-core`.
+Node `node:sqlite` Session backend for `@theta/agent-core`.
 
 ```ts
-import { BACKGROUND_CONTEXT } from "@earendil-works/pi-agent-core";
+import { BACKGROUND_CONTEXT } from "@theta/agent-core";
 import {
   createNodeSqliteFactory,
   SqliteSessionRepo,
-} from "@earendil-works/pi-session-backend-sqlite-node";
+} from "@theta/session-backend-sqlite-node";
 
 const repository = new SqliteSessionRepo({
-  directory: "/var/lib/pi/sessions",
+  directory: "/var/lib/theta/sessions",
   databaseFactory: createNodeSqliteFactory(),
 });
 
@@ -31,3 +31,4 @@ The database factory distinguishes intentional creation, no-create read-write op
 The host lifecycle, not this backend, guarantees one writable owner per Session. Directly opening the same Session for writes in another process is unsupported. The repository rejects overlapping local create/open/fork/delete ownership for one ID, but implements no cross-process lease, lock, fence, heartbeat, or takeover. The host must close a worker before deletion.
 
 A fork of a source open in the same repository queues its snapshot on that source's commit queue. Any other source, including one held open by a live Session worker, uses an independent read-only connection and one deferred WAL transaction; later worker commits may complete while that snapshot remains open. Shared-container deletion removes only the selected Session's rows. Repository close waits for every open Session cleanup attempt before reporting errors. The package does not export a search service or FTS index; search is the separate S3 projection.
+

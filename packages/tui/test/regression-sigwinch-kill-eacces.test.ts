@@ -60,3 +60,4 @@ describe("refreshTerminalDimensions", () => {
 		Object.defineProperty(process, "platform", { value: originalPlatform });
 	});
 });
+

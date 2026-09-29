@@ -84,3 +84,4 @@ describe("Together models", () => {
 		expect(getEnvApiKey("together")).toBe("test-together-key");
 	});
 });
+

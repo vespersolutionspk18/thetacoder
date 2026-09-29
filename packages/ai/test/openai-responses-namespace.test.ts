@@ -231,3 +231,4 @@ describe("OpenAI Responses tool-call namespaces", () => {
 		expect(replayed).not.toHaveProperty("namespace");
 	});
 });
+

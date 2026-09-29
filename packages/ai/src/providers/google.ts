@@ -13,3 +13,4 @@ export function googleProvider(): Provider<"google-generative-ai"> {
 		api: googleGenerativeAIApi(),
 	});
 }
+

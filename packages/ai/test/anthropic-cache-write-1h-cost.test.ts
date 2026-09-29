@@ -84,3 +84,4 @@ describe("Anthropic 1h cache write cost", () => {
 		expect(result.usage.cost.cacheWrite).toBeCloseTo(6.25, 10);
 	});
 });
+

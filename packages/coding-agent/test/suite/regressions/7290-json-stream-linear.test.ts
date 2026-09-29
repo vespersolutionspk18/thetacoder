@@ -1,4 +1,4 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { toJsonEvent } from "../../../src/modes/json-event.ts";
 import { createHarness, type Harness } from "../harness.ts";
@@ -42,3 +42,4 @@ describe("regression #7290: JSON event streams stay linear", () => {
 		expect(largeBytes / smallBytes).toBeLessThan(2.2);
 	});
 });
+

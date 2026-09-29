@@ -10,3 +10,4 @@ export function contentText(content: string | readonly Content[], separator = "\
 		.map((block) => block.text)
 		.join(separator);
 }
+

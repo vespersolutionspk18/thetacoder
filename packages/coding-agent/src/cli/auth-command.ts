@@ -1,4 +1,4 @@
-import type { AuthResult } from "@earendil-works/pi-ai";
+import type { AuthResult } from "@theta/ai";
 import { APP_NAME } from "../config.ts";
 import type { Args } from "./args.ts";
 
@@ -38,9 +38,9 @@ export function isAuthCommandHelp(args: string[]): boolean {
 
 export function printAuthCommandHelp(): void {
 	console.log(`Usage:
-  pi auth print-api-key [--provider <provider>] [--model <model>]
-  pi auth print-bearer-token [--provider <provider>] [--model <model>] [--min-expiry <duration>]
-  pi auth check [--provider <provider>] [--model <model>] [--json] [--credentials] [--no-refresh]
+  theta auth print-api-key [--provider <provider>] [--model <model>]
+  theta auth print-bearer-token [--provider <provider>] [--model <model>] [--min-expiry <duration>]
+  theta auth check [--provider <provider>] [--model <model>] [--json] [--credentials] [--no-refresh]
 
 Auth commands require at least one of --provider or --model. Checks refresh expired OAuth credentials by default; --no-refresh prevents this. --credentials emits the credential, or includes it in JSON output.`);
 }
@@ -124,3 +124,4 @@ export function getAuthCredential(auth: AuthResult | undefined): string | undefi
 	)?.[1];
 	return typeof authorization === "string" ? /^Bearer\s+(.+)$/iu.exec(authorization)?.[1] : undefined;
 }
+

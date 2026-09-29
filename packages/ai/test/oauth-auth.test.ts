@@ -164,3 +164,4 @@ describe("OAuth through Models.getAuth (lazy load chain)", () => {
 		expect(result?.auth.baseUrl).toBe("https://api.business.githubcopilot.com");
 	});
 });
+

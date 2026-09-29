@@ -1,6 +1,7 @@
 import type { ChildProcess } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { isAbsolute } from "node:path";
+import { BACKGROUND_CONTEXT, type Context, type JsonlSessionMetadata, TODO_CONTEXT } from "@theta/agent-core";
 import {
 	createServiceUnsubscribeCall,
 	decodeServiceControlCall,
@@ -8,14 +9,8 @@ import {
 	parseServiceProviderUpdate,
 	type ServiceCall,
 	type ServiceProviderUpdate,
-} from "@earendil-works/chord";
-import {
-	BACKGROUND_CONTEXT,
-	type Context,
-	type JsonlSessionMetadata,
-	TODO_CONTEXT,
-} from "@earendil-works/pi-agent-core";
-import { type RoutedSessionAttachment, type RoutedSessionHandle, ServerError } from "@earendil-works/pi-server";
+} from "@theta/chord";
+import { type RoutedSessionAttachment, type RoutedSessionHandle, ServerError } from "@theta/server";
 import { Check } from "typebox/value";
 import type { CoordinatorConnection, CoordinatorConnectionEvent } from "./coordinator.ts";
 import { spawnInternalProcess } from "./process.ts";
@@ -857,3 +852,4 @@ function abortError(signal: AbortSignal): Error {
 	const reason: unknown = signal.reason;
 	return reason instanceof Error ? reason : new DOMException("The operation was aborted", "AbortError");
 }
+

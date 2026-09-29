@@ -1,9 +1,9 @@
-# @earendil-works/chord
+# @theta/chord
 
 Chord is an application-composition runtime for systems assembled from
 plugins/extensions. It provides facets, services, replicated state, and a
 pluggable remote-service boundary. It is developed as a standalone package in
-the Pi monorepo, but it is not a Pi package: it does not depend on any other Pi
+the Theta monorepo, but it is not a Theta package: it does not depend on any other Theta
 workspace package and can be used by unrelated applications.
 
 ## What Chord is for
@@ -59,9 +59,9 @@ The design has a few connected pieces:
 
 The current runtime exports service tokens, singleton and keyed providers,
 remote bindings, replicated state, facet hosts, and facet loaders from
-`@earendil-works/chord`. Import public types and general runtime APIs from the
+`@theta/chord`. Import public types and general runtime APIs from the
 package root. Context constants and functions live in
-`@earendil-works/chord/context` because their generic names should not pollute
+`@theta/chord/context` because their generic names should not pollute
 the root API.
 Chord-owned identifiers use the `chord.*` namespace and its reserved service
 prefix is `$chord.*`.
@@ -88,10 +88,10 @@ outer protocol.
 
 ## Tracking JSON deltas
 
-Import the standalone delta primitive from `@earendil-works/chord/delta`:
+Import the standalone delta primitive from `@theta/chord/delta`:
 
 ```ts
-import { apply, track } from "@earendil-works/chord/delta";
+import { apply, track } from "@theta/chord/delta";
 
 const changes = track({ output: "", count: 0 });
 changes.flush(); // opening base batch
@@ -123,7 +123,7 @@ consumer-ownership rules.
 
 ## Bundling and loading facets
 
-`@earendil-works/chord/bundler` uses esbuild to turn ESM or TypeScript application
+`@theta/chord/bundler` uses esbuild to turn ESM or TypeScript application
 entries into independent, content-addressed CommonJS files. The package-level API
 reads plugin identity and build configuration from `package.json`, then applies
 facet path conventions supplied by the host application:
@@ -134,7 +134,7 @@ facet path conventions supplied by the host application:
   "version": "1.0.0",
   "type": "module",
   "peerDependencies": {
-    "@earendil-works/chord": "^0.84.4"
+    "@theta/chord": "^0.84.4"
   },
   "chord": {
     "facets": {
@@ -146,7 +146,7 @@ facet path conventions supplied by the host application:
 ```
 
 ```ts
-import { bundleFacetPackage } from "@earendil-works/chord/bundler";
+import { bundleFacetPackage } from "@theta/chord/bundler";
 
 await bundleFacetPackage({
 	packagePath: "/path/to/my-plugin",
@@ -169,7 +169,7 @@ The output directory contains one `.cjs` file per entry plus
 loader:
 
 ```ts
-import { createFacetBundleLoader } from "@earendil-works/chord/node";
+import { createFacetBundleLoader } from "@theta/chord/node";
 
 const loader = createFacetBundleLoader({
 	manifestPath: "/application-owned/plugin-builds/my-plugin/chord-facets.json",
@@ -203,3 +203,4 @@ output, so loaders do not observe partially built generations.
 
 See [PLANNING.md](PLANNING.md) for the broader RPC and generation-loading
 architecture.
+

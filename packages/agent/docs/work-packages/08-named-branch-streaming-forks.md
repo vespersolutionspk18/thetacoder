@@ -34,15 +34,15 @@ export type ForkOptions =
 
 `scope` is required. `branch` is required for branch scope. There is no default scope, no implicit `main`, and no compatibility alias.
 
-**Branch scope** requires a complete configured source AgentLane: `pi.branch.tip/{branch}`, `pi.lane.config/{branch}`, and `pi.lane.state/{branch}` must all exist. A missing tip rejects (`unknown branch`); a data-only Branch (tip without config/state) rejects. Forking does not audit unrelated lanes or malformed lane records: supported writers create lane state atomically, so branch validation checks only the selected Branch's required tip, config, and state. `entryId`, when supplied, must be an entry on that Branch's current tip ancestry (inclusive); an entry elsewhere in the tree rejects. Omitted `entryId` means the current tip. `position` defaults to `"at"`; `"before"` selects the target's parent and may yield a `null` destination tip (before the root entry, or a `null` source tip with no `entryId`) — legal. The destination contains exactly one Branch with the same name, the selected tip, the copied `LaneConfiguration`, and fresh idle lane state `{ currentOperationId: null, lastOperationId: null, inbox: [] }`. No other Branch or lane exists in the destination.
+**Branch scope** requires a complete configured source AgentLane: `theta.branch.tip/{branch}`, `theta.lane.config/{branch}`, and `theta.lane.state/{branch}` must all exist. A missing tip rejects (`unknown branch`); a data-only Branch (tip without config/state) rejects. Forking does not audit unrelated lanes or malformed lane records: supported writers create lane state atomically, so branch validation checks only the selected Branch's required tip, config, and state. `entryId`, when supplied, must be an entry on that Branch's current tip ancestry (inclusive); an entry elsewhere in the tree rejects. Omitted `entryId` means the current tip. `position` defaults to `"at"`; `"before"` selects the target's parent and may yield a `null` destination tip (before the root entry, or a `null` source tip with no `entryId`) — legal. The destination contains exactly one Branch with the same name, the selected tip, the copied `LaneConfiguration`, and fresh idle lane state `{ currentOperationId: null, lastOperationId: null, inbox: [] }`. No other Branch or lane exists in the destination.
 
 This deliberately makes branch forks of data-only Branches — including legacy v3 imports whose main lacked reconstructable model/thinking history — unavailable. Tree scope remains available for those sources.
 
 **Tree scope** copies: every immutable entry, including entries unreachable from every current Branch tip; every Branch tip verbatim; every configured lane's config plus fresh idle lane state under the same name; data-only Branches (tip present, config/state absent) as data-only Branches. Forking does not perform a corruption audit of lane records; supported writers create valid lane state atomically.
 
-**Both scopes**: copy `pi.session.name`; copy `pi.entry.label` values only for copied entries; exclude the usage ledger, `pi.result`, all `pi.op.*`, all `pi.pending.*` (entries, tool checkpoints, assistant frames), and every trace of open-operation state. Destination usage totals start at zero; destination `messageCount` equals the number of copied message entries, exactly as current conformance already proves. Destination metadata records `parentSessionId = source.id`. Sequence preservation is not part of the fork contract: backends may allocate destination-local sequences for copied and transformed writes, provided destination sequence and list-cursor semantics remain internally valid.
+**Both scopes**: copy `theta.session.name`; copy `theta.entry.label` values only for copied entries; exclude the usage ledger, `theta.result`, all `theta.op.*`, all `theta.pending.*` (entries, tool checkpoints, assistant frames), and every trace of open-operation state. Destination usage totals start at zero; destination `messageCount` equals the number of copied message entries, exactly as current conformance already proves. Destination metadata records `parentSessionId = source.id`. Sequence preservation is not part of the fork contract: backends may allocate destination-local sequences for copied and transformed writes, provided destination sequence and list-cursor semantics remain internally valid.
 
-**Application values/lists (outside the reserved `pi`/`pi.*` namespaces)**: tree scope copies every current scalar value and every surviving list element; branch scope copies none. A `seq <= tipSeq` cutoff is forbidden as "historical reconstruction" — it is provably not one:
+**Application values/lists (outside the reserved `theta`/`theta.*` namespaces)**: tree scope copies every current scalar value and every surviving list element; branch scope copies none. A `seq <= tipSeq` cutoff is forbidden as "historical reconstruction" — it is provably not one:
 
 ```text
 Scalar: TX[seq 10: set my-app.state = v1] · TX[seq 12: insert e1] ·
@@ -63,12 +63,12 @@ Any cutoff filters *survivors*, silently mixing rewound intent with post-deletio
 
 All namespace fork knowledge lives in one core module beside `session/values.ts` and `session/fork.ts` (e.g. `session/fork-policy.ts`). It is a closed switch, not a registry, plugin policy, or DSL:
 
-- `pi.op.*`, `pi.pending.*`, `pi.result` → exclude, both scopes.
-- `pi.session.name` → copy.
-- `pi.entry.label` → copy iff the keyed entry is copied.
-- `pi.branch.tip`, `pi.lane.config`, `pi.lane.state` → structured lane actions; the scope-specific rules (branch keeps only the named lane and rewrites its tip; lane state is always replaced with fresh idle state; tree keeps all) live in one shared driver consumed by all backends.
-- The exact namespace `pi` and any other `pi.*` namespace → the fork **fails**, but only when current surviving state exists at fork time (a current scalar row or a surviving list element). Historical writes later replaced or deleted are absent from current state on every backend and must not alone fail a JSONL fork — behavior is backend-equivalent. Introducing a new built-in namespace without declaring its fork semantics must break fork tests, not silently copy or drop state.
-- Neither `pi` nor `pi.*` → application: copy on tree, exclude on branch. The only built-in list namespace (`pi.pending.assistant_frame`) excludes; application lists follow the application rule.
+- `theta.op.*`, `theta.pending.*`, `theta.result` → exclude, both scopes.
+- `theta.session.name` → copy.
+- `theta.entry.label` → copy iff the keyed entry is copied.
+- `theta.branch.tip`, `theta.lane.config`, `theta.lane.state` → structured lane actions; the scope-specific rules (branch keeps only the named lane and rewrites its tip; lane state is always replaced with fresh idle state; tree keeps all) live in one shared driver consumed by all backends.
+- The exact namespace `theta` and any other `theta.*` namespace → the fork **fails**, but only when current surviving state exists at fork time (a current scalar row or a surviving list element). Historical writes later replaced or deleted are absent from current state on every backend and must not alone fail a JSONL fork — behavior is backend-equivalent. Introducing a new built-in namespace without declaring its fork semantics must break fork tests, not silently copy or drop state.
+- Neither `theta` nor `theta.*` → application: copy on tree, exclude on branch. The only built-in list namespace (`theta.pending.assistant_frame`) excludes; application lists follow the application rule.
 
 The driver exposes a streaming shape — accept one committed value/list write (or current row), emit zero or more destination writes, `finish()` emits fresh idle lane states and the rewritten branch tip. Entry-copy membership is a backend-supplied predicate so each backend uses its own index. `createForkSnapshot`, `forkSnapshotWrites`, `ForkSourceSnapshot`, `ForkDestinationSnapshot`, and the `entriesComplete` escape hatch are deleted.
 
@@ -91,7 +91,7 @@ Forks must stream source writes rather than materializing full source snapshot a
 
 - *External/closed/live-worker source:* WP07 path — `openReadOnly` on the exact canonical path, one deferred read transaction, session row and storage version validated inside it.
 - *Same-repository open source:* open the independent read-only connection **first**, then enqueue a short boundary callback on the source Storage `commitQueue` whose only job is to `BEGIN` and establish the independent reader's snapshot (issue a trivial read) before releasing the queue. Do not begin a read transaction on the source writer connection and then release its queue, and do not hold the queue for the copy duration.
-- *Stage:* while the source reader remains open, stream selected entries `ORDER BY seq` and classifier-selected current scalar/list rows (SQL-level namespace prefilters matching the classifier — enumerated built-in namespaces plus the application predicate excluding exact `pi` and `pi.%` — with each row still passing the classifier) into the temporary staging database in bounded batches. Branch scope enumerates the ancestry through the `branch_entries` segment chain up to the selected entry and answers `entryId` and label membership through that index, not an in-RAM id set. Later source commits use the original writer connection and may complete while staging streams, in **both** layouts, because stage writes target another file.
+- *Stage:* while the source reader remains open, stream selected entries `ORDER BY seq` and classifier-selected current scalar/list rows (SQL-level namespace prefilters matching the classifier — enumerated built-in namespaces plus the application predicate excluding exact `theta` and `theta.%` — with each row still passing the classifier) into the temporary staging database in bounded batches. Branch scope enumerates the ancestry through the `branch_entries` segment chain up to the selected entry and answers `entryId` and label membership through that index, not an in-RAM id set. Later source commits use the original writer connection and may complete while staging streams, in **both** layouts, because stage writes target another file.
 - *Publish:* close/commit the source read transaction, then stream the stage into one destination `BEGIN IMMEDIATE` transaction — entries in source order maintaining the destination branch index and `message_count` incrementally, then values/list elements — and delete the staging database in `finally` on success and failure. The destination allocates its own valid sequence range. Shared-container destinations write only the new session's rows.
 
 ### 1.4 Preserved WP07 behavior
@@ -110,13 +110,13 @@ Destination id reservation across create/open/fork/delete, no-create opens, fore
 - `createForkSnapshot` and its array snapshots force all backends through a materialized in-memory source copy.
 - A JSONL fork of a closed source uses `JsonlStorage.open()`, which rewrites the source file on a torn tail — a fork can mutate its source today.
 - Lists are never copied; application values are excluded with no declared tree policy (`values.md` explicitly defers it).
-- Namespace fork knowledge is repeated across `fork.ts`, `values.md` prose, and conformance assertions; nothing forces a new `pi.*` namespace to declare fork semantics.
+- Namespace fork knowledge is repeated across `fork.ts`, `values.md` prose, and conformance assertions; nothing forces a new `theta.*` namespace to declare fork semantics.
 - `entriesComplete?: false` exists only to let SQLite branch snapshots skip tip validation for other branches.
 
 ## 3. Required result
 
 1. `ForkOptions` and validation exactly as §1.1; all rejection paths create no destination file, database rows, or reserved-but-leaked ids.
-2. The closed classifier/driver of §1.2, exported from core and consumed by all three backends; unknown reserved namespaces (exact `pi` or undeclared `pi.*`) fail the fork only when current surviving state exists, identically on every backend.
+2. The closed classifier/driver of §1.2, exported from core and consumed by all three backends; unknown reserved namespaces (exact `theta` or undeclared `theta.*`) fail the fork only when current surviving state exists, identically on every backend.
 3. Streaming procedures of §1.3 on all three backends; `createForkSnapshot`/`captureForkSource`/`snapshot()` fork plumbing and their exports removed from `session/index.ts` and the sqlite-node import surface.
 4. Valid destination-local sequence allocation on every backend; identical logical destination state across backends for identical sources (conformance).
 5. JSONL source non-mutation, including torn-tail sources and legacy v3 sources.
@@ -163,13 +163,13 @@ Update fork option literals, add large-source fork benchmarks (tree and branch),
 - branch scope accepts: omitted `entryId` (tip), explicit tip, mid-ancestry entry, `position: "before"` at a mid entry and at the root entry (`null` destination tip), `null` source tip with no `entryId`.
 - destination shape: exactly one Branch, same name, copied config, fresh idle lane state, no other lane values, `parentSessionId` set.
 - tree scope: unreachable entries copied; every tip copied; configured lanes get config plus fresh idle state; data-only Branches stay data-only. Forking does not audit malformed lane records.
-- both scopes: session name copied; labels only for copied entries (branch fork excludes labels of non-ancestry entries); `pi.result`, `pi.op.*`, `pi.pending.*` (pending entries, tool checkpoints, assistant frame lists), and usage rows absent; exact stats expectation — a fork copying N message entries reports `getStats()` = `{ messageCount: N, usage: all-zero }`, matching current conformance; the ledger-completeness invariant ("a fork's ledger starts at zero") retained.
+- both scopes: session name copied; labels only for copied entries (branch fork excludes labels of non-ancestry entries); `theta.result`, `theta.op.*`, `theta.pending.*` (pending entries, tool checkpoints, assistant frame lists), and usage rows absent; exact stats expectation — a fork copying N message entries reports `getStats()` = `{ messageCount: N, usage: all-zero }`, matching current conformance; the ledger-completeness invariant ("a fork's ledger starts at zero") retained.
 
 ### Application values and lists
 
-- tree fork copies every non-`pi.*` scalar and every surviving list element; a list deleted-then-reappended in the source reproduces only survivors.
+- tree fork copies every non-`theta.*` scalar and every surviving list element; a list deleted-then-reappended in the source reproduces only survivors.
 - branch fork copies no application values/lists (pin the §1.1 scalar and list traces as regression cases: post-fork-point overwrite and delete-destroyed elements must not resurface under any implementation).
-- current surviving state in an unknown reserved namespace (exact `pi` or an undeclared `pi.*` scalar or surviving list element) fails the fork on every backend; the same namespace **set then deleted** before the fork fails no backend — including JSONL, where the dead history remains as physical lines and the disk fold must classify it as absent. Construct both cases via raw committed writes.
+- current surviving state in an unknown reserved namespace (exact `theta` or an undeclared `theta.*` scalar or surviving list element) fails the fork on every backend; the same namespace **set then deleted** before the fork fails no backend — including JSONL, where the dead history remains as physical lines and the disk fold must classify it as absent. Construct both cases via raw committed writes.
 
 ### Sequence allocation
 
@@ -213,7 +213,7 @@ Do not include:
 - compatibility aliases, a default scope, or implicit `main`;
 - any `seq <= tip` cutoff or other historical-state reconstruction;
 - a fork-policy registry, plugin hook, or DSL; per-address application opt-ins;
-- copying usage rows, `pi.result`, or any open-operation state under any option;
+- copying usage rows, `theta.result`, or any open-operation state under any option;
 - coding-agent `/fork`, `/clone`, `--fork`, or RPC migration;
 - storage-version bumps, migrations, or format changes (formats stay WIP-in-place);
 - J1 snapshot compaction (the streaming reader may be built shareable, nothing more);
@@ -230,7 +230,7 @@ WP08 is complete when:
 - `ForkOptions` is exactly the §1.1 union with the stated validation, on all three backends;
 - branch forks require a complete configured source AgentLane and enforce ancestry membership; tree forks copy the complete immutable tree, every tip, configured and data-only Branches;
 - tree forks carry all current application values and surviving list elements; branch forks carry none;
-- one closed core classifier owns every namespace disposition; unknown reserved namespaces (exact `pi` or undeclared `pi.*`) fail forks exactly when current surviving state exists, equivalently on all backends;
+- one closed core classifier owns every namespace disposition; unknown reserved namespaces (exact `theta` or undeclared `theta.*`) fail forks exactly when current surviving state exists, equivalently on all backends;
 - all supported fork paths — including closed legacy v3 sources — stream source writes without materializing full source snapshot arrays, proven by instrumented-reader tests over large fixtures; JSONL may retain structural indexes and legacy compaction context in memory; forking an open legacy-v3 source is explicitly unsupported (clear rejection) until an ordinary commit upgrades it, not handled by an in-memory exception;
 - JSONL forks never mutate their source, including torn-tail and legacy v3 sources, and JSONL destinations contain only current selected rows;
 - SQLite forks stage through a temporary on-disk database (source reader → stage while open, stage → one destination `BEGIN IMMEDIATE` after reader close, stage deleted in `finally`), with the independent-reader boundary design and concurrent later writer commits proven in both layouts, preserving all WP07 behavior;
@@ -244,3 +244,4 @@ WP08 is complete when:
 ### Cleanup after invocation cancellation
 
 Cancellation-safe filesystem cleanup is deferred. Cleanup currently receives the caller's Context, so an aborted invocation can leave a staged file behind even though readers close and the destination id reservation is released. Define the cleanup Context policy before implementing this; do not import Chord's `withoutAbortSignal` directly into JSONL code as a temporary workaround.
+

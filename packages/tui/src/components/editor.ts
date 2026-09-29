@@ -2459,3 +2459,4 @@ export class Editor implements Component, Focusable {
 		this.requestAutocomplete({ force: this.autocompleteState === "force", explicitTab: false });
 	}
 }
+

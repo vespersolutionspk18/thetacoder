@@ -127,3 +127,4 @@ describe("TruncatedText component", () => {
 		assert.ok(!stripped.includes("Second line"));
 	});
 });
+

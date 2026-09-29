@@ -51,7 +51,7 @@ vi.mock("../src/utils/clipboard-command.ts", () => ({
 	}),
 }));
 
-vi.mock("@earendil-works/pi-tui", () => ({
+vi.mock("@theta/tui", () => ({
 	getNativeClipboard: () => ({ getImage: async () => createTinyBmp1x1Red24bpp() }),
 }));
 
@@ -64,3 +64,4 @@ describe("readClipboardImage BMP conversion", () => {
 		expect(Array.from(image!.bytes.slice(0, 4))).toEqual([0x89, 0x50, 0x4e, 0x47]);
 	});
 });
+

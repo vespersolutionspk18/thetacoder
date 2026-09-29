@@ -6,7 +6,7 @@ import {
 	SESSION_REPO_FORK_WRITE_BENCHMARK_SCENARIOS,
 	seedSessionRepoCatalogBenchmark,
 	seedSessionRepoForkBenchmark,
-} from "@earendil-works/pi-agent-core/harness/session/testing";
+} from "@theta/agent-core/harness/session/testing";
 import { registerReadBenchmarks, registerWriteBenchmarks } from "../../../../agent/benchmark/session/benchmark.ts";
 import { sessionRepoBenchmarkTargets } from "./session-repo-targets.ts";
 
@@ -60,3 +60,4 @@ await registerWriteBenchmarks({
 		return benchmark.scenario.run(subject.repo, subject.source, benchmark.dataset);
 	},
 });
+

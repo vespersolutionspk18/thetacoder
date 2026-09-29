@@ -524,3 +524,4 @@ describe("StdinBuffer", () => {
 		});
 	});
 });
+

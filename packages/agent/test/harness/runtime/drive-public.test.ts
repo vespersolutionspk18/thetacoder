@@ -1,4 +1,4 @@
-import { createModels, fauxAssistantMessage, fauxProvider } from "@earendil-works/pi-ai";
+import { createModels, fauxAssistantMessage, fauxProvider } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import {
 	AgentHarness,
@@ -610,3 +610,4 @@ describe("runtime public drive", () => {
 		await expect(lane.getTipId(BACKGROUND_CONTEXT)).rejects.toBeInstanceOf(HarnessFault);
 	});
 });
+

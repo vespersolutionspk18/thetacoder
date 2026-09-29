@@ -55,3 +55,4 @@ for await (const event of stream) {
 }
 const final = await stream.result();
 console.log(`[${final.stopReason}] cost: $${final.usage.cost.total.toFixed(6)}`);
+

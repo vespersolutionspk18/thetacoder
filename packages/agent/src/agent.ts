@@ -6,7 +6,7 @@ import type {
 	TextContent,
 	ThinkingBudgets,
 	Transport,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import { runAgentLoop, runAgentLoopContinue } from "./agent-loop.ts";
 import { getDefaultStreamFn } from "./stream-fn.ts";
 import type {
@@ -21,6 +21,8 @@ import type {
 	AgentTool,
 	BeforeToolCallContext,
 	BeforeToolCallResult,
+	ContextCompilerConfig,
+	ExecutionPlanConfig,
 	PrepareNextTurnContext,
 	QueueMode,
 	ShouldStopAfterTurnContext,
@@ -99,6 +101,21 @@ export interface AgentOptions {
 	initialState?: Partial<Omit<AgentState, "pendingToolCalls" | "isStreaming" | "streamingMessage" | "errorMessage">>;
 	convertToLlm?: (messages: AgentMessage[]) => Message[] | Promise<Message[]>;
 	transformContext?: (messages: AgentMessage[], signal?: AbortSignal) => Promise<AgentMessage[]>;
+	/**
+	 * Optional F2 context-compiler routing. When set, the agent loop routes the
+	 * `transformContext` output through the provided `compile` callback before
+	 * handing it to `convertToLlm`. The higher-level package that owns the F2
+	 * module is responsible for supplying the `compile` callback.
+	 */
+	contextCompiler?: ContextCompilerConfig;
+	/**
+	 * Optional F6 ExecutionPlan routing. When set, the agent loop
+	 * dispatches tool calls from an assistant message that carries an
+	 * `executionPlan` field through the provided `executor` callback
+	 * instead of `executeToolCalls`. The higher-level package that owns
+	 * the F6 module is responsible for supplying the `executor` callback.
+	 */
+	executionPlan?: ExecutionPlanConfig;
 	streamFn: StreamFn;
 	getApiKey?: (provider: string) => Promise<string | undefined> | string | undefined;
 	onPayload?: SimpleStreamOptions["onPayload"];
@@ -178,6 +195,8 @@ export class Agent {
 
 	public convertToLlm: (messages: AgentMessage[]) => Message[] | Promise<Message[]>;
 	public transformContext?: (messages: AgentMessage[], signal?: AbortSignal) => Promise<AgentMessage[]>;
+	public contextCompiler?: ContextCompilerConfig;
+	public executionPlan?: ExecutionPlanConfig;
 	public streamFunction: StreamFn;
 	public getApiKey?: (provider: string) => Promise<string | undefined> | string | undefined;
 	public onPayload?: SimpleStreamOptions["onPayload"];
@@ -219,6 +238,8 @@ export class Agent {
 		this._state = createMutableAgentState(runtimeOptions.initialState);
 		this.convertToLlm = runtimeOptions.convertToLlm ?? defaultConvertToLlm;
 		this.transformContext = runtimeOptions.transformContext;
+		this.contextCompiler = runtimeOptions.contextCompiler;
+		this.executionPlan = runtimeOptions.executionPlan;
 		this.streamFunction = runtimeOptions.streamFn ?? getDefaultStreamFn();
 		this.getApiKey = runtimeOptions.getApiKey;
 		this.onPayload = runtimeOptions.onPayload;
@@ -471,6 +492,8 @@ export class Agent {
 					: undefined,
 			convertToLlm: this.convertToLlm,
 			transformContext: this.transformContext,
+			contextCompiler: this.contextCompiler,
+			executionPlan: this.executionPlan,
 			getApiKey: this.getApiKey,
 			getSteeringMessages: async () => {
 				if (skipInitialSteeringPoll) {
@@ -590,3 +613,4 @@ export class Agent {
 		}
 	}
 }
+

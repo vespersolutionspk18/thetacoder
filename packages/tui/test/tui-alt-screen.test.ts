@@ -1370,7 +1370,7 @@ describe("TuiAltScreen", () => {
 	it("coalesces slash and hyphen separated segments for double-click word selection", async () => {
 		for (const { line, needle } of [
 			{ line: "extensions/starline/fixed-editor/compositor.ts", needle: "starline" },
-			{ line: "earendil-works/pi-tui", needle: "works" },
+			{ line: "earendil-works/theta-tui", needle: "works" },
 		]) {
 			const copied: string[] = [];
 			const terminal = new RecordingTerminal(80, 1);
@@ -1906,3 +1906,4 @@ describe("TuiAltScreen", () => {
 		tui.stop();
 	});
 });
+

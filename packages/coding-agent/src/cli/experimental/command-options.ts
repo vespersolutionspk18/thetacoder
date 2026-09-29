@@ -1,5 +1,5 @@
 import { posix } from "node:path";
-import { isServerId, type ServerId } from "@earendil-works/pi-protocol";
+import { isServerId, type ServerId } from "@theta/protocol";
 import { type ParsedCommandInput, stringOption, valueOption } from "./command.ts";
 
 export type AuthInput =
@@ -104,3 +104,4 @@ export function unsupportedOptions(command: string, input: ParsedCommandInput): 
 	if (input.remainingArgs.length === 0) return [];
 	return [`The experimental ${command} command does not support existing CLI options yet`];
 }
+

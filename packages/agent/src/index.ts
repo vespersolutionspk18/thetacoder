@@ -1,4 +1,4 @@
-export { uuidv7 } from "@earendil-works/pi-ai";
+export { uuidv7 } from "@theta/ai";
 export type {
 	AttributeValue,
 	ExactTelemetryAttributes,
@@ -31,13 +31,13 @@ export type {
 	TelemetrySpanDefinition,
 	TelemetryStartAttributeDefinition,
 	TypedSpanStarter,
-} from "@earendil-works/pi-telemetry";
+} from "@theta/telemetry";
 export {
 	createTypedSpanStarter,
 	defineTelemetrySchema,
 	InMemoryTelemetryContext,
 	NOOP_TELEMETRY_CONTEXT,
-} from "@earendil-works/pi-telemetry";
+} from "@theta/telemetry";
 export * from "./agent.ts";
 export * from "./agent-loop.ts";
 export * from "./harness/agent-harness.ts";
@@ -146,7 +146,11 @@ export {
 export { applyShellOutputUpdate } from "./harness/utils/output-capture.ts";
 export * from "./harness/utils/shell-output.ts";
 export * from "./harness/utils/truncate.ts";
+export { synthesizeOutcome } from "./outcome.ts";
 export * from "./proxy.ts";
 export * from "./search/index.ts";
 export { setDefaultStreamFn } from "./stream-fn.ts";
+export { extractOutcome, hasOwnOutcome, preserveOutcome, toRecord } from "./tool-result-outcome-merge.ts";
+export type { ToolOutcome, ToolOutcomeStatus } from "./types.ts";
 export * from "./types.ts";
+

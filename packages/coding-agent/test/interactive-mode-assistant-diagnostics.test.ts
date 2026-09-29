@@ -1,5 +1,5 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
-import { Container } from "@earendil-works/pi-tui";
+import type { AssistantMessage } from "@theta/ai";
+import { Container } from "@theta/tui";
 import { describe, expect, test } from "vitest";
 import { InteractiveMode } from "../src/modes/interactive/interactive-mode.ts";
 import { initTheme } from "../src/modes/interactive/theme/theme.ts";
@@ -65,3 +65,4 @@ describe("InteractiveMode assistant diagnostics", () => {
 		expect(disabled.chatContainer.children).toHaveLength(0);
 	});
 });
+

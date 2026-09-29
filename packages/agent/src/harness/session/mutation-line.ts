@@ -21,3 +21,4 @@ export class MutationLine {
 		return this.tail;
 	}
 }
+

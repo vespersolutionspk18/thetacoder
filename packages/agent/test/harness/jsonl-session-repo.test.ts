@@ -197,3 +197,4 @@ describe("JsonlSessionRepo cwd-scoped lifecycle", () => {
 		await repo.close(BACKGROUND_CONTEXT);
 	});
 });
+

@@ -50,3 +50,4 @@ describe("issue #6596 taskkill spawn failures", () => {
 		expect(() => child.emit("error", new Error("spawn taskkill ENOENT"))).not.toThrow();
 	});
 });
+

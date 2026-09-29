@@ -311,3 +311,4 @@ describe("constrained tool sampling", () => {
 		expect(JSON.parse(deltas.join(""))).toEqual({ payload: "abc" });
 	});
 });
+

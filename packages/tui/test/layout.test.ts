@@ -365,3 +365,4 @@ describe("viewport layout", () => {
 		assert.strictEqual(second.root.children[0]?.lines?.length, 3);
 	});
 });
+

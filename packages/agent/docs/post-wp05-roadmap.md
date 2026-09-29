@@ -58,7 +58,7 @@ Independent of the mobile assistant-output handoff and SQLite internals. It shou
 
 **Consequence**
 
-Superseded `pi.op.state`, deleted pending payloads, deleted tool checkpoints, and deleted assistant-frame lists remain physical bytes indefinitely. Generic compaction and the [mobile assistant-output handoff](mobile-handoff/01-harness/05-assistant-output/message-update.md) are complementary. Compaction reclaims dead session-scoped write history after the fact; the handoff moves pending assistant/tool output into ephemeral scopes so it never becomes main-log history, and replaces full/per-frame replication with Chord op batches.
+Superseded `theta.op.state`, deleted pending payloads, deleted tool checkpoints, and deleted assistant-frame lists remain physical bytes indefinitely. Generic compaction and the [mobile assistant-output handoff](mobile-handoff/01-harness/05-assistant-output/message-update.md) are complementary. Compaction reclaims dead session-scoped write history after the fact; the handoff moves pending assistant/tool output into ephemeral scopes so it never becomes main-log history, and replaces full/per-frame replication with Chord op batches.
 
 **Dependency**
 
@@ -87,7 +87,7 @@ Do not count the current lane-watch compatibility RPC or plugin-service RPC as R
 
 **Evidence**
 
-`src/harness/telemetry.ts` and generated `docs/telemetry-schema.md` declare `pi.ai.request`, operation, checkpoint, turn, step, tool, hook, sleep, event-handler, and session-write spans. Production source starts only `pi.harness.hook`, and only for registered `before_tool`/`after_tool` handlers. AI options propagate `telemetryContext`, but no provider path starts `pi.ai.request`. Server request ingress has cancellation but no trace carrier or client/server RPC spans. `TODO_CONTEXT` remains at transport/worker lifecycle and event-delivery boundaries.
+`src/harness/telemetry.ts` and generated `docs/telemetry-schema.md` declare `theta.ai.request`, operation, checkpoint, turn, step, tool, hook, sleep, event-handler, and session-write spans. Production source starts only `theta.harness.hook`, and only for registered `before_tool`/`after_tool` handlers. AI options propagate `telemetryContext`, but no provider path starts `theta.ai.request`. Server request ingress has cancellation but no trace carrier or client/server RPC spans. `TODO_CONTEXT` remains at transport/worker lifecycle and event-delivery boundaries.
 
 **Remaining boundary**
 
@@ -163,7 +163,7 @@ The user-supplied motivating mini Session outside the repository is 303,920 byte
 
 - 477 assistant-frame appends totaling about 118,418 serialized write bytes;
 - 12 frame-list deletes; physical lines mentioning the frame namespace total 148,214 bytes;
-- about 51,568 bytes of superseded `pi.op.state` writes and 26,192 bytes of one structural preparation, showing why generic JSONL compaction and frame-specific bounding are distinct.
+- about 51,568 bytes of superseded `theta.op.state` writes and 26,192 bytes of one structural preparation, showing why generic JSONL compaction and frame-specific bounding are distinct.
 
 The authoritative design is the [mobile assistant-output handoff](mobile-handoff/01-harness/05-assistant-output/message-update.md), following the numbered `01-harness` prerequisites in [`mobile-handoff/README.md`](mobile-handoff/README.md). Chord delta tracking has landed; scoped storage, tool-output integration, and assistant-output integration have not.
 
@@ -252,3 +252,4 @@ This inventory must be updated when any of these facts changes:
 - a durable format change activates R11;
 - WP08 lands or its fork contract changes;
 - the host-authority contract changes.
+

@@ -18,8 +18,8 @@ import {
 	type RefreshModelsContext,
 	type SimpleStreamOptions,
 	type StreamOptions,
-} from "@earendil-works/pi-ai";
-import { getApiProvider } from "@earendil-works/pi-ai/compat";
+} from "@theta/ai";
+import { getApiProvider } from "@theta/ai/compat";
 import type { ModelConfig, ModelsJsonModel, ModelsJsonModelOverride, ModelsJsonProvider } from "./model-config.ts";
 import {
 	clearConfigValueCache,
@@ -579,3 +579,4 @@ export function configuredRequestAuthStatus(
 	}
 	return { configured: true, source: extension?.apiKey !== undefined ? "fallback" : "models_json_key" };
 }
+

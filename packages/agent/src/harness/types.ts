@@ -1,4 +1,4 @@
-import type { SimpleStreamOptions, Transport } from "@earendil-works/pi-ai";
+import type { SimpleStreamOptions, Transport } from "@theta/ai";
 import type { Static, TSchema } from "typebox";
 import type { AgentTool, AgentToolResult } from "../types.ts";
 import type { Context } from "./context.ts";
@@ -405,3 +405,4 @@ export interface Shell {
 
 /** Filesystem and process execution environment used by the harness. */
 export interface ExecutionEnv extends FileSystem, Shell {}
+

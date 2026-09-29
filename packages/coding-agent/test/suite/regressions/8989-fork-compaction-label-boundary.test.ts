@@ -22,3 +22,4 @@ describe("regression #8989", () => {
 		]);
 	});
 });
+

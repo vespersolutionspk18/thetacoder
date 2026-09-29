@@ -79,3 +79,4 @@ describe("TUI overlay compositing", () => {
 		tui.stop();
 	});
 });
+

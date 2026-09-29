@@ -106,3 +106,4 @@ describe("Anthropic empty thinking signature compat", () => {
 		expect(assistant?.content).toEqual([{ type: "thinking", thinking: "internal reasoning", signature: "" }]);
 	});
 });
+

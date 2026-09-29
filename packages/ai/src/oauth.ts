@@ -8,3 +8,4 @@ export type {
 	OAuthSelectOption,
 	OAuthSelectPrompt,
 } from "./compat/extension-oauth-types.ts";
+

@@ -1,4 +1,4 @@
-import type { ToolResultMessage } from "@earendil-works/pi-ai";
+import type { ToolResultMessage } from "@theta/ai";
 import type { AgentToolCall, AgentToolResult } from "../../../types.ts";
 import { AbortRequested } from "../../execution/effect-gate.ts";
 import {
@@ -390,6 +390,7 @@ async function performToolInvocation<TContext extends object | undefined>(
 			toolContext,
 			capability.invocation,
 			drive.context,
+			{ lane: lane.name, operationId: drive.operationId, turnId: batch.turnId, recovery },
 		);
 	} catch (error) {
 		capability.expire();
@@ -690,3 +691,4 @@ export async function runTools<TContext extends object | undefined>(
 		? runSequential(lane, drive, current.run, sources, { tools, toolsByName, toolContext }, recovery)
 		: runParallel(lane, drive, current.run, sources, tools, toolsByName, toolContext, recovery);
 }
+

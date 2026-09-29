@@ -1,4 +1,4 @@
-import { type AssistantMessage, fauxAssistantMessage } from "@earendil-works/pi-ai";
+import { type AssistantMessage, fauxAssistantMessage } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, type Harness } from "../harness.ts";
 
@@ -46,3 +46,4 @@ describe("#7048 truncated compaction summaries", () => {
 		expect(harness.sessionManager.getEntries().filter((entry) => entry.type === "compaction")).toHaveLength(0);
 	});
 });
+

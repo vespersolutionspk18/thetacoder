@@ -1,4 +1,4 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ExtensionFactory } from "../../../src/index.ts";
 import { createHarness, type Harness } from "../harness.ts";
@@ -14,8 +14,8 @@ interface RecordedCompactionEvent {
 }
 
 function recordingExtension(recorded: RecordedCompactionEvent[]): ExtensionFactory {
-	return (pi) => {
-		pi.on("session_before_compact", async (event) => {
+	return (theta) => {
+		theta.on("session_before_compact", async (event) => {
 			recorded.push({ type: event.type, reason: event.reason, willRetry: event.willRetry });
 			return {
 				compaction: {
@@ -26,7 +26,7 @@ function recordingExtension(recorded: RecordedCompactionEvent[]): ExtensionFacto
 				},
 			};
 		});
-		pi.on("session_compact", async (event) => {
+		theta.on("session_compact", async (event) => {
 			recorded.push({ type: event.type, reason: event.reason, willRetry: event.willRetry });
 		});
 	};
@@ -93,3 +93,4 @@ describe("issue #5217 compaction reason on extension events", () => {
 		]);
 	});
 });
+

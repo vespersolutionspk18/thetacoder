@@ -1,4 +1,4 @@
-import { Container } from "@earendil-works/pi-tui";
+import { Container } from "@theta/tui";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import type { AgentSessionRuntimeDiagnostic } from "../../../src/core/agent-session-services.ts";
 import { InteractiveMode } from "../../../src/modes/interactive/interactive-mode.ts";
@@ -54,3 +54,4 @@ describe("issue #7829 invalid settings warning", () => {
 		}
 	});
 });
+

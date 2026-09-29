@@ -180,3 +180,4 @@ describe("SessionManager.inMemory with preloaded entries", () => {
 		expect(restored.message.role).toBe("hookMessage");
 	});
 });
+

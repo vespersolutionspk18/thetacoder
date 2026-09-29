@@ -1,4 +1,4 @@
-import { Container } from "@earendil-works/pi-tui";
+import { Container } from "@theta/tui";
 import { describe, expect, test } from "vitest";
 import { createChatViewport } from "../src/modes/interactive/chat-viewport.ts";
 
@@ -24,3 +24,4 @@ describe("chat viewport", () => {
 		expect(hidden.transcript.scrollbar).toBe("hidden");
 	});
 });
+

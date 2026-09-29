@@ -75,3 +75,4 @@ describe("Session.createBranch", () => {
 		await session.close(BACKGROUND_CONTEXT);
 	});
 });
+

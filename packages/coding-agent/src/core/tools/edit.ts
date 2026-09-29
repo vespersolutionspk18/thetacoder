@@ -1,4 +1,4 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
+import type { AgentTool, ToolOutcome } from "@theta/agent-core";
 import { constants } from "fs";
 import { access as fsAccess, readFile as fsReadFile, writeFile as fsWriteFile } from "fs/promises";
 import { type Static, Type } from "typebox";
@@ -6,6 +6,7 @@ import { splitBom } from "../../utils/text.ts";
 import type { ExtensionContext, ToolDefinition } from "../extensions/types.ts";
 import {
 	applyEditsToNormalizedContent,
+	contentIdentity,
 	detectLineEnding,
 	type Edit,
 	generateDiffString,
@@ -13,6 +14,7 @@ import {
 	normalizeToLF,
 	restoreLineEndings,
 } from "./edit-diff.ts";
+import { invalidateFileContentCache } from "./file-content-cache.ts";
 import { withFileMutationQueue } from "./file-mutation-queue.ts";
 import { resolveToCwd } from "./path-utils.ts";
 import { type EditRenderState, editRenderers } from "./renderers/edit.ts";
@@ -36,6 +38,12 @@ const editSchema = Type.Object(
 			description:
 				"One or more targeted replacements. Each edit is matched against the original file, not incrementally. Do not include overlapping or nested edits. If two changes touch the same block or nearby lines, merge them into one edit instead.",
 		}),
+		expectedVersion: Type.Optional(
+			Type.String({
+				description:
+					"Content identity returned in details.contentIdentity from a prior read. If supplied and mismatched, the edit is rejected.",
+			}),
+		),
 	},
 	{},
 );
@@ -74,6 +82,14 @@ export interface EditToolDetails {
 	patch: string;
 	/** Line number of the first change in the new file (for editor navigation) */
 	firstChangedLine?: number;
+	/**
+	 * Content identity of the resulting file content (the bytes actually
+	 * written). Shares the `contentIdentity()` scheme the read tool reports
+	 * so the F2 change-tracking bridge can record it via `recordChange`.
+	 */
+	contentIdentity?: string;
+	/** Structured outcome synthesized by the agent loop. */
+	outcome?: ToolOutcome;
 }
 
 /**
@@ -158,6 +174,7 @@ export function createEditToolDefinition(
 		prepareArguments: prepareEditArguments,
 		async execute(_toolCallId, input: EditToolInput, signal?: AbortSignal, _onUpdate?, ctx?: ExtensionContext) {
 			const { path, edits } = validateEditInput(input);
+			const expectedVersion = input.expectedVersion;
 			const absolutePath = resolveToCwd(path, ctx?.cwd || cwd);
 
 			return withFileMutationQueue(absolutePath, async () => {
@@ -187,6 +204,16 @@ export function createEditToolDefinition(
 				const rawContent = buffer.toString("utf-8");
 				throwIfAborted();
 
+				// Optimistic-concurrency precheck: reject if the caller supplied a stale identity.
+				if (expectedVersion !== undefined) {
+					const currentVersion = await contentIdentity(rawContent);
+					if (currentVersion !== expectedVersion) {
+						throw new Error(
+							"Stale observation: file was modified since expectedVersion was captured. Re-read the file and retry.",
+						);
+					}
+				}
+
 				// Strip BOM before matching. The model will not include an invisible BOM in oldText.
 				const { bom, text: content } = splitBom(rawContent);
 				const originalEnding = detectLineEnding(content);
@@ -198,6 +225,16 @@ export function createEditToolDefinition(
 				await ops.writeFile(absolutePath, finalContent);
 				throwIfAborted();
 
+				// Drop any cached bytes for this path so the next read serves the
+				// freshly-written content instead of pre-edit bytes.
+				invalidateFileContentCache(absolutePath);
+
+				// Identity of the resulting content (BOM-stripped, LF-normalized).
+				// Reported in details so the F2 change-tracking bridge can record
+				// the change via `recordChange`.
+				const contentIdentityValue = await contentIdentity(finalContent);
+				throwIfAborted();
+
 				const diffResult = generateDiffString(baseContent, newContent);
 				const patch = generateUnifiedPatch(path, baseContent, newContent);
 				return {
@@ -207,7 +244,12 @@ export function createEditToolDefinition(
 							text: `Successfully replaced ${edits.length} block(s) in ${path}.`,
 						},
 					],
-					details: { diff: diffResult.diff, patch, firstChangedLine: diffResult.firstChangedLine },
+					details: {
+						diff: diffResult.diff,
+						patch,
+						firstChangedLine: diffResult.firstChangedLine,
+						contentIdentity: contentIdentityValue,
+					},
 				};
 			});
 		},
@@ -218,3 +260,4 @@ export function createEditToolDefinition(
 export function createEditTool(cwd: string, options?: EditToolOptions): AgentTool<typeof editSchema> {
 	return wrapToolDefinition(createEditToolDefinition(cwd, options));
 }
+

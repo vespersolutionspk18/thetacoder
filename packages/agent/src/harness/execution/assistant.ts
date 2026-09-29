@@ -8,10 +8,11 @@ import type {
 	Model,
 	SimpleStreamOptions,
 	Tool,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import type { AgentMessage, ThinkingLevel } from "../../types.ts";
 import { type Context, getTelemetryContext } from "../context.ts";
 import type { SettledAssistantMessage } from "../session/types.ts";
+import { startAiSpan } from "../telemetry.ts";
 import type { AgentHarnessStreamOptions } from "../types.ts";
 import { AbortRequested } from "./effect-gate.ts";
 
@@ -19,6 +20,36 @@ import { AbortRequested } from "./effect-gate.ts";
 export interface AssistantResponseMetadata {
 	status?: number;
 	headers?: Record<string, string>;
+}
+
+/** Inputs required to wrap a stream consumer call in a `theta.ai.request` span. */
+export interface AssistantStreamSpanContext {
+	/** Selected model the request is dispatched against. */
+	model: Model<Api>;
+	/** Whether the request participates in deferred execution. */
+	deferred: boolean;
+	/** Provider HTTP response metadata captured before the body is consumed. */
+	metadata: AssistantResponseMetadata;
+}
+
+/** Low-cardinality classifier for provider error messages surfaced on `theta.ai.error.type`. */
+function classifyProviderError(
+	status: number | undefined,
+	errorMessage: string | undefined,
+	stopReason: SettledAssistantMessage["stopReason"] | undefined,
+): string | undefined {
+	if (stopReason === "aborted") return "aborted";
+	if (status === 429) return "rate_limit";
+	if (status === 401 || status === 403) return "auth";
+	if (status !== undefined && status >= 500) return "server";
+	if (errorMessage === undefined) return undefined;
+	if (/context.{0,30}(exceed|limit|maximum|overflow|long)/i.test(errorMessage)) return "context_overflow";
+	if (/rate[-_ ]?limit|429/i.test(errorMessage)) return "rate_limit";
+	if (/auth|unauthorized|forbidden|invalid.{0,10}(token|api[-_ ]?key)/i.test(errorMessage)) return "auth";
+	if (/timeout|timed[-_ ]?out/i.test(errorMessage)) return "timeout";
+	if (/network|connect|ECONN|ENOTFOUND|EHOST|fetch failed/i.test(errorMessage)) return "network";
+	if (/server|500|502|503|504/i.test(errorMessage)) return "server";
+	return "other";
 }
 
 /** Process-local lifecycle observer for one assistant stream. */
@@ -103,33 +134,77 @@ export async function consumeAssistantStream(
 		| ((message: SettledAssistantMessage, context: Context) => Promise<SettledAssistantMessage>)
 		| undefined,
 	context: Context,
+	span: AssistantStreamSpanContext,
 ): Promise<SettledAssistantMessage> {
-	let started = false;
-	for await (const event of stream) {
-		if (event.type === "start") {
-			if (started) throw new Error("Assistant message stream emitted more than one start event");
-			started = true;
-			await observer.start({ ...event.partial }, event, context);
-		} else if (isUpdateEvent(event)) {
-			if (!started) throw new Error(`Assistant message stream emitted ${event.type} before start`);
-			await observer.update({ ...event.partial }, event, context);
-		} else if (event.type === "done" && !started) {
-			throw new Error("Assistant message stream emitted done before start");
-		}
-	}
+	return startAiSpan(
+		"theta.ai.request",
+		{
+			"theta.ai.operation": "stream",
+			"theta.ai.provider": span.model.provider,
+			"theta.ai.model": span.model.id,
+			"theta.ai.api": span.model.api,
+			"theta.ai.streaming": true,
+			...(span.deferred ? { "theta.ai.deferred": true } : {}),
+		},
+		async (aiSpan, spanContext) => {
+			let started = false;
+			let chunkCount = 0;
+			let firstChunkTime: number | undefined;
+			const requestStart = Date.now();
+			for await (const event of stream) {
+				if (event.type === "start") {
+					if (started) throw new Error("Assistant message stream emitted more than one start event");
+					started = true;
+					await observer.start({ ...event.partial }, event, spanContext);
+				} else if (isUpdateEvent(event)) {
+					if (!started) throw new Error(`Assistant message stream emitted ${event.type} before start`);
+					if (firstChunkTime === undefined) firstChunkTime = Date.now() - requestStart;
+					chunkCount++;
+					await observer.update({ ...event.partial }, event, spanContext);
+				} else if (event.type === "done" && !started) {
+					throw new Error("Assistant message stream emitted done before start");
+				}
+			}
 
-	const settled = (await stream.result()) as SettledAssistantMessage;
-	let finalMessage = settled;
-	if (afterResponse !== undefined) {
-		try {
-			finalMessage = await afterResponse(settled, context);
-		} catch (error) {
-			if (!(error instanceof AbortRequested)) throw error;
-			await error.cancellation;
-		}
-	}
-	await observer.end(finalMessage, context);
-	return finalMessage;
+			const settled = (await stream.result()) as SettledAssistantMessage;
+			let finalMessage = settled;
+			if (afterResponse !== undefined) {
+				try {
+					finalMessage = await afterResponse(settled, spanContext);
+				} catch (error) {
+					if (!(error instanceof AbortRequested)) throw error;
+					await error.cancellation;
+				}
+			}
+			await observer.end(finalMessage, spanContext);
+
+			const stopReason = finalMessage.stopReason === "toolUse" ? "tool_use" : finalMessage.stopReason;
+			const errorType = classifyProviderError(
+				span.metadata.status,
+				finalMessage.errorMessage,
+				finalMessage.stopReason,
+			);
+			const usage = finalMessage.usage;
+			aiSpan.setAttributes({
+				"theta.ai.response.model": finalMessage.responseModel ?? finalMessage.model,
+				...(finalMessage.responseId === undefined ? {} : { "theta.ai.response.id": finalMessage.responseId }),
+				...(stopReason ? { "theta.ai.response.stop_reason": stopReason } : {}),
+				...(span.metadata.status === undefined ? {} : { "theta.ai.http.status_code": span.metadata.status }),
+				"theta.ai.usage.input_tokens": usage.input ?? 0,
+				"theta.ai.usage.output_tokens": usage.output ?? 0,
+				"theta.ai.usage.cache_read_tokens": usage.cacheRead ?? 0,
+				"theta.ai.usage.cache_write_tokens": usage.cacheWrite ?? 0,
+				...(usage.reasoning === undefined ? {} : { "theta.ai.usage.reasoning_tokens": usage.reasoning }),
+				...(usage.totalTokens === undefined ? {} : { "theta.ai.usage.total_tokens": usage.totalTokens }),
+				...(usage.cost.total === undefined ? {} : { "theta.ai.usage.cost": usage.cost.total }),
+				...(chunkCount > 0 ? { "theta.ai.stream.chunk_count": chunkCount } : {}),
+				...(firstChunkTime === undefined ? {} : { "theta.ai.stream.time_to_first_chunk_ms": firstChunkTime }),
+				...(errorType === undefined ? {} : { "theta.ai.error.type": errorType }),
+			});
+			return finalMessage;
+		},
+		context,
+	);
 }
 
 /** Stream one assistant response without mutating the caller's message list. */
@@ -171,5 +246,7 @@ export async function streamHarnessAssistant(
 			? undefined
 			: (message, afterContext) => afterResponse(message, metadata, afterContext),
 		context,
+		{ model: config.model, deferred: config.streamOptions.deferred !== undefined, metadata },
 	);
 }
+

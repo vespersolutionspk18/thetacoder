@@ -16,3 +16,4 @@ describe("Xiaomi MiMo models", () => {
 		for (const modelId of REPLACEMENT_MODEL_IDS) expect(modelIds).toContain(modelId);
 	});
 });
+

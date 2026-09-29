@@ -114,3 +114,4 @@ describe("SelectList", () => {
 		assert.equal(visibleIndexOf(rendered[0], "first"), visibleIndexOf(rendered[1], "second"));
 	});
 });
+

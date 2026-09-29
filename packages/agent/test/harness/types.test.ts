@@ -1,4 +1,4 @@
-import type { AssistantMessage, AssistantMessageFrame, DeferredHandle, Usage } from "@earendil-works/pi-ai";
+import type { AssistantMessage, AssistantMessageFrame, DeferredHandle, Usage } from "@theta/ai";
 import { expectTypeOf, it } from "vitest";
 import * as storedValues from "../../src/harness/session/values.ts";
 import type {
@@ -521,3 +521,4 @@ it("covers Part 5 results, events, hooks, snapshots, tools, and stream options",
 	};
 	expectTypeOf(compileTimeFailures).toBeFunction();
 });
+

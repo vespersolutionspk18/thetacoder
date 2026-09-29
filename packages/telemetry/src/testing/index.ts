@@ -4,3 +4,4 @@ export type {
 	TelemetryAdapterFixture,
 	TelemetryAdapterFixtureFactory,
 } from "./types.ts";
+

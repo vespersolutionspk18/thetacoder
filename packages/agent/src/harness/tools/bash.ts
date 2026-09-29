@@ -1,4 +1,5 @@
 import { type Static, Type } from "typebox";
+import type { ToolOutcome } from "../../types.ts";
 import type { Context } from "../context.ts";
 import type { AgentHarnessTool, ShellOutputTruncation, ShellOutputView } from "../types.ts";
 import { applyShellOutputUpdate } from "../utils/output-capture.ts";
@@ -18,6 +19,8 @@ export type BashToolInput = Static<typeof bashSchema>;
 export interface BashToolDetails {
 	truncation?: ShellOutputTruncation;
 	fullOutputPath?: string;
+	/** Structured outcome synthesized by the agent loop. */
+	outcome?: ToolOutcome;
 }
 
 export interface BashExecution {
@@ -143,3 +146,4 @@ export function createBashTool<TContext extends ExecutionToolContext = Execution
 		},
 	};
 }
+

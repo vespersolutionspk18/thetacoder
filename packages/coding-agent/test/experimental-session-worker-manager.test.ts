@@ -1,5 +1,5 @@
-import type { ServiceCall } from "@earendil-works/chord";
-import { BACKGROUND_CONTEXT, type JsonlSessionMetadata } from "@earendil-works/pi-agent-core";
+import { BACKGROUND_CONTEXT, type JsonlSessionMetadata } from "@theta/agent-core";
+import type { ServiceCall } from "@theta/chord";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { CoordinatorConnectionEvent } from "../src/experimental/coordinator.ts";
 import { SessionWorkerManager } from "../src/experimental/session-worker-manager.ts";
@@ -307,3 +307,4 @@ function asObject(value: unknown): Record<string, unknown> {
 	if (typeof value !== "object" || value === null || Array.isArray(value)) throw new TypeError("Expected object");
 	return value as Record<string, unknown>;
 }
+

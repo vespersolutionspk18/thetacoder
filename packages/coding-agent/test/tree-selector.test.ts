@@ -1,5 +1,5 @@
 import { stripVTControlCharacters } from "node:util";
-import { setKeybindings, visibleWidth } from "@earendil-works/pi-tui";
+import { setKeybindings, visibleWidth } from "@theta/tui";
 import { beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { KeybindingsManager } from "../src/core/keybindings.ts";
 import type {
@@ -700,3 +700,4 @@ describe("TreeSelectorComponent", () => {
 		});
 	});
 });
+

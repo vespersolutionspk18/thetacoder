@@ -227,3 +227,4 @@ export function isRetryableAssistantError(message: AssistantMessage): boolean {
 	if (NON_RETRYABLE_PROVIDER_LIMIT_ERROR_PATTERN.test(errorMessage)) return false;
 	return RETRYABLE_PROVIDER_ERROR_PATTERN.test(errorMessage);
 }
+

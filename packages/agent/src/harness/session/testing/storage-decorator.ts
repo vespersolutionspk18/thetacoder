@@ -69,3 +69,4 @@ export class StorageDecorator implements Storage {
 		return this.delegate.close(context);
 	}
 }
+

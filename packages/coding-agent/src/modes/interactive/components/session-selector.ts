@@ -12,7 +12,7 @@ import {
 	Text,
 	truncateToWidth,
 	visibleWidth,
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 import { KeybindingsManager } from "../../../core/keybindings.ts";
 import type { SessionInfo, SessionListProgress } from "../../../core/session-manager.ts";
 import { canonicalizePath as _canonicalizePath } from "../../../utils/paths.ts";
@@ -1029,3 +1029,4 @@ export class SessionSelectorComponent extends Container implements Focusable {
 		return this.sessionList;
 	}
 }
+

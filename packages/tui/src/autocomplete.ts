@@ -824,3 +824,4 @@ export class CombinedAutocompleteProvider implements AutocompleteProvider {
 		return true;
 	}
 }
+

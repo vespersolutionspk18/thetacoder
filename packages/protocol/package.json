@@ -1,8 +1,9 @@
 {
-	"name": "@earendil-works/pi-protocol",
+	"name": "@theta/protocol",
 	"version": "0.85.1",
-	"description": "Transport-neutral CBOR protocol for remote pi sessions",
+	"description": "Transport-neutral CBOR protocol for remote theta sessions",
 	"type": "module",
+	"private": true,
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
@@ -18,28 +19,21 @@
 	"scripts": {
 		"clean": "shx rm -rf dist",
 		"build": "tsgo -p tsconfig.build.json",
-		"test": "vitest --run",
-		"prepublishOnly": "npm run clean && npm run build"
-	},
+		"test": "vitest --run"
+},
 	"keywords": [
-		"pi",
+		"theta",
 		"protocol",
 		"cbor",
 		"binary",
 		"framing"
 	],
-	"author": "Earendil Works",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
-		"directory": "packages/protocol"
-	},
-	"engines": {
+		"license": "UNLICENSED",
+		"engines": {
 		"node": ">=22.19.0"
 	},
 	"dependencies": {
-		"@earendil-works/chord": "^0.85.1",
+		"@theta/chord": "^0.85.1",
 		"typebox": "1.3.27"
 	},
 	"devDependencies": {

@@ -236,3 +236,4 @@ function trimToFirstUtf8Bytes(text: string, maxBytes: number): string {
 	while (end > 0 && ((bytes[end] ?? 0) & 0xc0) === 0x80) end--;
 	return textDecoder.decode(bytes.subarray(0, end));
 }
+

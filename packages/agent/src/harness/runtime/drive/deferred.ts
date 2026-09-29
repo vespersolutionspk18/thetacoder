@@ -1,4 +1,4 @@
-import type { Api, DeferredHandle, Model } from "@earendil-works/pi-ai";
+import type { Api, DeferredHandle, Model } from "@theta/ai";
 import { type Context, getTelemetryContext, withAbortSignal } from "../../context.ts";
 import { consumeAssistantStream } from "../../execution/assistant.ts";
 import { applyStreamOptionsPatch } from "../../hooks.ts";
@@ -222,6 +222,7 @@ async function performDeferredPoll<TContext extends object | undefined>(
 			response.observer,
 			(message, context) => response.afterResponse(message, metadata, context),
 			drive.context,
+			{ model: prepared.model, deferred: true, metadata },
 		);
 	} finally {
 		await response.close();
@@ -285,3 +286,4 @@ export function runDeferred<TContext extends object | undefined>(
 		? runDeferredSuspended(lane, drive, deferred)
 		: recoverDeferredPoll(lane, drive, deferred);
 }
+

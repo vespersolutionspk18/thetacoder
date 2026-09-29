@@ -247,3 +247,4 @@ describe("mouse-aware components", () => {
 		tui.stop();
 	});
 });
+

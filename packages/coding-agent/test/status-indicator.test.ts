@@ -1,4 +1,4 @@
-import { type TUI, visibleWidth } from "@earendil-works/pi-tui";
+import { type TUI, visibleWidth } from "@theta/tui";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { KeybindingsManager } from "../src/core/keybindings.ts";
 import { CustomEditor } from "../src/modes/interactive/components/custom-editor.ts";
@@ -109,3 +109,4 @@ describe("status indicators", () => {
 		expect(requestRender).toHaveBeenCalledTimes(callsBeforeDispose);
 	});
 });
+

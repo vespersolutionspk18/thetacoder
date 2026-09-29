@@ -152,3 +152,4 @@ export function allocateStackSizes(
 	else if (total > contentSize) distribute(sizes, entries, total - contentSize, "shrink");
 	return sizes;
 }
+

@@ -138,3 +138,4 @@ describe("openai-completions responseModel", () => {
 		expect(message.responseModel).toBeUndefined();
 	});
 });
+

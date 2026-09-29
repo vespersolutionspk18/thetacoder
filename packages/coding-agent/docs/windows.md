@@ -1,8 +1,8 @@
 # Windows Setup
 
-Pi uses Git Bash by default on Windows. Checked locations (in order):
+Theta uses Git Bash by default on Windows. Checked locations (in order):
 
-1. Custom path from `~/.pi/agent/settings.json`
+1. Custom path from `~/.theta/agent/settings.json`
 2. Git Bash (`C:\Program Files\Git\bin\bash.exe`)
 3. `bash.exe` on PATH (Cygwin, MSYS2, WSL)
 
@@ -37,3 +37,4 @@ The `!` and `!!` editor commands still use Bash.
   "shellPath": "C:\\cygwin64\\bin\\bash.exe"
 }
 ```
+

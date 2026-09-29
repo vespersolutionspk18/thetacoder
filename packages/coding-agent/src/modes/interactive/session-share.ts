@@ -3,8 +3,8 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { DEFAULT_RADIUS_GATEWAY } from "@earendil-works/pi-ai/providers/radius-config";
-import { type Container, type EditorComponent, hyperlink, type TUI } from "@earendil-works/pi-tui";
+import { DEFAULT_RADIUS_GATEWAY } from "@theta/ai/providers/radius-config";
+import { type Container, type EditorComponent, hyperlink, type TUI } from "@theta/tui";
 import { getAuthCredential } from "../../cli/auth-command.ts";
 import { getShareViewerUrl } from "../../config.ts";
 import type { AgentSession } from "../../core/agent-session.ts";
@@ -26,7 +26,7 @@ export function exportSessionForShare(filePath: string, session: AgentSession): 
 	exportSessionToJsonl(session.sessionManager, filePath, (parentId, timestamp) => [
 		{
 			type: "custom",
-			customType: "pi.share",
+			customType: "theta.share",
 			id: crypto.randomUUID().slice(0, 8),
 			parentId,
 			timestamp,
@@ -44,7 +44,7 @@ export function exportSessionForShare(filePath: string, session: AgentSession): 
 
 /** Share the current session through Radius, falling back to a private gist. */
 export async function shareSession(context: SessionShareContext): Promise<void> {
-	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-share-"));
+	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "theta-share-"));
 	const jsonlFile = path.join(tempDir, "session.jsonl");
 	const htmlFile = path.join(tempDir, "session.html");
 
@@ -107,7 +107,7 @@ async function tryShareViaRadius(tmpFile: string, context: SessionShareContext):
 		const body = fs.readFileSync(tmpFile);
 		const url = new URL("/v1/artifacts", DEFAULT_RADIUS_GATEWAY);
 		url.searchParams.set("visibility", "organization");
-		url.searchParams.set("title", "Pi session");
+		url.searchParams.set("title", "Theta session");
 		const response = await fetch(url, {
 			method: "POST",
 			headers: {
@@ -204,3 +204,4 @@ function restoreEditor(loader: BorderedLoader, context: SessionShareContext): vo
 	context.editorContainer.addChild(context.editor);
 	context.ui.setFocus(context.editor);
 }
+

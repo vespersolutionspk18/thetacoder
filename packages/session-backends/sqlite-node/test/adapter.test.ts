@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { createNodeSqliteFactory } from "../src/index.ts";
 
 async function withTempDir<T>(run: (directory: string) => Promise<T>): Promise<T> {
-	const directory = await mkdtemp(join(tmpdir(), "pi-sqlite-adapter-"));
+	const directory = await mkdtemp(join(tmpdir(), "theta-sqlite-adapter-"));
 	try {
 		return await run(directory);
 	} finally {
@@ -100,3 +100,4 @@ describe("node:sqlite adapter", () => {
 		}
 	});
 });
+

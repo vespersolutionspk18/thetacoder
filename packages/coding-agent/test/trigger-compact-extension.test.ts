@@ -58,3 +58,4 @@ describe("trigger-compact example extension", () => {
 		expect(compact).toHaveBeenCalledTimes(1);
 	});
 });
+

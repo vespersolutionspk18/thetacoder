@@ -1,4 +1,4 @@
-import type { Entry, EntryStructure, StorageBranchScan } from "@earendil-works/pi-agent-core";
+import type { Entry, EntryStructure, StorageBranchScan } from "@theta/agent-core";
 import { joinSqlFragments, type SqlQuery, sql } from "../sql.ts";
 import type { SqliteDatabase } from "../types.ts";
 import { decodeEntryRow, type EntryRow } from "./entries.ts";
@@ -322,3 +322,4 @@ export function scanBranchEntryStructures(
 ): EntryStructure[] {
 	return scanBranchSegments(db, sessionId, query, scanStructureSegmentRows);
 }
+

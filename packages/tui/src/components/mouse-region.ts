@@ -31,3 +31,4 @@ export class MouseRegion implements Component {
 		this.child.invalidate();
 	}
 }
+

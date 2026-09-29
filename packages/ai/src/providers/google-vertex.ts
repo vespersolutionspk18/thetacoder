@@ -98,3 +98,4 @@ export function googleVertexProvider(): Provider<"google-vertex"> {
 		api: googleVertexApi(),
 	});
 }
+

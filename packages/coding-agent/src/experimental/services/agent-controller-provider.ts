@@ -1,5 +1,5 @@
-import type { AgentLane, OperationResultRecord, SuspendedRun } from "@earendil-works/pi-agent-core";
-import type { ImageContent } from "@earendil-works/pi-ai";
+import type { AgentLane, OperationResultRecord, SuspendedRun } from "@theta/agent-core";
+import type { ImageContent } from "@theta/ai";
 import type {
 	AgentController as AgentControllerService,
 	AgentOperationError,
@@ -107,3 +107,4 @@ function toAgentError(error: { readonly _tag: string; readonly message: string }
 function toTextPrompt(request: AgentPromptRequest): [message: string, images: ImageContent[] | undefined] {
 	return [request.message, request.images ?? undefined];
 }
+

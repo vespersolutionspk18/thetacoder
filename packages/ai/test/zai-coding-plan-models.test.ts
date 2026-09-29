@@ -58,3 +58,4 @@ it("keeps zero costs for Coding Plan models without a matching API price", () =>
 		expect(getBuiltinModel(provider, "glm-5.2-highspeed").cost).toEqual(zeroCost);
 	}
 });
+

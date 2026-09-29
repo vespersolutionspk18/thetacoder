@@ -264,3 +264,4 @@ describe("Application inference profile support", () => {
 		expect(payload.additionalModelRequestFields?.anthropic_beta).toEqual(["interleaved-thinking-2025-05-14"]);
 	});
 });
+

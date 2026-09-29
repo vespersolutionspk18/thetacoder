@@ -28,3 +28,4 @@ for (const [provider, models] of Object.entries(catalog)) {
 	);
 	writeFileSync(join(providersDir, `${provider}.json`), JSON.stringify(capabilities));
 }
+

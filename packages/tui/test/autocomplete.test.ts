@@ -120,7 +120,7 @@ describe("CombinedAutocompleteProvider", () => {
 		let outsideDir = "";
 
 		beforeEach(() => {
-			rootDir = mkdtempSync(join(tmpdir(), "pi-autocomplete-root-"));
+			rootDir = mkdtempSync(join(tmpdir(), "theta-autocomplete-root-"));
 			baseDir = join(rootDir, "cwd");
 			outsideDir = join(rootDir, "outside");
 			mkdirSync(baseDir, { recursive: true });
@@ -318,9 +318,9 @@ describe("CombinedAutocompleteProvider", () => {
 
 		test("includes hidden paths but excludes .git", async () => {
 			setupFolder(baseDir, {
-				dirs: [".pi", ".github", ".git"],
+				dirs: [".theta", ".github", ".git"],
 				files: {
-					".pi/config.json": "{}",
+					".theta/config.json": "{}",
 					".github/workflows/ci.yml": "name: ci",
 					".git/config": "[core]",
 				},
@@ -331,7 +331,7 @@ describe("CombinedAutocompleteProvider", () => {
 			const result = await getSuggestions(provider, [line], 0, line.length);
 
 			const values = result?.items.map((item) => item.value) ?? [];
-			assert.ok(values.includes("@.pi/"));
+			assert.ok(values.includes("@.theta/"));
 			assert.ok(values.includes("@.github/"));
 			assert.ok(!values.some((value) => value === "@.git" || value.startsWith("@.git/")));
 		});
@@ -467,7 +467,7 @@ describe("CombinedAutocompleteProvider", () => {
 		let baseDir = "";
 
 		beforeEach(() => {
-			baseDir = mkdtempSync(join(tmpdir(), "pi-autocomplete-"));
+			baseDir = mkdtempSync(join(tmpdir(), "theta-autocomplete-"));
 		});
 
 		afterEach(() => {
@@ -513,7 +513,7 @@ describe("CombinedAutocompleteProvider", () => {
 		let baseDir = "";
 
 		beforeEach(() => {
-			baseDir = mkdtempSync(join(tmpdir(), "pi-autocomplete-"));
+			baseDir = mkdtempSync(join(tmpdir(), "theta-autocomplete-"));
 		});
 
 		afterEach(() => {
@@ -576,3 +576,4 @@ describe("CombinedAutocompleteProvider", () => {
 		});
 	});
 });
+

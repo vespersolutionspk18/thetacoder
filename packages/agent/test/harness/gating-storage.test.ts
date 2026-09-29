@@ -108,3 +108,4 @@ describe("GatingStorage", () => {
 		await storage.close(BACKGROUND_CONTEXT);
 	});
 });
+

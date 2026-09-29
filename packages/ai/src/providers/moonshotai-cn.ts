@@ -13,3 +13,4 @@ export function moonshotaiCnProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

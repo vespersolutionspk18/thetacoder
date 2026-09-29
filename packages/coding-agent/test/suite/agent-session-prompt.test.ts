@@ -1,8 +1,8 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentTool } from "@earendil-works/pi-agent-core";
-import { fauxAssistantMessage, fauxToolCall, type Model } from "@earendil-works/pi-ai";
+import type { AgentTool } from "@theta/agent-core";
+import { fauxAssistantMessage, fauxToolCall, type Model } from "@theta/ai";
 import { Type } from "typebox";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ExtensionAPI, InputEvent } from "../../src/core/extensions/index.ts";
@@ -145,7 +145,7 @@ describe("AgentSession prompt characterization", () => {
 	});
 
 	it("expands skill commands before sending the prompt", async () => {
-		const tempDir = join(tmpdir(), `pi-skill-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		const tempDir = join(tmpdir(), `theta-skill-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		mkdirSync(tempDir, { recursive: true });
 		tempDirs.push(tempDir);
 		const skillPath = join(tempDir, "test-skill.md");
@@ -261,8 +261,8 @@ describe("AgentSession prompt characterization", () => {
 		const commandRuns: string[] = [];
 		const harness = await createHarness({
 			extensionFactories: [
-				(pi) => {
-					pi.registerCommand("testcmd", {
+				(theta) => {
+					theta.registerCommand("testcmd", {
 						description: "Test command",
 						handler: async (args) => {
 							commandRuns.push(args);
@@ -289,9 +289,9 @@ describe("AgentSession prompt characterization", () => {
 		});
 		const harness = await createHarness({
 			extensionFactories: [
-				(pi) => {
-					extensionApi = pi;
-					pi.registerCommand("testcmd", {
+				(theta) => {
+					extensionApi = theta;
+					theta.registerCommand("testcmd", {
 						description: "Test command",
 						handler: async (args) => {
 							resolveCommandRun(args);
@@ -326,8 +326,8 @@ describe("AgentSession prompt characterization", () => {
 		const inputEvents: InputEvent[] = [];
 		const harness = await createHarness({
 			extensionFactories: [
-				(pi) => {
-					pi.on("input", (event) => {
+				(theta) => {
+					theta.on("input", (event) => {
 						inputEvents.push(event);
 					});
 				},
@@ -364,8 +364,8 @@ describe("AgentSession prompt characterization", () => {
 		const harness = await createHarness({
 			tools: [waitTool],
 			extensionFactories: [
-				(pi) => {
-					pi.on("input", (event) => {
+				(theta) => {
+					theta.on("input", (event) => {
 						inputEvents.push(event);
 					});
 				},
@@ -453,8 +453,8 @@ describe("AgentSession prompt characterization", () => {
 		const harness = await createHarness({
 			settings: { compaction: { keepRecentTokens: 1 } },
 			extensionFactories: [
-				(pi) => {
-					pi.on("session_before_compact", async (event) => {
+				(theta) => {
+					theta.on("session_before_compact", async (event) => {
 						markCompactionStarted();
 						await compactionReleased;
 						return {
@@ -504,3 +504,4 @@ describe("AgentSession prompt characterization", () => {
 		);
 	});
 });
+

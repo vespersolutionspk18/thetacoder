@@ -7,7 +7,7 @@ import { SettingsManager, type SettingsStorage } from "../src/core/settings-mana
 
 describe("settings diagnostics", () => {
 	it("includes the settings file path for file-backed storage", () => {
-		const tempDir = mkdtempSync(join(tmpdir(), "pi-settings-diagnostics-"));
+		const tempDir = mkdtempSync(join(tmpdir(), "theta-settings-diagnostics-"));
 		const agentDir = join(tempDir, "agent");
 		const settingsPath = join(agentDir, "settings.json");
 		mkdirSync(agentDir);
@@ -45,3 +45,4 @@ describe("settings diagnostics", () => {
 		]);
 	});
 });
+

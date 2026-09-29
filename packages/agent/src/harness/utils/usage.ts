@@ -1,4 +1,4 @@
-import type { Usage } from "@earendil-works/pi-ai";
+import type { Usage } from "@theta/ai";
 
 export function emptyUsage(): Usage {
 	return {
@@ -33,3 +33,4 @@ export function addUsage(left: Usage, right: Usage): Usage {
 		},
 	};
 }
+

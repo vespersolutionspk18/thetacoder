@@ -112,3 +112,4 @@ export class GatingStorage extends StorageDecorator {
 		}
 	}
 }
+

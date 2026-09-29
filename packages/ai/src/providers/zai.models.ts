@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const ZAI_MODELS: ModelCatalog<typeof values, "zai"> =
 	flattenModelCatalog("zai", values);
+

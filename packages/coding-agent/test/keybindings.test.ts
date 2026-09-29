@@ -40,3 +40,4 @@ describe("Windows keybinding defaults", () => {
 		expect(KEYBINDINGS["app.message.dequeue"].defaultKeys).toBe(windowsKeybindings ? "alt+q" : "alt+up");
 	});
 });
+

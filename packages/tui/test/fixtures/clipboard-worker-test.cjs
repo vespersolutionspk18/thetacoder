@@ -64,3 +64,4 @@ async function waitFor(predicate) {
 	console.error(error);
 	process.exitCode = 1;
 });
+

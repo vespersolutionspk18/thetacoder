@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const GOOGLE_MODELS: ModelCatalog<typeof values, "google"> =
 	flattenModelCatalog("google", values);
+

@@ -7,7 +7,7 @@ import { APP_NAME } from "../../../src/config.ts";
 import type { SessionManager } from "../../../src/core/session-manager.ts";
 import { InteractiveMode } from "../../../src/modes/interactive/interactive-mode.ts";
 
-// Regression for https://github.com/earendil-works/pi/issues/5080
+// Regression for https://github.com/earendil-works/theta/issues/5080
 //
 // On SIGTERM/SIGHUP the graceful shutdown must emit `session_shutdown`
 // (runtimeHost.dispose) BEFORE touching the terminal. Extension teardown such
@@ -41,13 +41,13 @@ function createSessionManager(options: { sessionFile?: string } = {}): SessionMa
 		isPersisted: () => options.sessionFile !== undefined,
 		getSessionFile: () => options.sessionFile,
 		getSessionId: () => "test-session",
-		getSessionDir: () => "/tmp/pi-sessions",
+		getSessionDir: () => "/tmp/theta-sessions",
 		usesDefaultSessionDir: () => true,
 	} as unknown as SessionManager;
 }
 
 function createTempFile(): string {
-	const dir = mkdtempSync(join(tmpdir(), "pi-shutdown-resume-hint-"));
+	const dir = mkdtempSync(join(tmpdir(), "theta-shutdown-resume-hint-"));
 	tempDirs.push(dir);
 	const file = join(dir, "session.jsonl");
 	writeFileSync(file, "\n");
@@ -183,3 +183,4 @@ describe("InteractiveMode.shutdown ordering (#5080)", () => {
 		expect(context.runtimeHost.dispose).not.toHaveBeenCalled();
 	});
 });
+

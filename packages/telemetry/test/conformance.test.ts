@@ -44,3 +44,4 @@ describe("InMemoryTelemetryContext conformance", () => {
 		expect(second?.events).toEqual([{ name: "event", attributes: { value: 1 } }]);
 	});
 });
+

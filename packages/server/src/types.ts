@@ -1,5 +1,5 @@
-import type { JsonValue, ServiceCall, ServiceProviderUpdate } from "@earendil-works/chord";
-import type { Context, SessionMetadata } from "@earendil-works/pi-agent-core";
+import type { Context, SessionMetadata } from "@theta/agent-core";
+import type { JsonValue, ServiceCall, ServiceProviderUpdate } from "@theta/chord";
 import type { ServerListener } from "./listener.ts";
 
 export interface ServerOptions {
@@ -62,3 +62,4 @@ export interface ServerHost<TMetadata extends SessionMetadata = SessionMetadata>
 	resolveSession(sessionId: string, context: Context): Promise<TMetadata>;
 	openSession(metadata: TMetadata, context: Context): Promise<RoutedSessionHandle>;
 }
+

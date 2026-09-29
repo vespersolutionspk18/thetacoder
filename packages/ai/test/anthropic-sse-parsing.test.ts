@@ -583,3 +583,4 @@ describe("Anthropic raw SSE parsing", () => {
 		expect(result.content).toEqual([{ type: "text", text: "Hello" }]);
 	});
 });
+

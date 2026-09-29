@@ -16,3 +16,4 @@ export function hasBedrockCredentials(): boolean {
 		process.env.AWS_BEARER_TOKEN_BEDROCK
 	);
 }
+

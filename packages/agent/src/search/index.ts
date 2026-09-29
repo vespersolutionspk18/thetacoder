@@ -25,3 +25,4 @@ export interface SessionSearchService {
 	remove(sessionId: string): Promise<void>;
 	close(): Promise<void>;
 }
+

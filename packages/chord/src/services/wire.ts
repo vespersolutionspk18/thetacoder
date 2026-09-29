@@ -232,3 +232,4 @@ function isMode(value: unknown): value is ServiceMode {
 function isInteger(value: unknown, minimum: number): value is number {
 	return typeof value === "number" && Number.isInteger(value) && value >= minimum;
 }
+

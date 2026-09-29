@@ -13,3 +13,4 @@ export function nvidiaProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

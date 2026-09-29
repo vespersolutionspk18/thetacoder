@@ -81,3 +81,4 @@ Do not parameterize obsolete runtime1 suites against runtime2 and do not keep a 
 ## Stop condition
 
 Stop once runtime1 is absent, runtime2 is the public factory, retained coverage is green, and all checks pass. Report the deletion and harvested scenarios; do not begin another work package.
+

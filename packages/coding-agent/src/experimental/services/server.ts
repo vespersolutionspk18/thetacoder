@@ -4,9 +4,9 @@ import {
 	type JsonValue,
 	RemoteServiceProvider,
 	replicatedState,
-} from "@earendil-works/chord";
-import { BACKGROUND_CONTEXT } from "@earendil-works/chord/context";
-import type { RoutedServerServiceAttachment, RoutedServerServiceHost } from "@earendil-works/pi-server";
+} from "@theta/chord";
+import { BACKGROUND_CONTEXT } from "@theta/chord/context";
+import type { RoutedServerServiceAttachment, RoutedServerServiceHost } from "@theta/server";
 import { PresentationPlugins } from "./plugins.ts";
 import {
 	type SessionCreateOptions,
@@ -148,3 +148,4 @@ function createProviderAttachment(
 		},
 	};
 }
+

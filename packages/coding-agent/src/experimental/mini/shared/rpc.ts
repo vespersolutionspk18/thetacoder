@@ -231,3 +231,4 @@ export function createPeer(connection: Connection, options: PeerOptions = {}): R
 function message(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
+

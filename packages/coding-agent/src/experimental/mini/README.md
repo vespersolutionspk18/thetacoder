@@ -19,7 +19,7 @@ two presentations to the same session; both see the same transcript, live.
 ```text
 tui        tui        tui          presentations: render, no agent state
   \         |         /
-   \        |        /             unix socket, ~/.pi/agent/experimental/mini.sock
+   \        |        /             unix socket, ~/.theta/agent/experimental/mini.sock
     \       |       /
         server                     routes calls, fans out events, spawns workers
        /        \
@@ -105,3 +105,4 @@ Two known shortcuts: the server broadcasts a worker's events to every attached p
 N presentations each event crosses N² times and each client discards the copies that are not its own;
 and cancelling an interactive login only interrupts at a prompt, since the worker's login has no
 abort path yet.
+

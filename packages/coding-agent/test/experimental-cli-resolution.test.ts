@@ -49,3 +49,4 @@ describe("experimental CLI command composition", () => {
 		expect(context.runClient).toHaveBeenCalledTimes(name === "client" ? 1 : 0);
 	});
 });
+

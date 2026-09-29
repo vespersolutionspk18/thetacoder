@@ -1,4 +1,4 @@
-import { setKeybindings } from "@earendil-works/pi-tui";
+import { setKeybindings } from "@theta/tui";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { KeybindingsManager } from "../src/core/keybindings.ts";
 import { OAuthSelectorComponent } from "../src/modes/interactive/components/oauth-selector.ts";
@@ -145,3 +145,4 @@ describe("OAuthSelectorComponent", () => {
 		expect(stripAnsi(selector.render(120).join("\n"))).toContain("✓ command in models.json");
 	});
 });
+

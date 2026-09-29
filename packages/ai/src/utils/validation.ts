@@ -348,3 +348,4 @@ export function validateToolArguments(tool: Tool, toolCall: ToolCall): any {
 
 	throw new Error(errorMessage);
 }
+

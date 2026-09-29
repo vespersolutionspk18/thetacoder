@@ -11,3 +11,4 @@ void runSessionWorker({ sessionsRoot, cwd, ...(sessionId === undefined ? {} : { 
 		process.exit(1);
 	},
 );
+

@@ -1,6 +1,6 @@
-import * as storedValues from "@earendil-works/pi-agent-core";
-import * as sessionWrites from "@earendil-works/pi-agent-core";
-import { BACKGROUND_CONTEXT, prepareStorageCommit } from "@earendil-works/pi-agent-core";
+import * as storedValues from "@theta/agent-core";
+import * as sessionWrites from "@theta/agent-core";
+import { BACKGROUND_CONTEXT, prepareStorageCommit } from "@theta/agent-core";
 import { describe, expect, it } from "vitest";
 import {
 	createNodeSqliteFactory,
@@ -694,3 +694,4 @@ describe("SqliteStorage", () => {
 		});
 	});
 });
+

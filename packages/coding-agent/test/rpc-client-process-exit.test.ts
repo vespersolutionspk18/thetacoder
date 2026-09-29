@@ -7,7 +7,7 @@ import { RpcClient } from "../src/modes/rpc/rpc-client.ts";
 const tempDirs: string[] = [];
 
 function writeChildScript(contents: string): string {
-	const dir = mkdtempSync(join(tmpdir(), "pi-rpc-client-exit-"));
+	const dir = mkdtempSync(join(tmpdir(), "theta-rpc-client-exit-"));
 	tempDirs.push(dir);
 	const path = join(dir, "child.mjs");
 	writeFileSync(path, contents);
@@ -36,3 +36,4 @@ process.stdin.resume();
 		await expect(client.getCommands()).rejects.toThrow(/Agent process exited \(code=43 signal=null\)/);
 	});
 });
+

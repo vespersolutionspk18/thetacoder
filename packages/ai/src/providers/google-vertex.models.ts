@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const GOOGLE_VERTEX_MODELS: ModelCatalog<typeof values, "google-vertex"> =
 	flattenModelCatalog("google-vertex", values);
+

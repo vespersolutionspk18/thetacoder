@@ -13,3 +13,4 @@ export function togetherProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

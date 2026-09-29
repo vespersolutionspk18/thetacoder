@@ -135,3 +135,4 @@ describe("normalizeToolResultImages", () => {
 		expect(normalized[3]).toEqual({ type: "text", text: "after" });
 	});
 });
+

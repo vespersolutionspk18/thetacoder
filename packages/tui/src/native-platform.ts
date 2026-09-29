@@ -61,3 +61,4 @@ export function getNativeClipboard(): NativeClipboard | undefined {
 	if (!process.env.DISPLAY) return undefined;
 	return loadNativePlatformHelper("linux", "-x11");
 }
+

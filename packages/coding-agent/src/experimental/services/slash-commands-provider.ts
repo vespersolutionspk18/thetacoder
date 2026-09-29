@@ -1,5 +1,5 @@
-import { defineFacet, type Facet, type JsonValue } from "@earendil-works/chord";
-import type { ThinkingLevel } from "@earendil-works/pi-agent-core";
+import type { ThinkingLevel } from "@theta/agent-core";
+import { defineFacet, type Facet, type JsonValue } from "@theta/chord";
 import { AgentController } from "./agent-controller.ts";
 import { type ModelSummary, Models, type Models as ModelsService } from "./models.ts";
 import { PresentationPlugins, SessionPlugins } from "./plugins.ts";
@@ -76,7 +76,7 @@ export class SlashCommandRegistry implements SlashCommands {
 
 export function createSlashCommandsRuntimeFacet(registry = new SlashCommandRegistry()): Facet {
 	return defineFacet({
-		id: "@pi/slash-commands-runtime",
+		id: "@theta/slash-commands-runtime",
 		setup(env) {
 			env.provide(SlashCommands, registry);
 		},
@@ -87,7 +87,7 @@ export function createBuiltInSlashCommandsFacet(options: {
 	reloadPresentationPlugins(data: JsonValue): Promise<void>;
 }): Facet {
 	return defineFacet({
-		id: "@pi/slash-commands-builtin",
+		id: "@theta/slash-commands-builtin",
 		setup(env) {
 			const commands = env.use(SlashCommands);
 			const models = env.use(Models);
@@ -223,3 +223,4 @@ function exactModel(models: readonly ModelSummary[], query: string): ModelSummar
 	);
 	return matches.length === 1 ? matches[0] : undefined;
 }
+

@@ -1,5 +1,5 @@
-import type { AgentTool, AgentToolResult } from "@earendil-works/pi-agent-core";
-import { fauxAssistantMessage, fauxToolCall } from "@earendil-works/pi-ai";
+import type { AgentTool, AgentToolResult } from "@theta/agent-core";
+import { fauxAssistantMessage, fauxToolCall } from "@theta/ai";
 import { Type } from "typebox";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -98,3 +98,4 @@ describe("regression #8724: in-memory fork during an active tool turn", () => {
 		expect(capturedRoles).toEqual(["user"]);
 	});
 });
+

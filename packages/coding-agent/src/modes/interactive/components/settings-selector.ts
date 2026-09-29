@@ -1,5 +1,5 @@
-import type { ThinkingLevel } from "@earendil-works/pi-agent-core";
-import { getSupportedThinkingLevels, type Model, type Transport } from "@earendil-works/pi-ai";
+import type { ThinkingLevel } from "@theta/agent-core";
+import { getSupportedThinkingLevels, type Model, type Transport } from "@theta/ai";
 import {
 	type Component,
 	Container,
@@ -10,7 +10,7 @@ import {
 	SettingsList,
 	Spacer,
 	Text,
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 import { formatHttpIdleTimeoutMs, HTTP_IDLE_TIMEOUT_CHOICES } from "../../../core/http-dispatcher.ts";
 import type {
 	DefaultProjectTrust,
@@ -943,3 +943,4 @@ export class SettingsSelectorComponent extends Container {
 		return this.settingsList;
 	}
 }
+

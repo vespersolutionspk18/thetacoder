@@ -10,8 +10,9 @@ export default defineConfig({
 	resolve: {
 		conditions: ["source"],
 		alias: {
-			"@earendil-works/pi-protocol": fileURLToPath(new URL("../protocol/src/index.ts", import.meta.url)),
+			"@theta/protocol": fileURLToPath(new URL("../protocol/src/index.ts", import.meta.url)),
 		},
 	},
 	ssr: { resolve: { conditions: ["source"] } },
 });
+

@@ -492,3 +492,4 @@ export class Input implements Component, Focusable {
 		return [line];
 	}
 }
+

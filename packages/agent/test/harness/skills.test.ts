@@ -148,3 +148,4 @@ Use this skill.
 		expect(skills.map((skill) => skill.name).sort()).toEqual(["nested-skill", "skills"]);
 	});
 });
+

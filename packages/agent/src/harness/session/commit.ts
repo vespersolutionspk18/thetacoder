@@ -114,3 +114,4 @@ export function validateCommittedWrites(
 		if (write.kind === "entry") transactionEntryIds.add(write.id);
 	}
 }
+

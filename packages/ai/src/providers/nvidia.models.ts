@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const NVIDIA_MODELS: ModelCatalog<typeof values, "nvidia"> =
 	flattenModelCatalog("nvidia", values);
+

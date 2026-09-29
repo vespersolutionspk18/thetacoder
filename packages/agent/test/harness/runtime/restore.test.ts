@@ -439,3 +439,4 @@ describe("runtime lane restore", () => {
 		await expect(restoreSession(session, BACKGROUND_CONTEXT)).rejects.toThrow('Lane "main" is missing branch.tip');
 	});
 });
+

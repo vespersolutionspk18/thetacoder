@@ -44,3 +44,4 @@ describe("overlay CJK boundary regression", () => {
 		assert.strictEqual(overlay.includes("│XX│"), true);
 	});
 });
+

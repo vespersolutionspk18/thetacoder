@@ -1,7 +1,7 @@
-# Pi evals
+# Theta evals
 
-Pi evals are behavioral, model-backed checks for Pi workflows. They adapt a real `AgentSession` to `vitest-evals`, run
-it in isolated temporary project and agent directories, and attach native Pi session artifacts.
+Theta evals are behavioral, model-backed checks for Theta workflows. They adapt a real `AgentSession` to `vitest-evals`, run
+it in isolated temporary project and agent directories, and attach native Theta session artifacts.
 Use them to measure end-to-end behavior and compare prompts, tools, skills, models, or other harness configurations.
 
 ## Running evals
@@ -19,7 +19,7 @@ PI_PROVIDER=openai PI_MODEL=gpt-5.6-sol npm run eval
 ```
 
 CLI values take precedence and become defaults for harnesses that do not select a model explicitly. Provider and model must be supplied together. The runner also allows no default when every executed harness configures its own model.
-Authentication comes from Pi's normal `ModelRuntime`, including Pi subscription credentials and provider API-key
+Authentication comes from Theta's normal `ModelRuntime`, including Theta subscription credentials and provider API-key
 environment variables.
 
 Additional arguments are forwarded to Vitest:
@@ -31,23 +31,23 @@ npm run eval -- src/docs.eval.ts -t "session-format\.md"
 ```
 
 Each invocation prints an ignored `.eval/` artifact directory. `runs.jsonl` indexes completed harness runs and their
-native Pi session JSONL attachments under `sessions/`. These files may contain prompts, responses, source code, and tool
+native Theta session JSONL attachments under `sessions/`. These files may contain prompts, responses, source code, and tool
 output.
 
 ## Writing evals
 
 Follow [`vitest-evals`](https://github.com/getsentry/vitest-evals) for general suite, judge, assertion, and normalized
-trace guidance. Pi-specific evals use `createPiCodingAgentHarness(...)` from `src/pi-harness.ts`, with one harness bound
+trace guidance. Theta-specific evals use `createPiCodingAgentHarness(...)` from `src/theta-harness.ts`, with one harness bound
 to each `describeEval(...)` suite:
 
 ```ts
 import { expect } from "vitest";
 import { describeEval } from "vitest-evals";
-import { createPiCodingAgentHarness } from "./pi-harness.ts";
+import { createPiCodingAgentHarness } from "./theta-harness.ts";
 
 const harness = createPiCodingAgentHarness({ noTools: "all" });
 
-describeEval("Pi smoke", { harness }, (it) => {
+describeEval("Theta smoke", { harness }, (it) => {
 	it("answers a factual question", async ({ run }) => {
 		const result = await run("What is the capital of France? Reply with only the city name.");
 		expect(result.output).toBe("Paris");
@@ -55,13 +55,13 @@ describeEval("Pi smoke", { harness }, (it) => {
 });
 ```
 
-### Configuring the Pi harness
+### Configuring the Theta harness
 
 `createPiCodingAgentHarness(...)` accepts:
 
 - `name`: stable harness identity used by reports and comparisons.
 - `model`: optional `{ provider, id }` selection. It overrides the runner's default model.
-- `noTools`: Pi's tool-disable configuration.
+- `noTools`: Theta's tool-disable configuration.
 - `tools`: optional allowlist of tool names available to the evaluated agent.
 - `customTools`: custom tool definitions to register for the evaluated agent.
 - `transformSystemPrompt`: transforms the complete default prompt before the eval starts.
@@ -77,11 +77,11 @@ const harness = createPiCodingAgentHarness({
 ```
 
 A run accepts either one prompt or a sequence of prompt and reload steps. Reload steps are useful when the preceding
-prompt creates or changes Pi resources:
+prompt creates or changes Theta resources:
 
 ```ts
 const result = await run([
-	{ type: "prompt", content: "Create a Pi extension." },
+	{ type: "prompt", content: "Create a Theta extension." },
 	{ type: "reload" },
 	{ type: "prompt", content: "Use the extension." },
 ]);
@@ -89,7 +89,7 @@ const result = await run([
 
 ### Transforming harness output
 
-Use `output` to expose scenario-specific, JSON-safe behavior without adding that behavior to the generic Pi adapter:
+Use `output` to expose scenario-specific, JSON-safe behavior without adding that behavior to the generic Theta adapter:
 
 ```ts
 const harness = createPiCodingAgentHarness({
@@ -107,7 +107,7 @@ Assert application behavior on `result.output`. Assert model and tool traces on 
 ### Writing comparative eval sets
 
 Use `evalHarnessTable(...)` with Vitest's native `describe.for(...)` to run the same inputs against multiple harnesses.
-Harnesses may differ by prompt, tools, skills, model, or any other Pi configuration:
+Harnesses may differ by prompt, tools, skills, model, or any other Theta configuration:
 
 ```ts
 import { describe } from "vitest";
@@ -140,7 +140,7 @@ Comparative suites should record correctness with deterministic or model-backed 
 This keeps a low score as an observation instead of making the Vitest invocation fail. Use hard assertions only for
 suite invariants and infrastructure contracts. `expect.soft(...)` still fails the test and is not a scoring mechanism.
 
-The Pi harness snapshots native session JSONL before deleting its temporary workspace. An eval-only `afterEach` hook
+The Theta harness snapshots native session JSONL before deleting its temporary workspace. An eval-only `afterEach` hook
 registers that snapshot against the explicit Vitest test task before reporters run.
 
 Harness names must be stable and unique within an eval set. The grouping key combines repetition with a non-empty string
@@ -154,3 +154,4 @@ necessary, use Vitest's built-in sequence shuffling.
 
 See the [`skill-eval-harness`](https://github.com/adewale/skill-eval-harness/) guidance for comparative-eval methodology,
 repetition strategy, trustworthy judges, and telemetry interpretation.
+

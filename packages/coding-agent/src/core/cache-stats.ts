@@ -1,4 +1,4 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
+import type { AssistantMessage } from "@theta/ai";
 import type { SessionEntry } from "./session-manager.ts";
 
 /**
@@ -162,3 +162,4 @@ export function detectCacheMiss(
 ): CacheMiss | undefined {
 	return detectMiss(scan(entries, models).prev, message, models);
 }
+

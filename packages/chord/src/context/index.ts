@@ -119,3 +119,4 @@ function abortError(signal: AbortSignal): Error {
 	const reason: unknown = signal.reason;
 	return reason instanceof Error ? reason : new DOMException("The operation was aborted", "AbortError");
 }
+

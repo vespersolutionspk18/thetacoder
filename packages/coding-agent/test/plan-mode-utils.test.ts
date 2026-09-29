@@ -259,3 +259,4 @@ describe("markCompletedSteps", () => {
 		expect(items[0].completed).toBe(true);
 	});
 });
+

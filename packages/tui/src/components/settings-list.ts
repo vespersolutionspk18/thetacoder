@@ -326,3 +326,4 @@ export class SettingsList implements Component {
 		);
 	}
 }
+

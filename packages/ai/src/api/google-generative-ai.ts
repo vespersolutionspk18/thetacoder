@@ -22,8 +22,8 @@ import type {
 import { formatProviderError, normalizeProviderError } from "../utils/error-body.ts";
 import { AssistantMessageEventStream } from "../utils/event-stream.ts";
 import { providerHeadersToRecord } from "../utils/headers.ts";
-import { getPiUserAgent } from "../utils/pi-user-agent.ts";
 import { sanitizeSurrogates } from "../utils/sanitize-unicode.ts";
+import { getThetaUserAgent } from "../utils/theta-user-agent.ts";
 import type { GoogleApiThinkingLevel, ResolvedGoogleThinkingLevel } from "./google-shared.ts";
 import {
 	convertMessages,
@@ -345,7 +345,7 @@ function createClient(
 		httpOptions.baseUrl = model.baseUrl;
 		httpOptions.apiVersion = ""; // baseUrl already includes version path, don't append
 	}
-	const headers = providerHeadersToRecord({ "User-Agent": getPiUserAgent(), ...model.headers, ...optionsHeaders });
+	const headers = providerHeadersToRecord({ "User-Agent": getThetaUserAgent(), ...model.headers, ...optionsHeaders });
 	if (headers) {
 		httpOptions.headers = headers;
 	}
@@ -432,7 +432,7 @@ function isGemini3FlashModel(model: Model<"google-generative-ai">): boolean {
 function getDisabledThinkingConfig(model: Model<"google-generative-ai">): ThinkingConfig {
 	// Google docs: Gemini 3.1 Pro cannot disable thinking, and Gemini 3 Flash / Flash-Lite
 	// do not support full thinking-off either. For Gemini 3 models, use the lowest supported
-	// thinkingLevel without includeThoughts so hidden thinking remains invisible to pi.
+	// thinkingLevel without includeThoughts so hidden thinking remains invisible to theta.
 	if (isGemini3ProModel(model)) {
 		return { thinkingLevel: "LOW" as any };
 	}
@@ -524,3 +524,4 @@ function getGoogleBudget(
 
 	return -1;
 }
+

@@ -143,3 +143,4 @@ describe("OAuth device-code polling", () => {
 		await expect(resultPromise).rejects.toThrow("Login cancelled");
 	});
 });
+

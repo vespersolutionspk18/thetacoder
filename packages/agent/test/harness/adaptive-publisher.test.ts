@@ -74,3 +74,4 @@ describe("AdaptivePublisher", () => {
 		expect(updates.at(-1)).toEqual({ previous: "ab", current: "abc" });
 	});
 });
+

@@ -1,4 +1,4 @@
-import type { TUI } from "@earendil-works/pi-tui";
+import type { TUI } from "@theta/tui";
 import type { SettingsManager } from "../../../core/settings-manager.ts";
 import {
 	detectTerminalBackgroundFromEnv,
@@ -170,3 +170,4 @@ export class InteractiveThemeController {
 		}
 	}
 }
+

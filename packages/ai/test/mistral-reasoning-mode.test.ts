@@ -116,3 +116,4 @@ describe("Mistral reasoning mode selection", () => {
 		expect(payload.promptCacheKey).toBeUndefined();
 	});
 });
+

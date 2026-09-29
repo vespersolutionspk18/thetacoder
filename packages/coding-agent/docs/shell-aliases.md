@@ -1,8 +1,8 @@
 # Shell Aliases
 
-Pi runs bash in non-interactive mode (`bash -c`), which doesn't expand aliases by default.
+Theta runs bash in non-interactive mode (`bash -c`), which doesn't expand aliases by default.
 
-To enable your shell aliases, add to `~/.pi/agent/settings.json`:
+To enable your shell aliases, add to `~/.theta/agent/settings.json`:
 
 ```json
 {
@@ -11,3 +11,4 @@ To enable your shell aliases, add to `~/.pi/agent/settings.json`:
 ```
 
 Adjust the path (`~/.zshrc`, `~/.bashrc`, etc.) to match your shell config.
+

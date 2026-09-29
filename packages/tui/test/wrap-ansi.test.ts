@@ -264,3 +264,4 @@ describe("wrapTextWithAnsi with OSC 8 hyperlinks", () => {
 		assert.strictEqual(closeCount, 1);
 	});
 });
+

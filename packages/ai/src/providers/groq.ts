@@ -13,3 +13,4 @@ export function groqProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

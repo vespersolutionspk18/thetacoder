@@ -10,10 +10,10 @@ import {
 	replicatedState,
 	type Service,
 	type ServiceCatalogueEntry,
-} from "@earendil-works/chord";
-import { BACKGROUND_CONTEXT } from "@earendil-works/chord/context";
-import { type Client, createClientServiceTransport } from "@earendil-works/pi-client";
-import type { SessionTarget } from "@earendil-works/pi-protocol";
+} from "@theta/chord";
+import { BACKGROUND_CONTEXT } from "@theta/chord/context";
+import { type Client, createClientServiceTransport } from "@theta/client";
+import type { SessionTarget } from "@theta/protocol";
 
 export type ServerConnectionState =
 	| { status: "connecting"; attempt: number }
@@ -403,3 +403,4 @@ function throwFailures(results: readonly PromiseSettledResult<unknown>[], messag
 function toError(error: unknown): Error {
 	return error instanceof Error ? error : new Error(String(error));
 }
+

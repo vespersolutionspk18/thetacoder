@@ -188,3 +188,4 @@ describe("InstrumentedStorage", () => {
 		expect(storage.getCommitAttempts()).toHaveLength(1);
 	});
 });
+

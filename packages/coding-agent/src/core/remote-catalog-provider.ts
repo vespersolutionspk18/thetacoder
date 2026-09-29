@@ -1,9 +1,9 @@
-import type { Api, Model, ModelsStoreEntry, Provider } from "@earendil-works/pi-ai";
+import type { Api, Model, ModelsStoreEntry, Provider } from "@theta/ai";
 import { VERSION } from "../config.ts";
 import { fetchWithRetry } from "../utils/management-http.ts";
-import { getPiUserAgent } from "../utils/pi-user-agent.ts";
+import { getThetaUserAgent } from "../utils/theta-user-agent.ts";
 
-const DEFAULT_CATALOG_BASE_URL = "https://pi.dev";
+const DEFAULT_CATALOG_BASE_URL = "https://theta.local";
 const REMOTE_CATALOG_ATTEMPT_TIMEOUT_MS = 4_000;
 export const REMOTE_CATALOG_REFRESH_INTERVAL_MS = 4 * 60 * 60 * 1000;
 
@@ -42,7 +42,7 @@ function remoteModels(
 	return entry.models;
 }
 
-/** Add a persisted pi.dev catalog overlay to a static built-in provider. */
+/** Add a persisted remote catalog overlay to a static built-in provider. */
 export function withRemoteCatalog(
 	provider: Provider,
 	catalogBaseUrl: string = DEFAULT_CATALOG_BASE_URL,
@@ -84,7 +84,7 @@ export function withRemoteCatalog(
 				{
 					headers: {
 						accept: "application/json",
-						"User-Agent": getPiUserAgent(VERSION),
+						"User-Agent": getThetaUserAgent(VERSION),
 						...(validator ? { "if-none-match": validator } : {}),
 					},
 					signal: context.signal,
@@ -135,3 +135,4 @@ export function withRemoteCatalog(
 		},
 	};
 }
+

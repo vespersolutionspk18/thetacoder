@@ -7,13 +7,13 @@ afterEach(() => vi.unstubAllEnvs());
 
 describe("experimental server session directory", () => {
 	test("uses the experimental directory under the configured agent directory by default", () => {
-		vi.stubEnv("PI_CODING_AGENT_DIR", "/tmp/pi-agent-config");
+		vi.stubEnv("THETA_CODING_AGENT_DIR", "/tmp/theta-agent-config");
 
-		expect(resolveSessionDirectory()).toBe("/tmp/pi-agent-config/experimental/sessions");
+		expect(resolveSessionDirectory()).toBe("/tmp/theta-agent-config/experimental/sessions");
 	});
 
 	test("resolves an explicit relative directory from the current working directory", () => {
-		vi.stubEnv("PI_CODING_AGENT_DIR", "/tmp/pi-agent-config");
+		vi.stubEnv("THETA_CODING_AGENT_DIR", "/tmp/theta-agent-config");
 
 		expect(resolveSessionDirectory("relative/sessions")).toBe(resolve("relative/sessions"));
 	});
@@ -22,3 +22,4 @@ describe("experimental server session directory", () => {
 		expect(resolveSessionDirectory("~/custom-sessions")).toBe(resolve(homedir(), "custom-sessions"));
 	});
 });
+

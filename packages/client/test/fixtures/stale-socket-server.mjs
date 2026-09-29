@@ -7,3 +7,4 @@ const server = createServer();
 server.listen(path, () => {
 	if (process.send) process.send("listening");
 });
+

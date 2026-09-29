@@ -1,4 +1,4 @@
-import { Container, getKeybindings, Spacer, Text } from "@earendil-works/pi-tui";
+import { Container, getKeybindings, Spacer, Text } from "@theta/tui";
 import {
 	getProjectTrustOptions,
 	type ProjectTrustOption,
@@ -132,3 +132,4 @@ export class TrustSelectorComponent extends Container {
 		}
 	}
 }
+

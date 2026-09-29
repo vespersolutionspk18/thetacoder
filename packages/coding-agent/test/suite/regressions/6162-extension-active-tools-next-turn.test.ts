@@ -1,21 +1,21 @@
-import { fauxAssistantMessage, fauxToolCall } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage, fauxToolCall } from "@theta/ai";
 import { Type } from "typebox";
 import { describe, expect, it } from "vitest";
 import type { ExtensionFactory } from "../../../src/index.ts";
 import { createHarness } from "../harness.ts";
 
 describe("extension active tools next-turn refresh", () => {
-	it("applies pi.setActiveTools before the next provider request in the same run", async () => {
+	it("applies theta.setActiveTools before the next provider request in the same run", async () => {
 		const extensionFactories: ExtensionFactory[] = [
-			(pi) => {
-				pi.registerTool({
+			(theta) => {
+				theta.registerTool({
 					name: "switch_tools",
 					label: "Switch Tools",
 					description: "Switch the active extension tool set",
 					promptSnippet: "Switch to the next extension tool",
 					parameters: Type.Object({}),
 					execute: async () => {
-						pi.setActiveTools(["after_switch"]);
+						theta.setActiveTools(["after_switch"]);
 						return {
 							content: [{ type: "text", text: "switched" }],
 							details: {},
@@ -23,7 +23,7 @@ describe("extension active tools next-turn refresh", () => {
 					},
 				});
 
-				pi.registerTool({
+				theta.registerTool({
 					name: "after_switch",
 					label: "After Switch",
 					description: "Tool that should be available after switching",
@@ -68,14 +68,14 @@ describe("extension active tools next-turn refresh", () => {
 
 	it("records additive active tool changes on the current tool result", async () => {
 		const extensionFactories: ExtensionFactory[] = [
-			(pi) => {
-				pi.registerTool({
+			(theta) => {
+				theta.registerTool({
 					name: "load_more_tools",
 					label: "Load More Tools",
 					description: "Load more tools",
 					parameters: Type.Object({}),
 					execute: async () => {
-						pi.setActiveTools([...pi.getActiveTools(), "after_load"]);
+						theta.setActiveTools([...theta.getActiveTools(), "after_load"]);
 						return {
 							content: [{ type: "text", text: "loaded" }],
 							details: {},
@@ -83,7 +83,7 @@ describe("extension active tools next-turn refresh", () => {
 					},
 				});
 
-				pi.registerTool({
+				theta.registerTool({
 					name: "after_load",
 					label: "After Load",
 					description: "Tool available after loading",
@@ -124,19 +124,19 @@ describe("extension active tools next-turn refresh", () => {
 
 	it("preserves before_agent_start system prompt overrides when tools change mid-run", async () => {
 		const extensionFactories: ExtensionFactory[] = [
-			(pi) => {
-				pi.on("before_agent_start", async (event) => ({
+			(theta) => {
+				theta.on("before_agent_start", async (event) => ({
 					systemPrompt: `${event.systemPrompt}\n\nkeep this run override`,
 				}));
 
-				pi.registerTool({
+				theta.registerTool({
 					name: "switch_tools",
 					label: "Switch Tools",
 					description: "Switch the active extension tool set",
 					promptSnippet: "Switch to the next extension tool",
 					parameters: Type.Object({}),
 					execute: async () => {
-						pi.setActiveTools(["after_switch"]);
+						theta.setActiveTools(["after_switch"]);
 						return {
 							content: [{ type: "text", text: "switched" }],
 							details: {},
@@ -144,7 +144,7 @@ describe("extension active tools next-turn refresh", () => {
 					},
 				});
 
-				pi.registerTool({
+				theta.registerTool({
 					name: "after_switch",
 					label: "After Switch",
 					description: "Tool that should be available after switching",
@@ -190,3 +190,4 @@ describe("extension active tools next-turn refresh", () => {
 		}
 	});
 });
+

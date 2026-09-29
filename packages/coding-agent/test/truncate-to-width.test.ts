@@ -1,4 +1,4 @@
-import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { truncateToWidth, visibleWidth } from "@theta/tui";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -79,3 +79,4 @@ describe("truncateToWidth", () => {
 		expect(finalWidth + cursorWidth).toBeLessThanOrEqual(terminalWidth);
 	});
 });
+

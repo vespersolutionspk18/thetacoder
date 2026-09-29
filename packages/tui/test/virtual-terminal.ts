@@ -216,3 +216,4 @@ export class VirtualTerminal implements Terminal {
 		await this.flush();
 	}
 }
+

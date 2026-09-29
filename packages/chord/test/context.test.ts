@@ -87,3 +87,4 @@ describe("Context", () => {
 		await expect(awaitWithContext(Promise.resolve("completed"), BACKGROUND_CONTEXT)).resolves.toBe("completed");
 	});
 });
+

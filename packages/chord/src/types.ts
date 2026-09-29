@@ -259,3 +259,4 @@ export interface LoadedFacets {
 export interface FacetLoader {
 	load(): Promise<LoadedFacets>;
 }
+

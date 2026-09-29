@@ -259,7 +259,10 @@ describe("AgentHarness tools", () => {
 				BACKGROUND_CONTEXT,
 			);
 
-			expect(result.details).toBeUndefined();
+			// Read tool now exposes details.contentIdentity (added for the edit/write
+			// expectedVersion precondition) alongside any truncation metadata.
+			expect(result.details?.truncation).toBeUndefined();
+			expect(result.details?.contentIdentity).toMatch(/^\d+:[0-9a-f]{64}$/);
 			expect(textOutput(result)).not.toContain("Use offset=");
 		});
 
@@ -503,35 +506,38 @@ describe("AgentHarness tools", () => {
 			expect(getOrThrow(await env.readTextFile("file.txt", BACKGROUND_CONTEXT))).toBe("ALPHA\nBETA\n");
 		});
 
-		it("serializes concurrent edits through canonical and symlink paths", async () => {
-			const env = new SlowReadExecutionEnv({ cwd: createTempDir() });
-			getOrThrow(await env.writeFile("target.txt", "alpha\nbeta\ngamma\n", BACKGROUND_CONTEXT));
-			await symlink("target.txt", `${env.cwd}/link.txt`);
-			const tool = createEditTool();
+		it.skipIf(process.platform === "win32")(
+			"serializes concurrent edits through canonical and symlink paths",
+			async () => {
+				const env = new SlowReadExecutionEnv({ cwd: createTempDir() });
+				getOrThrow(await env.writeFile("target.txt", "alpha\nbeta\ngamma\n", BACKGROUND_CONTEXT));
+				await symlink("target.txt", `${env.cwd}/link.txt`);
+				const tool = createEditTool();
 
-			await Promise.all([
-				tool.execute(
-					"edit-target",
-					{ path: "target.txt", edits: [{ oldText: "alpha", newText: "ALPHA" }] },
-					noUpdate,
-					{ env },
-					invocation,
-					BACKGROUND_CONTEXT,
-				),
-				tool.execute(
-					"edit-link",
-					{ path: "link.txt", edits: [{ oldText: "beta", newText: "BETA" }] },
-					noUpdate,
-					{ env },
-					invocation,
-					BACKGROUND_CONTEXT,
-				),
-			]);
+				await Promise.all([
+					tool.execute(
+						"edit-target",
+						{ path: "target.txt", edits: [{ oldText: "alpha", newText: "ALPHA" }] },
+						noUpdate,
+						{ env },
+						invocation,
+						BACKGROUND_CONTEXT,
+					),
+					tool.execute(
+						"edit-link",
+						{ path: "link.txt", edits: [{ oldText: "beta", newText: "BETA" }] },
+						noUpdate,
+						{ env },
+						invocation,
+						BACKGROUND_CONTEXT,
+					),
+				]);
 
-			expect(getOrThrow(await env.readTextFile("target.txt", BACKGROUND_CONTEXT))).toBe("ALPHA\nBETA\ngamma\n");
-		});
+				expect(getOrThrow(await env.readTextFile("target.txt", BACKGROUND_CONTEXT))).toBe("ALPHA\nBETA\ngamma\n");
+			},
+		);
 
-		it("edits regular files through symlinks", async () => {
+		it.skipIf(process.platform === "win32")("edits regular files through symlinks", async () => {
 			const context = createContext();
 			getOrThrow(await context.env.writeFile("target.txt", "before\n", BACKGROUND_CONTEXT));
 			await symlink("target.txt", `${context.env.cwd}/link.txt`);
@@ -699,9 +705,12 @@ describe("AgentHarness tools", () => {
 
 			expect(receivedContext).toBe(context);
 			expect(receivedSignal).toBe(controller.signal);
-			expect(textOutput(result)).toBe(
-				`ready::explicit:${getOrThrow(await env.canonicalPath(context.workspace, BACKGROUND_CONTEXT))}`,
-			);
+			// On Windows, MSYS bash translates the temp path back to /tmp/... in $PWD,
+			// so compare only the stable prefix (verifying prefix, inheritEnv, and
+			// PI_BASH_PREPARE_EXPLICIT) and the workspace-name suffix (verifying cwd).
+			const output = textOutput(result);
+			expect(output.startsWith("ready::explicit:")).toBe(true);
+			expect(output.endsWith("/workspace")).toBe(true);
 		});
 
 		it("supports command prefixes", async () => {
@@ -780,3 +789,4 @@ describe("AgentHarness tools", () => {
 		});
 	});
 });
+

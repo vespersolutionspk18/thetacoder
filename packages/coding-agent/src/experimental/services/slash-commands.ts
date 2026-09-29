@@ -1,4 +1,4 @@
-import { type Context, defineService } from "@earendil-works/chord";
+import { type Context, defineService } from "@theta/chord";
 import type { AgentOperationResponse, AgentQueueResponse } from "./agent-controller.ts";
 
 export interface SlashCommandCompletion {
@@ -27,4 +27,5 @@ export interface SlashCommands {
 	subscribe(listener: (commands: readonly SlashCommandContribution[]) => void): () => void;
 }
 
-export const SlashCommands = defineService<SlashCommands>("pi.local.slash-commands", { local: true });
+export const SlashCommands = defineService<SlashCommands>("theta.local.slash-commands", { local: true });
+

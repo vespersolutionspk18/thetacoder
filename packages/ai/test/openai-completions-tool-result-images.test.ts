@@ -159,3 +159,4 @@ describe("openai-completions convertMessages", () => {
 		expect(toolMessage?.content).not.toContain("see attached image");
 	});
 });
+

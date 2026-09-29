@@ -1,5 +1,5 @@
 import { platform } from "node:os";
-import { getNativeClipboard } from "@earendil-works/pi-tui";
+import { getNativeClipboard } from "@theta/tui";
 import { runClipboardCommand } from "./clipboard-command.ts";
 
 const MAX_OSC52_ENCODED_LENGTH = 100_000;
@@ -75,3 +75,4 @@ export async function copyToClipboard(text: string): Promise<void> {
 	if (isRemoteSession() || !copied) copied = emitOsc52(text) || copied;
 	if (!copied) throw new Error("Failed to copy to clipboard");
 }
+

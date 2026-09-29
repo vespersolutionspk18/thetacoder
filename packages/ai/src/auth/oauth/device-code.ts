@@ -96,3 +96,4 @@ export async function pollOAuthDeviceCodeFlow<T>(options: OAuthDeviceCodePollOpt
 
 	throw new Error(slowDownResponses > 0 ? SLOW_DOWN_TIMEOUT_MESSAGE : TIMEOUT_MESSAGE);
 }
+

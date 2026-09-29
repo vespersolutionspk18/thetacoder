@@ -1,38 +1,10 @@
-<p align="center">
-  <a href="https://pi.dev">
-    <img alt="pi logo" src="https://pi.dev/logo-auto.svg" width="128">
-  </a>
-</p>
-<p align="center">
-  <a href="https://discord.com/invite/3cU7Bz4UPx"><img alt="Discord" src="https://img.shields.io/badge/discord-community-5865F2?style=flat-square&logo=discord&logoColor=white" /></a>
-  <a href="https://www.npmjs.com/package/@earendil-works/pi-coding-agent"><img alt="npm" src="https://img.shields.io/npm/v/@earendil-works/pi-coding-agent?style=flat-square" /></a>
-</p>
+# Coding Agent
 
-> New issues and PRs from new contributors are auto-closed by default. Maintainers review auto-closed issues daily. See [CONTRIBUTING.md](../../CONTRIBUTING.md).
+Theta is a minimal terminal coding harness. Adapt theta to your workflows, not the other way around, without having to fork and modify theta internals. Extend it with TypeScript [Extensions](#extensions), [Skills](#skills), [Prompt Templates](#prompt-templates), and [Themes](#themes). Put your extensions, skills, prompt templates, and themes in [Theta Packages](#theta-packages) and share them with others via npm or git.
 
----
+Theta ships with powerful defaults but skips features like sub agents and plan mode. Instead, you can ask theta to build what you want or install a third party theta package that matches your workflow.
 
-Pi is a minimal terminal coding harness. Adapt pi to your workflows, not the other way around, without having to fork and modify pi internals. Extend it with TypeScript [Extensions](#extensions), [Skills](#skills), [Prompt Templates](#prompt-templates), and [Themes](#themes). Put your extensions, skills, prompt templates, and themes in [Pi Packages](#pi-packages) and share them with others via npm or git.
-
-Pi ships with powerful defaults but skips features like sub agents and plan mode. Instead, you can ask pi to build what you want or install a third party pi package that matches your workflow.
-
-Pi runs in four modes: interactive, print or JSON, RPC for process integration, and an SDK for embedding in your own apps.
-
-## Share your OSS coding agent sessions
-
-If you use pi for open source work, please share your coding agent sessions.
-
-Public OSS session data helps improve models, prompts, tools, and evaluations using real development workflows.
-
-For the full explanation, see [this post on X](https://x.com/badlogicgames/status/2037811643774652911).
-
-To publish sessions, use [`badlogic/pi-share-hf`](https://github.com/badlogic/pi-share-hf). Read its README.md for setup instructions. All you need is a Hugging Face account, the Hugging Face CLI, and `pi-share-hf`.
-
-You can also watch [this video](https://x.com/badlogicgames/status/2041151967695634619), where I show how I publish my `pi-mono` sessions.
-
-I regularly publish my own `pi-mono` work sessions here:
-
-- [badlogicgames/pi-mono on Hugging Face](https://huggingface.co/datasets/badlogicgames/pi-mono)
+Theta runs in four modes: interactive, print or JSON, RPC for process integration, and an SDK for embedding in your own apps.
 
 ## Table of Contents
 
@@ -53,7 +25,7 @@ I regularly publish my own `pi-mono` work sessions here:
   - [Skills](#skills)
   - [Extensions](#extensions)
   - [Themes](#themes)
-  - [Pi Packages](#pi-packages)
+  - [Theta Packages](#theta-packages)
 - [Programmatic Usage](#programmatic-usage)
 - [Philosophy](#philosophy)
 - [CLI Reference](#cli-reference)
@@ -63,32 +35,32 @@ I regularly publish my own `pi-mono` work sessions here:
 ## Quick Start
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+npm install -g --ignore-scripts @theta/coding-agent
 ```
 
-`--ignore-scripts` disables dependency lifecycle scripts during install. Pi does not require install scripts for normal npm installs.
+`--ignore-scripts` disables dependency lifecycle scripts during install. Theta does not require install scripts for normal npm installs.
 
 Installer alternative:
 
 ```bash
-curl -fsSL https://pi.dev/install.sh | sh
+curl -fsSL https://theta.local/install.sh | sh
 ```
 
 Authenticate with an API key:
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-pi
+theta
 ```
 
 Or use your existing subscription:
 
 ```bash
-pi
+theta
 /login  # Then select provider
 ```
 
-Then just talk to pi. By default, pi gives the model four tools: `read`, `write`, `edit`, and `bash`. The model uses these to fulfill your requests. Add capabilities via [skills](#skills), [prompt templates](#prompt-templates), [extensions](#extensions), or [pi packages](#pi-packages).
+Then just talk to theta. By default, theta gives the model four tools: `read`, `write`, `edit`, and `bash`. The model uses these to fulfill your requests. Add capabilities via [skills](#skills), [prompt templates](#prompt-templates), [extensions](#extensions), or [theta packages](#theta-packages).
 
 **Platform notes:** [Windows](docs/windows.md) | [Termux (Android)](docs/termux.md) | [tmux](docs/tmux.md) | [Terminal setup](docs/terminal-setup.md) | [Shell aliases](docs/shell-aliases.md)
 
@@ -96,7 +68,7 @@ Then just talk to pi. By default, pi gives the model four tools: `read`, `write`
 
 ## Providers & Models
 
-For each built-in provider, pi maintains a list of tool-capable models. Configured provider catalogs refresh automatically; run `pi update --models` to force an immediate refresh. Authenticate via subscription (`/login`) or API key, then select any model from that provider via `/model` (or Ctrl+L). Press Ctrl+S in the model picker to save the highlighted model as the startup default.
+For each built-in provider, theta maintains a list of tool-capable models. Configured provider catalogs refresh automatically; run `theta update --models` to force an immediate refresh. Authenticate via subscription (`/login`) or API key, then select any model from that provider via `/model` (or Ctrl+L). Press Ctrl+S in the model picker to save the highlighted model as the startup default.
 
 **Subscriptions:**
 - Anthropic Claude Pro/Max
@@ -136,11 +108,11 @@ For each built-in provider, pi maintains a list of tool-capable models. Configur
 - Xiaomi MiMo Token Plan (Amsterdam)
 - Xiaomi MiMo Token Plan (Singapore)
 
-Pi also supports the llama.cpp router server. Configure it with `/login llama.cpp`, manage downloads and loaded models with `/llama`, then select a loaded model with `/model`. See [docs/llama-cpp.md](docs/llama-cpp.md) for setup and usage.
+Theta also supports the llama.cpp router server. Configure it with `/login llama.cpp`, manage downloads and loaded models with `/llama`, then select a loaded model with `/model`. See [docs/llama-cpp.md](docs/llama-cpp.md) for setup and usage.
 
 See [docs/providers.md](docs/providers.md) for other provider setup instructions.
 
-**Custom providers & models:** Add providers via `~/.pi/agent/models.json` if they speak a supported API (OpenAI, Anthropic, Google). For custom APIs or OAuth, use extensions. See [docs/models.md](docs/models.md) and [docs/custom-provider.md](docs/custom-provider.md).
+**Custom providers & models:** Add providers via `~/.theta/agent/models.json` if they speak a supported API (OpenAI, Anthropic, Google). For custom APIs or OAuth, use extensions. See [docs/models.md](docs/models.md) and [docs/custom-provider.md](docs/custom-provider.md).
 
 ---
 
@@ -198,11 +170,11 @@ Type `/` in the editor to trigger commands. [Extensions](#extensions) can regist
 | `/reload` | Reload keybindings, extensions, skills, prompts, themes, and context files |
 | `/hotkeys` | Show all keyboard shortcuts |
 | `/changelog` | Display version history |
-| `/quit` | Quit pi |
+| `/quit` | Quit theta |
 
 ### Keyboard Shortcuts
 
-See `/hotkeys` for the full list. Customize via `~/.pi/agent/keybindings.json`. See [docs/keybindings.md](docs/keybindings.md).
+See `/hotkeys` for the full list. Customize via `~/.theta/agent/keybindings.json`. See [docs/keybindings.md](docs/keybindings.md).
 
 **Commonly used:**
 
@@ -228,7 +200,7 @@ Submit messages while the agent is working:
 - **Escape** aborts and restores queued messages to editor
 - **Alt+Up** retrieves queued messages back to editor
 
-On Windows Terminal, `Alt+Enter` is fullscreen by default. Remap it in [docs/terminal-setup.md](docs/terminal-setup.md) so pi can receive the follow-up shortcut.
+On Windows Terminal, `Alt+Enter` is fullscreen by default. Remap it in [docs/terminal-setup.md](docs/terminal-setup.md) so theta can receive the follow-up shortcut.
 
 Configure delivery in [settings](docs/settings.md): `steeringMode` and `followUpMode` can be `"one-at-a-time"` (default, waits for response) or `"all"` (delivers all queued at once). `transport` selects provider transport preference (`"sse"`, `"websocket"`, or `"auto"`) for providers that support multiple transports.
 
@@ -240,15 +212,15 @@ Sessions are stored as JSONL files with a tree structure. Each entry has an `id`
 
 ### Management
 
-Sessions auto-save to `~/.pi/agent/sessions/` organized by working directory.
+Sessions auto-save to `~/.theta/agent/sessions/` organized by working directory.
 
 ```bash
-pi -c                  # Continue most recent session
-pi -r                  # Browse and select from past sessions
-pi --no-session        # Ephemeral mode (don't save)
-pi --name "my task"    # Set session display name at startup
-pi --session <path|id> # Use specific session file or ID
-pi --fork <path|id>    # Fork specific session file or ID into a new session
+theta -c                  # Continue most recent session
+theta -r                  # Browse and select from past sessions
+theta --no-session        # Ephemeral mode (don't save)
+theta --name "my task"    # Set session display name at startup
+theta --session <path|id> # Use specific session file or ID
+theta --fork <path|id>    # Fork specific session file or ID into a new session
 ```
 
 Use `/session` in interactive mode to see the current session ID before reusing it with `--session <id>` or `--fork <id>`.
@@ -288,31 +260,31 @@ Use `/settings` to modify common options, or edit JSON files directly:
 
 | Location | Scope |
 |----------|-------|
-| `~/.pi/agent/settings.json` | Global (all projects) |
-| `.pi/settings.json` | Project (overrides global) |
+| `~/.theta/agent/settings.json` | Global (all projects) |
+| `.theta/settings.json` | Project (overrides global) |
 
 See [docs/settings.md](docs/settings.md) for all options.
 
 ### Project Trust
 
-On interactive startup, pi asks before trusting a project folder that contains project-local settings, resources, or project `.agents/skills` and has no saved decision for the folder or a parent folder in `~/.pi/agent/trust.json`. Trusting a project allows pi to load `.pi/settings.json` and `.pi` resources, install missing project packages, and execute project extensions.
+On interactive startup, theta asks before trusting a project folder that contains project-local settings, resources, or project `.agents/skills` and has no saved decision for the folder or a parent folder in `~/.theta/agent/trust.json`. Trusting a project allows theta to load `.theta/settings.json` and `.theta` resources, install missing project packages, and execute project extensions.
 
-Before the trust decision, pi loads only context files, user/global extensions, and CLI `-e` extensions so they can handle the `project_trust` event. Project-local extensions, project package-managed extensions, and project settings are loaded only after the project is trusted. This split also applies when switching to a session from a different cwd whose trust has not been resolved in the current process.
+Before the trust decision, theta loads only context files, user/global extensions, and CLI `-e` extensions so they can handle the `project_trust` event. Project-local extensions, project package-managed extensions, and project settings are loaded only after the project is trusted. This split also applies when switching to a session from a different cwd whose trust has not been resolved in the current process.
 
 Non-interactive modes (`-p`, `--mode json`, and `--mode rpc`) do not show a trust prompt. Without an applicable saved trust decision, they use `defaultProjectTrust` from global settings: `ask` (default) and `never` ignore those project resources, while `always` trusts them. Pass `--approve`/`-a` or `--no-approve`/`-na` to override project trust for one run.
 
-If no extension or saved decision applies, `defaultProjectTrust` controls the fallback behavior. Set it to `"ask"`, `"always"`, or `"never"` in `~/.pi/agent/settings.json`, or change it with `/settings`.
+If no extension or saved decision applies, `defaultProjectTrust` controls the fallback behavior. Set it to `"ask"`, `"always"`, or `"never"` in `~/.theta/agent/settings.json`, or change it with `/settings`.
 
-`pi config` and package commands use the same project trust flow, except `pi update` never prompts. Pass `--approve` to trust project-local settings for one command or `--no-approve` to ignore them.
+`theta config` and package commands use the same project trust flow, except `theta update` never prompts. Pass `--approve` to trust project-local settings for one command or `--no-approve` to ignore them.
 
-Use `/trust` in interactive mode to save a project trust decision for future sessions, including trust for the immediate parent folder. It writes `~/.pi/agent/trust.json` only; the current session is not reloaded, so restart pi for changes to take effect.
+Use `/trust` in interactive mode to save a project trust decision for future sessions, including trust for the immediate parent folder. It writes `~/.theta/agent/trust.json` only; the current session is not reloaded, so restart theta for changes to take effect.
 
 ### Telemetry and update checks
 
-Pi has two separate startup features:
+Theta has two separate startup features:
 
-- **Update check:** fetches `https://pi.dev/api/latest-version` to check whether a newer Pi version exists. Disable it with `PI_SKIP_VERSION_CHECK=1`. Disabling update checks only turns off this check.
-- **Install/update telemetry:** after first install or a changelog-detected update, sends an anonymous version ping to `https://pi.dev/api/report-install`. This setting also controls optional provider attribution headers for OpenRouter, Cloudflare, and direct NVIDIA NIM requests. Opt out by setting `enableInstallTelemetry` to `false` in `settings.json`, or by setting `PI_TELEMETRY=0`. This does not disable update checks; Pi may still contact `pi.dev` for the latest version unless update checks are disabled or offline mode is enabled.
+- **Update check:** fetches `https://theta.local/api/latest-version` to check whether a newer Theta version exists. Disable it with `PI_SKIP_VERSION_CHECK=1`. Disabling update checks only turns off this check.
+- **Install/update telemetry:** after first install or a changelog-detected update, sends an anonymous version ping to `https://theta.local/api/report-install`. This setting also controls optional provider attribution headers for OpenRouter, Cloudflare, and direct NVIDIA NIM requests. Opt out by setting `enableInstallTelemetry` to `false` in `settings.json`, or by setting `PI_TELEMETRY=0`. This does not disable update checks; Theta may still contact the update endpoint for the latest version unless update checks are disabled or offline mode is enabled.
 
 Use `--offline` or `PI_OFFLINE=1` to disable all startup network operations described here, including update checks, package update checks, and install/update telemetry.
 
@@ -320,12 +292,12 @@ Use `--offline` or `PI_OFFLINE=1` to disable all startup network operations desc
 
 ## Context Files
 
-Pi loads `AGENTS.md` (or `CLAUDE.md`) at startup from:
-- `~/.pi/agent/AGENTS.md` (global)
+Theta loads `AGENTS.md` (or `CLAUDE.md`) at startup from:
+- `~/.theta/agent/AGENTS.md` (global)
 - Parent directories (walking up from cwd)
 - Current directory
 
-If a directory contains `AGENTS.override.md`, Pi loads it instead of `AGENTS.md` or `CLAUDE.md` from that directory. Context files from other directories are still concatenated.
+If a directory contains `AGENTS.override.md`, Theta loads it instead of `AGENTS.md` or `CLAUDE.md` from that directory. Context files from other directories are still concatenated.
 
 Use for project instructions (`AGENTS.md`/`CLAUDE.md`), conventions, common commands. All matching files are concatenated.
 
@@ -333,7 +305,7 @@ Disable context file loading with `--no-context-files` (or `-nc`).
 
 ### System Prompt
 
-Replace the default system prompt with `.pi/SYSTEM.md` (project) or `~/.pi/agent/SYSTEM.md` (global). Append without replacing via `APPEND_SYSTEM.md`.
+Replace the default system prompt with `.theta/SYSTEM.md` (project) or `~/.theta/agent/SYSTEM.md` (global). Append without replacing via `APPEND_SYSTEM.md`.
 
 ---
 
@@ -344,19 +316,19 @@ Replace the default system prompt with `.pi/SYSTEM.md` (project) or `~/.pi/agent
 Reusable prompts as Markdown files. Type `/name` to expand.
 
 ```markdown
-<!-- ~/.pi/agent/prompts/review.md -->
+<!-- ~/.theta/agent/prompts/review.md -->
 Review this code for bugs, security issues, and performance problems.
 Focus on: {{focus}}
 ```
 
-Place in `~/.pi/agent/prompts/`, `.pi/prompts/`, or a [pi package](#pi-packages) to share with others. See [docs/prompt-templates.md](docs/prompt-templates.md).
+Place in `~/.theta/agent/prompts/`, `.theta/prompts/`, or a [theta package](#theta-packages) to share with others. See [docs/prompt-templates.md](docs/prompt-templates.md).
 
 ### Skills
 
 On-demand capability packages following the [Agent Skills standard](https://agentskills.io). Invoke via `/skill:name` or let the agent load them automatically.
 
 ```markdown
-<!-- ~/.pi/agent/skills/my-skill/SKILL.md -->
+<!-- ~/.theta/agent/skills/my-skill/SKILL.md -->
 # My Skill
 Use this skill when the user asks about X.
 
@@ -365,23 +337,23 @@ Use this skill when the user asks about X.
 2. Then that
 ```
 
-Place in `~/.pi/agent/skills/`, `~/.agents/skills/`, `.pi/skills/`, or `.agents/skills/` (from `cwd` up through parent directories) or a [pi package](#pi-packages) to share with others. See [docs/skills.md](docs/skills.md).
+Place in `~/.theta/agent/skills/`, `~/.agents/skills/`, `.theta/skills/`, or `.agents/skills/` (from `cwd` up through parent directories) or a [theta package](#theta-packages) to share with others. See [docs/skills.md](docs/skills.md).
 
 ### Extensions
 
 <p align="center"><img src="docs/images/doom-extension.png" alt="Doom Extension" width="600"></p>
 
-TypeScript modules that extend pi with custom tools, commands, keyboard shortcuts, event handlers, and UI components.
+TypeScript modules that extend theta with custom tools, commands, keyboard shortcuts, event handlers, and UI components.
 
 ```typescript
-export default function (pi: ExtensionAPI) {
-  pi.registerTool({ name: "deploy", ... });
-  pi.registerCommand("stats", { ... });
-  pi.on("tool_call", async (event, ctx) => { ... });
+export default function (theta: ExtensionAPI) {
+  theta.registerTool({ name: "deploy", ... });
+  theta.registerCommand("stats", { ... });
+  theta.on("tool_call", async (event, ctx) => { ... });
 }
 ```
 
-The default export can also be `async`. pi waits for async extension factories before startup continues, which is useful for one-time initialization such as fetching remote model lists before calling `pi.registerProvider()`.
+The default export can also be `async`. theta waits for async extension factories before startup continues, which is useful for one-time initialization such as fetching remote model lists before calling `theta.registerProvider()`.
 
 **What's possible:**
 - Custom tools (or replace built-in tools entirely)
@@ -393,57 +365,57 @@ The default export can also be `async`. pi waits for async extension factories b
 - Git checkpointing and auto-commit
 - SSH and sandbox execution
 - MCP server integration
-- Make pi look like Claude Code
+- Make theta look like Claude Code
 - Games while waiting (yes, Doom runs)
 - ...anything you can dream up
 
-Place in `~/.pi/agent/extensions/`, `.pi/extensions/`, or a [pi package](#pi-packages) to share with others. See [docs/extensions.md](docs/extensions.md) and [examples/extensions/](examples/extensions/).
+Place in `~/.theta/agent/extensions/`, `.theta/extensions/`, or a [theta package](#theta-packages) to share with others. See [docs/extensions.md](docs/extensions.md) and [examples/extensions/](examples/extensions/).
 
 ### Themes
 
-Built-in: `dark`, `light`. Themes hot-reload: modify the active theme file and pi immediately applies changes.
+Built-in: `dark`, `light`. Themes hot-reload: modify the active theme file and theta immediately applies changes.
 
-Place in `~/.pi/agent/themes/`, `.pi/themes/`, or a [pi package](#pi-packages) to share with others. See [docs/themes.md](docs/themes.md).
+Place in `~/.theta/agent/themes/`, `.theta/themes/`, or a [theta package](#theta-packages) to share with others. See [docs/themes.md](docs/themes.md).
 
-### Pi Packages
+### Theta Packages
 
-Bundle and share extensions, skills, prompts, and themes via npm or git. Find packages on [npmjs.com](https://www.npmjs.com/search?q=keywords%3Api-package) or [Discord](https://discord.com/channels/1456806362351669492/1457744485428629628).
+Bundle and share extensions, skills, prompts, and themes via npm or git.
 
-> **Security:** Pi packages run with full system access. Extensions execute arbitrary code, and skills can instruct the model to perform any action including running executables. Review source code before installing third-party packages.
+> **Security:** Theta packages run with full system access. Extensions execute arbitrary code, and skills can instruct the model to perform any action including running executables. Review source code before installing third-party packages.
 
 ```bash
-pi install npm:@foo/pi-tools
-pi install npm:@foo/pi-tools@1.2.3      # pinned version
-pi install git:github.com/user/repo
-pi install git:github.com/user/repo@v1  # tag or commit
-pi install git:git@github.com:user/repo
-pi install git:git@github.com:user/repo@v1  # tag or commit
-pi install https://github.com/user/repo
-pi install https://github.com/user/repo@v1      # tag or commit
-pi install ssh://git@github.com/user/repo
-pi install ssh://git@github.com/user/repo@v1    # tag or commit
-pi remove npm:@foo/pi-tools
-pi uninstall npm:@foo/pi-tools          # alias for remove
-pi list
-pi update                               # update pi only
-pi update --all                         # update pi and packages
-pi update --extensions                  # update packages only
-pi update --models                      # refresh model catalogs only
-pi update --self                        # update pi only
-pi update --self --force                # reinstall pi even if current
-pi update npm:@foo/pi-tools             # update one package
-pi config                               # enable/disable extensions, skills, prompts, themes
+theta install npm:@foo/theta-tools
+theta install npm:@foo/theta-tools@1.2.3      # pinned version
+theta install git:github.com/user/repo
+theta install git:github.com/user/repo@v1  # tag or commit
+theta install git:git@github.com:user/repo
+theta install git:git@github.com:user/repo@v1  # tag or commit
+theta install https://github.com/user/repo
+theta install https://github.com/user/repo@v1      # tag or commit
+theta install ssh://git@github.com/user/repo
+theta install ssh://git@github.com/user/repo@v1    # tag or commit
+theta remove npm:@foo/theta-tools
+theta uninstall npm:@foo/theta-tools          # alias for remove
+theta list
+theta update                               # update theta only
+theta update --all                         # update theta and packages
+theta update --extensions                  # update packages only
+theta update --models                      # refresh model catalogs only
+theta update --self                        # update theta only
+theta update --self --force                # reinstall theta even if current
+theta update npm:@foo/theta-tools             # update one package
+theta config                               # enable/disable extensions, skills, prompts, themes
 ```
 
-Packages install to `~/.pi/agent/git/` (git) or `~/.pi/agent/npm/` (npm). Use `-l` for project-local installs (`.pi/git/`, `.pi/npm/`). Git `@ref` values are pinned tags or commits; pinned packages are skipped by `pi update --extensions` and `pi update --all`, so use `pi install git:host/user/repo@new-ref` to move an existing package to a new ref. Git packages install dependencies with `npm install --omit=dev` by default, so runtime deps must be listed under `dependencies`; when `npmCommand` is configured, git packages use plain `install` for compatibility with wrappers. If you use a Node version manager and want package installs to reuse a stable npm context, set `npmCommand` in `settings.json`, for example `["mise", "exec", "node@20", "--", "npm"]`.
+Packages install to `~/.theta/agent/git/` (git) or `~/.theta/agent/npm/` (npm). Use `-l` for project-local installs (`.theta/git/`, `.theta/npm/`). Git `@ref` values are pinned tags or commits; pinned packages are skipped by `theta update --extensions` and `theta update --all`, so use `theta install git:host/user/repo@new-ref` to move an existing package to a new ref. Git packages install dependencies with `npm install --omit=dev` by default, so runtime deps must be listed under `dependencies`; when `npmCommand` is configured, git packages use plain `install` for compatibility with wrappers. If you use a Node version manager and want package installs to reuse a stable npm context, set `npmCommand` in `settings.json`, for example `["mise", "exec", "node@20", "--", "npm"]`.
 
-Create a package by adding a `pi` key to `package.json`:
+Create a package by adding a `theta` key to `package.json`:
 
 ```json
 {
-  "name": "my-pi-package",
-  "keywords": ["pi-package"],
-  "pi": {
+  "name": "my-theta-package",
+  "keywords": ["theta-package"],
+  "theta": {
     "extensions": ["./extensions"],
     "skills": ["./skills"],
     "prompts": ["./prompts"],
@@ -452,7 +424,7 @@ Create a package by adding a `pi` key to `package.json`:
 }
 ```
 
-Without a `pi` manifest, pi auto-discovers from conventional directories (`extensions/`, `skills/`, `prompts/`, `themes/`).
+Without a `theta` manifest, theta auto-discovers from conventional directories (`extensions/`, `skills/`, `prompts/`, `themes/`).
 
 See [docs/packages.md](docs/packages.md).
 
@@ -463,7 +435,7 @@ See [docs/packages.md](docs/packages.md).
 ### SDK
 
 ```typescript
-import { createAgentSession, ModelRuntime, SessionManager } from "@earendil-works/pi-coding-agent";
+import { createAgentSession, ModelRuntime, SessionManager } from "@theta/coding-agent";
 
 const modelRuntime = await ModelRuntime.create();
 const { session } = await createAgentSession({
@@ -483,7 +455,7 @@ See [docs/sdk.md](docs/sdk.md) and [examples/sdk/](examples/sdk/).
 For non-Node.js integrations, use RPC mode over stdin/stdout:
 
 ```bash
-pi --mode rpc
+theta --mode rpc
 ```
 
 RPC mode uses strict LF-delimited JSONL framing. Clients must split records on `\n` only. Do not use generic line readers like Node `readline`, which also split on Unicode separators inside JSON payloads.
@@ -494,11 +466,11 @@ See [docs/rpc.md](docs/rpc.md) for the protocol.
 
 ## Philosophy
 
-Pi is aggressively extensible so it doesn't have to dictate your workflow. Features that other tools bake in can be built with [extensions](#extensions), [skills](#skills), or installed from third-party [pi packages](#pi-packages). This keeps the core minimal while letting you shape pi to fit how you work.
+Theta is aggressively extensible so it doesn't have to dictate your workflow. Features that other tools bake in can be built with [extensions](#extensions), [skills](#skills), or installed from third-party [theta packages](#theta-packages). This keeps the core minimal while letting you shape theta to fit how you work.
 
 **No MCP.** Build CLI tools with READMEs (see [Skills](#skills)), or build an extension that adds MCP support. [Why?](https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/)
 
-**No sub-agents.** There's many ways to do this. Spawn pi instances via tmux, or build your own with [extensions](#extensions), or install a package that does it your way.
+**No sub-agents.** There's many ways to do this. Spawn theta instances via tmux, or build your own with [extensions](#extensions), or install a package that does it your way.
 
 **No permission popups.** Run in a container, or build your own confirmation flow with [extensions](#extensions) inline with your environment and security requirements.
 
@@ -508,34 +480,34 @@ Pi is aggressively extensible so it doesn't have to dictate your workflow. Featu
 
 **No background bash.** Use tmux. Full observability, direct interaction.
 
-Read the [blog post](https://mariozechner.at/posts/2025-11-30-pi-coding-agent/) for the full rationale.
+Read the [blog post](https://mariozechner.at/posts/2025-11-30-theta-coding-agent/) for the full rationale.
 
 ---
 
 ## CLI Reference
 
 ```bash
-pi [options] [--] [@files...] [messages...]
+theta [options] [--] [@files...] [messages...]
 ```
 
 ### Package Commands
 
 ```bash
-pi install <source> [-l]     # Install package, -l for project-local
-pi remove <source> [-l]      # Remove package
-pi uninstall <source> [-l]   # Alias for remove
-pi update [source|self|pi]   # Update pi only, or one package source
-pi update --all              # Update pi and packages
-pi update --extensions       # Update packages only
-pi update --models           # Refresh model catalogs only
-pi update --self             # Update pi only
-pi update --self --force     # Reinstall pi even if current
-pi update --extension <src>  # Update one package
-pi list                      # List installed packages
-pi config                    # Enable/disable package resources
+theta install <source> [-l]     # Install package, -l for project-local
+theta remove <source> [-l]      # Remove package
+theta uninstall <source> [-l]   # Alias for remove
+theta update [source|self|theta]   # Update theta only, or one package source
+theta update --all              # Update theta and packages
+theta update --extensions       # Update packages only
+theta update --models           # Refresh model catalogs only
+theta update --self             # Update theta only
+theta update --self --force     # Reinstall theta even if current
+theta update --extension <src>  # Update one package
+theta list                      # List installed packages
+theta config                    # Enable/disable package resources
 ```
 
-`pi config` and project package commands accept `--approve`/`--no-approve` to trust or ignore project-local settings for one command. `pi update` never prompts for project trust.
+`theta config` and project package commands accept `--approve`/`--no-approve` to trust or ignore project-local settings for one command. `theta update` never prompts for project trust.
 
 ### Modes
 
@@ -547,10 +519,10 @@ pi config                    # Enable/disable package resources
 | `--mode rpc` | RPC mode for process integration (see [docs/rpc.md](docs/rpc.md)) |
 | `--export <in> [out]` | Export session to HTML |
 
-In print mode, pi also reads piped stdin and merges it into the initial prompt:
+In print mode, theta also reads piped stdin and merges it into the initial prompt:
 
 ```bash
-cat README.md | pi -p "Summarize this text"
+cat README.md | theta -p "Summarize this text"
 ```
 
 ### Model Options
@@ -623,62 +595,62 @@ Combine `--no-*` with explicit flags to load exactly what you need, ignoring set
 Prefix files with `@` to include in the message:
 
 ```bash
-pi @prompt.md "Answer this"
-pi -p @screenshot.png "What's in this image?"
-pi @code.ts @test.ts "Review these files"
+theta @prompt.md "Answer this"
+theta -p @screenshot.png "What's in this image?"
+theta @code.ts @test.ts "Review these files"
 ```
 
 ### Examples
 
 ```bash
 # Interactive with initial prompt
-pi "List all .ts files in src/"
+theta "List all .ts files in src/"
 
 # Non-interactive
-pi -p "Summarize this codebase"
+theta -p "Summarize this codebase"
 
 # Prompt beginning with a dash
-pi -p -- "- Summarize these points"
+theta -p -- "- Summarize these points"
 
 # Non-interactive with piped stdin
-cat README.md | pi -p "Summarize this text"
+cat README.md | theta -p "Summarize this text"
 
 # Named one-shot session
-pi --name "release audit" -p "Audit this repository"
+theta --name "release audit" -p "Audit this repository"
 
 # Different model
-pi --provider openai --model gpt-4o "Help me refactor"
+theta --provider openai --model gpt-4o "Help me refactor"
 
 # Model with provider prefix (no --provider needed)
-pi --model openai/gpt-4o "Help me refactor"
+theta --model openai/gpt-4o "Help me refactor"
 
 # Model with thinking level shorthand
-pi --model sonnet:high "Solve this complex problem"
+theta --model sonnet:high "Solve this complex problem"
 
 # Limit model cycling
-pi --models "claude-*,gpt-4o"
+theta --models "claude-*,gpt-4o"
 
 # Read-only mode
-pi --tools read,grep,find,ls -p "Review the code"
+theta --tools read,grep,find,ls -p "Review the code"
 
 # Disable one extension or built-in tool while keeping the rest available
-pi --exclude-tools ask_question
+theta --exclude-tools ask_question
 
 # High thinking level
-pi --thinking high "Solve this complex problem"
+theta --thinking high "Solve this complex problem"
 ```
 
 ### Environment Variables
 
 | Variable | Description |
 |----------|-------------|
-| `AI_AGENT` | Set to `pi` by the CLI and RPC entry points so generic tooling can attribute child processes to Pi |
-| `PI_CODING_AGENT` | Set to `true` by the CLI and RPC entry points so child processes can detect that they run inside Pi |
-| `PI_CODING_AGENT_DIR` | Override config directory (default: `~/.pi/agent`) |
-| `PI_CODING_AGENT_SESSION_DIR` | Override session storage directory (overridden by `--session-dir`) |
+| `AI_AGENT` | Set to `theta` by the CLI and RPC entry points so generic tooling can attribute child processes to Theta |
+| `PI_CODING_AGENT` | Set to `true` by the CLI and RPC entry points so child processes can detect that they run inside Theta |
+| `THETA_CODING_AGENT_DIR` | Override config directory (default: `~/.theta/agent`) |
+| `THETA_CODING_AGENT_SESSION_DIR` | Override session storage directory (overridden by `--session-dir`) |
 | `PI_PACKAGE_DIR` | Override package directory (useful for Nix/Guix where store paths tokenize poorly) |
 | `PI_OFFLINE` | Disable startup network operations, including update checks, package update checks, and install/update telemetry |
-| `PI_SKIP_VERSION_CHECK` | Skip the Pi version update check at startup. This prevents the `pi.dev` latest-version request |
+| `PI_SKIP_VERSION_CHECK` | Skip the Theta version update check at startup. This prevents the `theta.local` latest-version request |
 | `PI_TELEMETRY` | Override install/update telemetry and provider attribution headers. Use `1`/`true`/`yes` to enable or `0`/`false`/`no` to disable. This does not disable update checks |
 | `PI_CACHE_RETENTION` | Set to `long` for extended prompt cache (Anthropic: 1h, OpenAI: 24h) |
 | `VISUAL`, `EDITOR` | Fallback external editor for Ctrl+G when `externalEditor` is unset; defaults to Notepad on Windows and `nano` elsewhere |
@@ -703,16 +675,11 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines and [docs/developmen
 
 ## License
 
-MIT
+See [LICENSE](../../LICENSE) in the repository root.
 
 ## See Also
 
-- [@earendil-works/pi-ai](https://www.npmjs.com/package/@earendil-works/pi-ai): Core LLM toolkit
-- [@earendil-works/pi-agent-core](https://www.npmjs.com/package/@earendil-works/pi-agent-core): Agent framework
-- [@earendil-works/pi-tui](https://www.npmjs.com/package/@earendil-works/pi-tui): Terminal UI components
+- [@theta/ai](../ai): Core LLM toolkit
+- [@theta/agent-core](../agent): Agent framework
+- [@theta/tui](../tui): Terminal UI components
 
-<p align="center">
-  <a href="https://pi.dev">pi.dev</a> domain graciously donated by
-  <br /><br />
-  <a href="https://exe.dev"><img src="docs/images/exy.png" alt="Exy mascot" width="48" /><br />exe.dev</a>
-</p>

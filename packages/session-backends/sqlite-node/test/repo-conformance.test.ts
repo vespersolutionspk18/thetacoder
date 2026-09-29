@@ -1,10 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-	type ConformanceCase,
-	createSessionRepoConformance,
-} from "@earendil-works/pi-agent-core/harness/session/testing";
+import { type ConformanceCase, createSessionRepoConformance } from "@theta/agent-core/harness/session/testing";
 import { describe, it } from "vitest";
 import { createNodeSqliteFactory, SqliteSessionRepo } from "../src/index.ts";
 
@@ -26,7 +23,7 @@ let currentDirectory: string | undefined;
 let currentSharedDirectory: string | undefined;
 
 async function createConformanceRepo() {
-	currentDirectory = await mkdtemp(join(tmpdir(), "pi-sqlite-session-repo-conformance-"));
+	currentDirectory = await mkdtemp(join(tmpdir(), "theta-sqlite-session-repo-conformance-"));
 	return new SqliteSessionRepo({
 		directory: currentDirectory,
 		databaseFactory: createNodeSqliteFactory(),
@@ -35,7 +32,7 @@ async function createConformanceRepo() {
 }
 
 async function createSharedContainerConformanceRepo() {
-	currentSharedDirectory = await mkdtemp(join(tmpdir(), "pi-sqlite-session-repo-shared-conformance-"));
+	currentSharedDirectory = await mkdtemp(join(tmpdir(), "theta-sqlite-session-repo-shared-conformance-"));
 	return new SqliteSessionRepo({
 		directory: currentSharedDirectory,
 		databasePath: join(currentSharedDirectory, "sessions.sqlite"),
@@ -65,3 +62,4 @@ registerConformance(
 	"SqliteSessionRepo shared-container conformance",
 	createSessionRepoConformance(createSharedContainerConformanceRepo, cleanupSharedContainerConformanceRepo),
 );
+

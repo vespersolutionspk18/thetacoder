@@ -34,3 +34,4 @@ describe("MemoryStorage", () => {
 		await storage.close(BACKGROUND_CONTEXT);
 	});
 });
+

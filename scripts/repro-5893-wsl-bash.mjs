@@ -53,3 +53,4 @@ await runCase(
 );
 
 console.log("issue #5893 WSL bash repro passed");
+

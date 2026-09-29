@@ -56,3 +56,4 @@ describe("UserMessageComponent", () => {
 		expect(stripAnsi(component.render(80).join("\n"))).toContain("Message after");
 	});
 });
+

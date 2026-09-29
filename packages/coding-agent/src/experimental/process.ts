@@ -37,7 +37,7 @@ export interface InternalProcessSpawnOptions {
 	readonly env?: NodeJS.ProcessEnv;
 }
 
-/** Spawn a detached Pi-owned process consistently across Node and compiled Bun. */
+/** Spawn a detached Theta-owned process consistently across Node and compiled Bun. */
 export function spawnInternalProcess(
 	role: InternalProcessRole,
 	args: readonly string[],
@@ -103,3 +103,4 @@ export function encodeControlLine(message: unknown): string {
 	if (Buffer.byteLength(line) > MAX_CONTROL_LINE_BYTES) throw new Error("Internal control message is too large");
 	return line;
 }
+

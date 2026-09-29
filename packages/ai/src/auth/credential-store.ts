@@ -65,3 +65,4 @@ export class InMemoryCredentialStore implements CredentialStore {
 		);
 	}
 }
+

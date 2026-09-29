@@ -56,7 +56,7 @@ describe("git-merge-and-resolve example", () => {
 	});
 
 	function createTempDir() {
-		tempDir = mkdtempSync(join(tmpdir(), "pi-merge-test-"));
+		tempDir = mkdtempSync(join(tmpdir(), "theta-merge-test-"));
 		return tempDir;
 	}
 
@@ -204,3 +204,4 @@ describe("git-merge-and-resolve example", () => {
 		expect(sendUserMessage).not.toHaveBeenCalled();
 	});
 });
+

@@ -107,3 +107,4 @@ export function oauthErrorHtml(message: string, details?: string): string {
 		details,
 	});
 }
+

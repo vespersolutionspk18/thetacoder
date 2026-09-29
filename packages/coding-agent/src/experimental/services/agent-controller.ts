@@ -1,4 +1,4 @@
-import { type Context, defineService } from "@earendil-works/chord";
+import { type Context, defineService } from "@theta/chord";
 
 export interface AgentPromptImage {
 	type: "image";
@@ -51,4 +51,5 @@ export interface AgentController {
 	navigate(request: AgentNavigationRequest, context: Context): Promise<AgentOperationResponse>;
 }
 
-export const AgentController = defineService<AgentController>("pi.agent-controller");
+export const AgentController = defineService<AgentController>("theta.agent-controller");
+

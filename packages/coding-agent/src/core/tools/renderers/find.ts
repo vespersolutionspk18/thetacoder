@@ -6,7 +6,7 @@
  * definition, so the tool's public shape is unchanged.
  */
 
-import { Text } from "@earendil-works/pi-tui";
+import { Text } from "@theta/tui";
 import { keyHint } from "../../../modes/interactive/components/keybinding-hints.ts";
 import type { Theme } from "../../../modes/interactive/theme/theme.ts";
 import type { ToolDefinition, ToolRenderResultOptions } from "../../extensions/types.ts";
@@ -75,3 +75,4 @@ export const findRenderers: Pick<ToolDefinition<any, any>, "renderCall" | "rende
 		return text;
 	},
 };
+

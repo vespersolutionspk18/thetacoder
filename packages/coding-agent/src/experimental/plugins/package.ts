@@ -1,13 +1,9 @@
 import { createHash } from "node:crypto";
 import { readFile, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
-import { bundleFacetPackage } from "@earendil-works/chord/bundler";
-import {
-	FACET_BUNDLE_MANIFEST_FILE,
-	type FacetBundleArtifact,
-	readFacetBundleArtifact,
-} from "@earendil-works/chord/node";
-import type { ServerId } from "@earendil-works/pi-protocol";
+import { bundleFacetPackage } from "@theta/chord/bundler";
+import { FACET_BUNDLE_MANIFEST_FILE, type FacetBundleArtifact, readFacetBundleArtifact } from "@theta/chord/node";
+import type { ServerId } from "@theta/protocol";
 
 const PLUGIN_PACKAGE_PROFILE_VERSION = 1;
 const DEFAULT_PLUGIN_FACETS = Object.freeze({ session: "src/session.ts", tui: "src/tui.ts" });
@@ -169,3 +165,4 @@ function pluginBuildDirectoryName(packagePath: string): string {
 	const hash = createHash("sha256").update(packagePath).digest("hex").slice(0, 12);
 	return `${label}-${hash}`;
 }
+

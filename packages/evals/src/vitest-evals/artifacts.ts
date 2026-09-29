@@ -12,8 +12,8 @@ import type { HarnessRun } from "vitest-evals/harness";
 
 export const PI_SESSION_SNAPSHOT_ARTIFACT = "piSessionJsonl";
 
-const evalSessionArtifactKey = Symbol("pi-evals-session-artifact");
-const evalSourceArtifactKey = Symbol("pi-evals-source-artifact");
+const evalSessionArtifactKey = Symbol("theta-evals-session-artifact");
+const evalSourceArtifactKey = Symbol("theta-evals-source-artifact");
 
 interface PiSessionAttachment extends TestAttachment {
 	name: "session.jsonl";
@@ -30,13 +30,13 @@ export interface SourceAttachment extends TestAttachment {
 }
 
 interface PiSessionArtifact extends TestArtifactBase {
-	type: "@earendil-works/pi-evals:session";
+	type: "@theta/evals:session";
 	runId: string;
 	attachments: [PiSessionAttachment] | [];
 }
 
 interface SourceArtifact extends TestArtifactBase {
-	type: "@earendil-works/pi-evals:source";
+	type: "@theta/evals:source";
 	runId: string;
 	attachments: [SourceAttachment] | [];
 }
@@ -56,10 +56,10 @@ export async function recordEvalSessionArtifact(
 	const session = run.artifacts?.[PI_SESSION_SNAPSHOT_ARTIFACT];
 	if (session === undefined) return;
 	if (typeof runId !== "string" || typeof session !== "string") {
-		throw new TypeError("Pi eval session artifact metadata is invalid.");
+		throw new TypeError("Theta eval session artifact metadata is invalid.");
 	}
 	await recordArtifact(task, {
-		type: "@earendil-works/pi-evals:session",
+		type: "@theta/evals:session",
 		runId,
 		attachments: [
 			{
@@ -78,7 +78,7 @@ export async function recordEvalSourceArtifact(
 	attachment: SourceAttachment,
 ): Promise<void> {
 	await recordArtifact(task, {
-		type: "@earendil-works/pi-evals:source",
+		type: "@theta/evals:source",
 		runId,
 		attachments: [attachment],
 	});
@@ -92,13 +92,12 @@ export async function persistEvalArtifactReferences(
 	const references: Array<{ name: string; path: string }> = [];
 	for (const artifact of artifacts) {
 		if (
-			(artifact.type !== "@earendil-works/pi-evals:session" &&
-				artifact.type !== "@earendil-works/pi-evals:source") ||
+			(artifact.type !== "@theta/evals:session" && artifact.type !== "@theta/evals:source") ||
 			artifact.runId !== runId
 		) {
 			continue;
 		}
-		const category = artifact.type === "@earendil-works/pi-evals:session" ? "sessions" : "sources";
+		const category = artifact.type === "@theta/evals:session" ? "sessions" : "sources";
 		for (const attachment of artifact.attachments) {
 			const name = basename(attachment.name);
 			if (name !== attachment.name) throw new TypeError(`Invalid eval artifact name: ${attachment.name}`);
@@ -111,3 +110,4 @@ export async function persistEvalArtifactReferences(
 	}
 	return references;
 }
+

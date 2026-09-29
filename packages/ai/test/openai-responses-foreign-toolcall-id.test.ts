@@ -64,3 +64,4 @@ describe("OpenAI Responses foreign tool call ID normalization", () => {
 		expect(functionCall.id).toMatch(/^fc_[A-Za-z0-9]+$/);
 	});
 });
+

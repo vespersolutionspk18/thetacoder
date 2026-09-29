@@ -28,7 +28,7 @@ The solution separates two orders:
 1. **outcome durability:** actual completion order;
 2. **entry materialization:** assistant source order.
 
-A complete finalized result becomes durable immediately in `pi.pending.entry`; the call becomes `outcome_ready`; placement happens later when every earlier source position is complete or ready.
+A complete finalized result becomes durable immediately in `theta.pending.entry`; the call becomes `outcome_ready`; placement happens later when every earlier source position is complete or ready.
 
 ## Goals
 
@@ -89,7 +89,7 @@ export const operationToolMemo = (
   invocationId: string,
   memoName: string,
 ) => value<JsonValue>(
-  "pi.op.tool_memo",
+  "theta.op.tool_memo",
   `${operationId}:${invocationId}:${memoName}`,
 );
 ```
@@ -107,7 +107,7 @@ export const pendingToolOutput = (
   operationId: string,
   invocationId: string,
 ) => value<AgentToolResult<unknown>>(
-  "pi.pending.tool_output",
+  "theta.pending.tool_output",
   `${operationId}:${invocationId}`,
 );
 ```
@@ -230,7 +230,7 @@ Unchanged effect sandwich:
 planned
 → prepare arguments, run before_tool, validate replacements
 → TX[
-     set pi.op.tool_args,
+     set theta.op.tool_args,
      set call = effect_pending(replay)
    ]
 → post-commit tool_start
@@ -249,7 +249,7 @@ TX[
 ]
 ```
 
-The mutation verifies the same operation, turn, source position, and invocation remain `effect_pending`. It does not rewrite `pi.op.state`. A late checkpoint after settlement returns without committing.
+The mutation verifies the same operation, turn, source position, and invocation remain `effect_pending`. It does not rewrite `theta.op.state`. A late checkpoint after settlement returns without committing.
 
 The tool must checkpoint bounded complete snapshots, not growing unbounded values. Bash uses the same bounded `ShellCaptureProgress` snapshot it already sends live. Clients may render and locally retain live updates newer than the durable checkpoint, but those updates are explicitly process-local.
 
@@ -603,7 +603,7 @@ Instrumented-storage tests assert `intent commit → tool_start → tool_update*
 
 1. `invocationId` equals the reserved result entry ID and is stable across safe replay.
 2. A call in `outcome_ready` or `completed` never executes again.
-3. Every `outcome_ready` call has exactly one complete matching `pi.pending.entry` value.
+3. Every `outcome_ready` call has exactly one complete matching `theta.pending.entry` value.
 4. Completed calls form a source-ordered prefix.
 5. Only source-ordered materialization extends that prefix.
 6. Parallel calls after the completed prefix may mix planned, effect-pending, and outcome-ready states.
@@ -696,9 +696,10 @@ Expected runtime areas:
 Concrete built-in address constructors in `session/values.ts`:
 
 ```text
-operationToolMemo(operationId, invocationId, name) → value("pi.op.tool_memo", ...)
-pendingToolOutput(operationId, invocationId)      → value("pi.pending.tool_output", ...)
-pendingEntry(resultEntryId)                       → value("pi.pending.entry", ...)
+operationToolMemo(operationId, invocationId, name) → value("theta.op.tool_memo", ...)
+pendingToolOutput(operationId, invocationId)      → value("theta.pending.tool_output", ...)
+pendingEntry(resultEntryId)                       → value("theta.pending.entry", ...)
 ```
 
 Implement `outcome_ready` and invocation memos before progress checkpoints. The state solves incorrect parallel replay by itself; checkpoints improve reconnect observation and unsafe interruption diagnostics without becoming completion authority.
+

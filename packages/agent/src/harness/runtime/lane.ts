@@ -5,7 +5,7 @@ import {
 	type Models,
 	reduceAssistantMessageFrames,
 	type Usage,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import type { AgentMessage, ThinkingLevel } from "../../types.ts";
 import type {
 	AbortRequestResult,
@@ -2010,3 +2010,4 @@ export class Lane<TContext extends object | undefined> implements AgentLane {
 		if (this.closedError !== undefined) throw this.closedError;
 	}
 }
+

@@ -46,3 +46,4 @@ import { createCompartment } from "./membrane.ts";
   }
   iso.dispose();
 }
+

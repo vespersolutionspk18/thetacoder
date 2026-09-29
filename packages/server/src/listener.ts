@@ -6,3 +6,4 @@ export interface ServerListener {
 	start(accept: ByteConnectionAcceptor): Promise<void>;
 	close(): Promise<void>;
 }
+

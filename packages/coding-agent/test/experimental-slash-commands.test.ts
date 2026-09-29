@@ -1,4 +1,4 @@
-import { createFacetHost, defineFacet } from "@earendil-works/chord";
+import { createFacetHost, defineFacet } from "@theta/chord";
 import { describe, expect, test, vi } from "vitest";
 import { SlashCommands } from "../src/experimental/services/slash-commands.ts";
 import {
@@ -94,3 +94,4 @@ describe("experimental slash command facets", () => {
 		expect(registry.list()).toEqual([]);
 	});
 });
+

@@ -1,7 +1,9 @@
 import { type Static, Type } from "typebox";
+import type { ToolOutcome } from "../../types.ts";
 import type { AgentHarnessTool, FileError } from "../types.ts";
 import {
 	applyEditsToNormalizedContent,
+	contentIdentity,
 	detectLineEnding,
 	type Edit,
 	generateDiffString,
@@ -32,6 +34,12 @@ const editSchema = Type.Object(
 			description:
 				"One or more targeted replacements. Each edit is matched against the original file, not incrementally. Do not include overlapping or nested edits. If two changes touch the same block or nearby lines, merge them into one edit instead.",
 		}),
+		expectedVersion: Type.Optional(
+			Type.String({
+				description:
+					"Content identity returned in details.contentIdentity from a prior read. If supplied and mismatched, the edit is rejected.",
+			}),
+		),
 	},
 	{},
 );
@@ -50,6 +58,14 @@ export interface EditToolDetails {
 	diff: string;
 	patch: string;
 	firstChangedLine?: number;
+	/**
+	 * Content identity of the resulting file content (the bytes actually
+	 * written; BOM-stripped, LF-normalized). Mirrors the normal-path edit
+	 * tool so consumers can record the change and verify freshness.
+	 */
+	contentIdentity?: string;
+	/** Structured outcome synthesized by the agent loop. */
+	outcome?: ToolOutcome;
 }
 
 function prepareEditArguments(input: unknown): EditToolInput {
@@ -101,6 +117,7 @@ export function createEditTool<TContext extends ExecutionToolContext = Execution
 		prepareArguments: prepareEditArguments,
 		async execute(_toolCallId, input, _onUpdate, { env }, _invocation, context) {
 			const { path, edits } = validateEditInput(input);
+			const expectedVersion = input.expectedVersion;
 			const absolutePath = await resolveToolPath(env, path, context);
 			return withFileMutationQueue(
 				env,
@@ -117,6 +134,16 @@ export function createEditTool<TContext extends ExecutionToolContext = Execution
 					if (!readResult.ok) throw editAccessError(path, readResult.error);
 					if (context.abortSignal?.aborted) throw new Error("Operation aborted");
 
+					// Optimistic-concurrency precheck: reject if the caller supplied a stale identity.
+					if (expectedVersion !== undefined) {
+						const currentVersion = await contentIdentity(readResult.value);
+						if (currentVersion !== expectedVersion) {
+							throw new Error(
+								"Stale observation: file was modified since expectedVersion was captured. Re-read the file and retry.",
+							);
+						}
+					}
+
 					const { bom, text: content } = stripBom(readResult.value);
 					const originalEnding = detectLineEnding(content);
 					const normalizedContent = normalizeToLF(content);
@@ -128,6 +155,10 @@ export function createEditTool<TContext extends ExecutionToolContext = Execution
 					if (!writeResult.ok) throw editAccessError(path, writeResult.error);
 					if (context.abortSignal?.aborted) throw new Error("Operation aborted");
 
+					// Identity of the resulting content (BOM-stripped, LF-normalized).
+					// Mirrors the normal-path edit tool so consumers that bridge results
+					// into task state can record the change via `recordChange`.
+					const contentIdentityValue = await contentIdentity(finalContent);
 					const diffResult = generateDiffString(baseContent, newContent);
 					return {
 						content: [{ type: "text", text: `Successfully replaced ${edits.length} block(s) in ${path}.` }],
@@ -135,6 +166,7 @@ export function createEditTool<TContext extends ExecutionToolContext = Execution
 							diff: diffResult.diff,
 							patch: generateUnifiedPatch(path, baseContent, newContent),
 							firstChangedLine: diffResult.firstChangedLine,
+							contentIdentity: contentIdentityValue,
 						},
 					};
 				},
@@ -143,3 +175,4 @@ export function createEditTool<TContext extends ExecutionToolContext = Execution
 		},
 	};
 }
+

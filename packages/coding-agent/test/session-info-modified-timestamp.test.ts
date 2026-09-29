@@ -47,7 +47,7 @@ describe("SessionInfo.modified", () => {
 	});
 
 	it("uses last user/assistant message timestamp instead of file mtime", async () => {
-		const filePath = join(tmpdir(), `pi-session-${Date.now()}-modified.jsonl`);
+		const filePath = join(tmpdir(), `theta-session-${Date.now()}-modified.jsonl`);
 		createSessionFile(filePath);
 
 		const before = await stat(filePath);
@@ -81,3 +81,4 @@ describe("SessionInfo.modified", () => {
 		expect(s!.modified.getTime()).not.toBe(before.mtime.getTime());
 	});
 });
+

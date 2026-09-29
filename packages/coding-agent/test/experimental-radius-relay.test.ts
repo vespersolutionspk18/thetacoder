@@ -1,5 +1,5 @@
-import type { Client } from "@earendil-works/pi-client";
-import type { Server } from "@earendil-works/pi-server";
+import type { Client } from "@theta/client";
+import type { Server } from "@theta/server";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { RadiusRelayAuthResolver } from "../src/experimental/radius-auth.ts";
 import {
@@ -284,3 +284,4 @@ describe("experimental Radius relay", () => {
 		await reconnect.dispose();
 	});
 });
+

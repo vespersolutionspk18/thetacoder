@@ -72,3 +72,4 @@ describe("compat legacy API fallback", () => {
 		expect(capturedApiKey).toBe("request-key");
 	});
 });
+

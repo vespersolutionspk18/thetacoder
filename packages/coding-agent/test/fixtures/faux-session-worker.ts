@@ -1,8 +1,8 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createStaticFacetLoader, defineFacet } from "@earendil-works/chord";
-import { AgentHarness, BACKGROUND_CONTEXT } from "@earendil-works/pi-agent-core";
-import { createModels, fauxAssistantMessage, fauxProvider } from "@earendil-works/pi-ai";
+import { AgentHarness, BACKGROUND_CONTEXT } from "@theta/agent-core";
+import { createModels, fauxAssistantMessage, fauxProvider } from "@theta/ai";
+import { createStaticFacetLoader, defineFacet } from "@theta/chord";
 import { consumeInternalProcessRole } from "../../src/experimental/process.ts";
 import { runSessionWorkerWithHarness } from "../../src/experimental/session-worker.ts";
 import { KeyedProbe } from "./keyed-service.ts";
@@ -67,3 +67,4 @@ function abortError(signal: AbortSignal): Error {
 	const reason: unknown = signal.reason;
 	return reason instanceof Error ? reason : new DOMException("The operation was aborted", "AbortError");
 }
+

@@ -325,3 +325,4 @@ export class AltScreenSearchComponent implements Component, Focusable {
 		];
 	}
 }
+

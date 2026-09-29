@@ -43,7 +43,7 @@ const powershellToolConfig: ShellToolConfig = {
 	prompt: "PS>",
 	promptSnippet: powershellToolSystemPromptContribution.snippet,
 	promptGuidelines: powershellToolSystemPromptContribution.guidelines,
-	tempFilePrefix: "pi-powershell",
+	tempFilePrefix: "theta-powershell",
 };
 
 export function createPowerShellToolDefinition(
@@ -65,3 +65,4 @@ export function createPowerShellTool(cwd: string, options?: PowerShellToolOption
 	});
 	return tool;
 }
+

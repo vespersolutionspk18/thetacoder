@@ -53,15 +53,15 @@ built, used, and durable. It simply is not what `message_update` carries.
 
 ## 3. Precedent
 
-pi already does wire-is-delta one layer down. `PiMessagesEvent` — the serialized form
-a pi-messages backend sends — has no `partial`:
+theta already does wire-is-delta one layer down. `PiMessagesEvent` — the serialized form
+a theta-messages backend sends — has no `partial`:
 
 ```ts
 | { type: "text_delta"; contentIndex: number; delta: string }
 | { type: "text_end"; contentIndex: number; content: string; contentSignature?: string }
 ```
 
-`pi-messages.ts` then rehydrates: it holds a local `partial`, mutates it per event
+`theta-messages.ts` then rehydrates: it holds a local `partial`, mutates it per event
 (`partial.content[i].text += event.delta`), and returns the in-process
 `AssistantMessageEvent` with `partial` attached.
 
@@ -79,7 +79,7 @@ continuing through the harness.
 The blast radius is small because `HarnessEvent` is not what most streaming consumers
 read. `AgentEvent` (`agent-loop.ts`) and `AgentSessionEvent` (`agent-session.ts`) are
 separate unions that happen to share the tag name and build their own
-`message_update` from the pi-ai event directly. They are out of scope here.
+`message_update` from the theta-ai event directly. They are out of scope here.
 
 Real consumers and producers of `HarnessEvent.message_update`:
 
@@ -113,11 +113,11 @@ recipe; that motivation is gone ([delta.md §8](../01-delta/delta.md#8-what-this
 needed — the whole-stream version becomes a loop over it — just for the simpler
 reason that the reducer folds one frame at a time.
 
-### 5.1 pi-ai frames stay at the pi-ai boundary; Chord ops cross replication boundaries
+### 5.1 theta-ai frames stay at the theta-ai boundary; Chord ops cross replication boundaries
 
-`AssistantMessageFrame` is pi-ai's semantic delta vocabulary (`text_delta`, `text_end`, …). [Delta tracking §6](../01-delta/delta.md#6-there-is-no-frame-type) defines no second frame wrapper: in-process replication carries `Op[]`, and a wire adapter carries encoded `WireOp[]`. Pi-ai frames stop at the fold; Chord ops cross the replication boundary.
+`AssistantMessageFrame` is theta-ai's semantic delta vocabulary (`text_delta`, `text_end`, …). [Delta tracking §6](../01-delta/delta.md#6-there-is-no-frame-type) defines no second frame wrapper: in-process replication carries `Op[]`, and a wire adapter carries encoded `WireOp[]`. Theta-ai frames stop at the fold; Chord ops cross the replication boundary.
 
-`AssistantMessageFrame` is pi-ai's own delta vocabulary and stays. What changes is
+`AssistantMessageFrame` is theta-ai's own delta vocabulary and stays. What changes is
 that it is no longer the durable unit or the replication unit.
 
 The harness folds frames into `LaneView` by plain mutation. Under the Chord tracker that yields:
@@ -225,3 +225,4 @@ Any correct listener already has the base, because `watch()` installs the subscr
 and captures the snapshot inside one `readLane` critical section, buffering until
 `start()`. But a listener that calls `on("message_update")` directly, without a watch,
 is no longer viable — worth knowing before committing.
+

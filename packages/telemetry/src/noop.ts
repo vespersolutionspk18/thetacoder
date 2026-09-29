@@ -18,3 +18,4 @@ Object.freeze(noopTelemetrySpan);
 
 /** Shared telemetry context used when an application does not provide one. */
 export const NOOP_TELEMETRY_CONTEXT: TelemetryContext = noopTelemetrySpan;
+

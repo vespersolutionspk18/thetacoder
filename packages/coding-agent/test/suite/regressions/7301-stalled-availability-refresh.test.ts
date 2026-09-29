@@ -1,4 +1,4 @@
-import type { Models } from "@earendil-works/pi-ai";
+import type { Models } from "@theta/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createHarness, type Harness } from "../harness.ts";
 
@@ -131,3 +131,4 @@ describe("issue #7301 stalled availability refresh", () => {
 		expect(runtime.getError()).toBeUndefined();
 	});
 });
+

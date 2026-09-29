@@ -394,3 +394,4 @@ function relativeEnvPath(root: string, path: string): string {
 		? normalizedPath.slice(normalizedRoot.length + 1)
 		: normalizedPath.replace(/^\/+/, "");
 }
+

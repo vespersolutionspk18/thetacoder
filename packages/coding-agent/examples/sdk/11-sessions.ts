@@ -4,7 +4,7 @@
  * Control session persistence: in-memory, new file, continue, or open specific.
  */
 
-import { createAgentSession, SessionManager } from "@earendil-works/pi-coding-agent";
+import { createAgentSession, SessionManager } from "@theta/coding-agent";
 
 // In-memory (no persistence)
 const { session: inMemory } = await createAgentSession({
@@ -50,3 +50,4 @@ if (sessions.length > 0) {
 // });
 // SessionManager.list(process.cwd(), customDir);
 // SessionManager.continueRecent(process.cwd(), customDir);
+

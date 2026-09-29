@@ -32,3 +32,4 @@ console.log(
 		externalBytes: after.external - before.external,
 	}),
 );
+

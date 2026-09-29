@@ -3,7 +3,7 @@
 This document specifies durable partial assistant messages for ordinary assistant generation and deferred-response polling. It builds on:
 
 - bound typed value/list addresses from `values.md`;
-- `AssistantMessageFrame`, `AssistantMessageFrameEncoder`, and `reduceAssistantMessageFrames()` from `@earendil-works/pi-ai`;
+- `AssistantMessageFrame`, `AssistantMessageFrameEncoder`, and `reduceAssistantMessageFrames()` from `@theta/ai`;
 - the assistant intent/effect/settlement state machine in `harness.md`.
 
 The design persists compact replayable stream frames without making them operation-state authority and without storing a growing full partial message on every update.
@@ -13,7 +13,7 @@ The design persists compact replayable stream frames without making them operati
 1. Reconstruct the latest committed partial assistant message after process loss.
 2. Preserve provider stream order without repeated full-snapshot write amplification.
 3. Avoid provider backpressure from storage commits.
-4. Reuse pi-ai's canonical frame conversion and reduction semantics.
+4. Reuse theta-ai's canonical frame conversion and reduction semantics.
 5. Preserve current public assistant event ordering.
 6. Keep operation `effect_pending` state authoritative for recovery.
 7. Delete all partial frames atomically with normal or synthetic response settlement.
@@ -37,7 +37,7 @@ export const pendingAssistantFrames = (
   operationId: string,
   responseEntryId: string,
 ) => list<AssistantMessageFrame>(
-  "pi.pending.assistant_frame",
+  "theta.pending.assistant_frame",
   `${operationId}:${responseEntryId}`,
 );
 ```
@@ -59,7 +59,7 @@ Each list element is one `AssistantMessageFrame`. The storage transaction's glob
 
 ## Frame contract
 
-Create one pi-ai encoder per provider stream and feed it every event in order:
+Create one theta-ai encoder per provider stream and feed it every event in order:
 
 ```ts
 const encoder = new AssistantMessageFrameEncoder();
@@ -76,7 +76,7 @@ const frame = encoder.encode(event);
 - text/thinking/tool end frames contain the authoritative completed block value;
 - completed tool-call arguments remain unvalidated against a tool schema.
 
-Do not define a second harness frame codec or reducer. Persistence stores the exported pi-ai value directly; hydration calls `reduceAssistantMessageFrames()`.
+Do not define a second harness frame codec or reducer. Persistence stores the exported theta-ai value directly; hydration calls `reduceAssistantMessageFrames()`.
 
 Provider event blocks may interleave. Encoding and reduction rely on `contentIndex`, never block contiguity. Text and ordinary thinking blocks must be empty when `*_start` is published and then append only through matching deltas until end; redacted thinking may be complete at start and emit no deltas. Streaming tool calls start with empty arguments and emit their complete raw JSON through deltas; a provider that starts with complete arguments must emit a cumulative delta prefix that parses to that snapshot at an event boundary before later argument deltas.
 
@@ -257,7 +257,7 @@ Authorized external finalization deletes the operation-owned frame-list address 
 
 Normal/synthetic response settlement should already delete its exact frame address. The operation terminal transaction also defensively constructs and deletes the current operation-owned frame address when state is assistant/deferred `effect_pending`.
 
-Idle forks never copy lists in the `pi.pending.assistant_frame` address family. Precise rewrites and migrations page frame lists and preserve element sequences when retaining them.
+Idle forks never copy lists in the `theta.pending.assistant_frame` address family. Precise rewrites and migrations page frame lists and preserve element sequences when retaining them.
 
 A migration changing `AssistantMessageFrame` shape must map every surviving element or explicitly delete the whole list and leave `effect_pending` recovery with no partial. It must never infer completion from legacy frames.
 
@@ -281,7 +281,7 @@ JSONL retains deleted frame bytes until snapshot compaction. Logical deletion is
 
 1. Scalar assistant/deferred state is the sole restart authority.
 2. One effect-pending response ID constructs exactly one assistant frame-list address.
-3. Every stored element is an exported pi-ai `AssistantMessageFrame`.
+3. Every stored element is an exported theta-ai `AssistantMessageFrame`.
 4. Terminal `done`/`error` events are never stored as frames.
 5. Frame order is a subsequence of provider event order; zero-frame covered events do not disturb order.
 6. Awaiting the latest frame-write promise at stream settlement implies all accepted appends completed.
@@ -353,3 +353,4 @@ Expected runtime areas:
 - instrumented writer and backend conformance tests.
 
 Implement bound typed value/list addresses first, then frame enqueue/settlement, then recovery/snapshots. Update `harness.md` with this complete lifecycle before implementing runtime assistant parity.
+

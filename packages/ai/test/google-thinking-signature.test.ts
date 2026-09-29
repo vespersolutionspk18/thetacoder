@@ -36,3 +36,4 @@ describe("Google thinking detection (thoughtSignature)", () => {
 		expect(updated).toBe("sig-2");
 	});
 });
+

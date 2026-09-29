@@ -202,7 +202,7 @@ function hasAnyApiKey(): boolean {
 }
 
 function dumpFailurePayload(params: { label: string; error: string; payload?: unknown; messages: Message[] }): void {
-	const filename = `/tmp/pi-handoff-${params.label}-${Date.now()}.json`;
+	const filename = `/tmp/theta-handoff-${params.label}-${Date.now()}.json`;
 	const body = {
 		label: params.label,
 		error: params.error,
@@ -520,3 +520,4 @@ describe.skipIf(!hasAnyApiKey())("Cross-Provider Handoff", () => {
 		600000,
 	);
 });
+

@@ -1,7 +1,7 @@
 import * as os from "node:os";
 import { pathToFileURL } from "node:url";
-import type { ImageContent, TextContent } from "@earendil-works/pi-ai";
-import { getCapabilities, getImageDimensions, hyperlink, imageFallback } from "@earendil-works/pi-tui";
+import type { ImageContent, TextContent } from "@theta/ai";
+import { getCapabilities, getImageDimensions, hyperlink, imageFallback } from "@theta/tui";
 import type { Theme } from "../../modes/interactive/theme/theme.ts";
 import { stripAnsi } from "../../utils/ansi.ts";
 import { resolvePath } from "../../utils/paths.ts";
@@ -83,3 +83,4 @@ export function renderToolPath(
 	if (!value) return theme.fg("toolOutput", "...");
 	return linkPath(theme.fg("accent", shortenPath(value)), value, cwd);
 }
+

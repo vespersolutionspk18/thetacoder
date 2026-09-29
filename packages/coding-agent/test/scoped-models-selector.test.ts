@@ -1,4 +1,4 @@
-import { setKeybindings } from "@earendil-works/pi-tui";
+import { setKeybindings } from "@theta/tui";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { KeybindingsManager } from "../src/core/keybindings.ts";
 import { ScopedModelsSelectorComponent } from "../src/modes/interactive/components/scoped-models-selector.ts";
@@ -124,3 +124,4 @@ describe("scoped models selector", () => {
 		expect(stripAnsi(selector.render(120).join("\n"))).toContain("all enabled");
 	});
 });
+

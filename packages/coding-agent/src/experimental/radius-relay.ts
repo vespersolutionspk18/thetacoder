@@ -1,11 +1,11 @@
-import type { ByteTransport, ByteTransportFactory, ByteTransportHandlers, Client } from "@earendil-works/pi-client";
-import { DEFAULT_MAX_FRAME_LENGTH, type ServerId } from "@earendil-works/pi-protocol";
-import type { Server } from "@earendil-works/pi-server";
+import type { ByteTransport, ByteTransportFactory, ByteTransportHandlers, Client } from "@theta/client";
+import { DEFAULT_MAX_FRAME_LENGTH, type ServerId } from "@theta/protocol";
+import type { Server } from "@theta/server";
 import { WebSocket } from "undici";
 import type { RadiusRelayAuthResolver } from "./radius-auth.ts";
 
-export const RADIUS_RELAY_HOST_SUBPROTOCOL = "pi-session-relay.host.v1";
-export const RADIUS_RELAY_CLIENT_SUBPROTOCOL = "pi-session-relay.client.v1";
+export const RADIUS_RELAY_HOST_SUBPROTOCOL = "theta-session-relay.host.v1";
+export const RADIUS_RELAY_CLIENT_SUBPROTOCOL = "theta-session-relay.client.v1";
 
 const RELAY_DATA_HEADER_BYTES = 18;
 const RELAY_DATA_FRAME_VERSION = 1;
@@ -127,7 +127,7 @@ export class RadiusRelayHost {
 		this.#closed = true;
 		this.#abortController.abort();
 		this.#writer?.close();
-		this.#socket?.close(1000, "Pi server stopped");
+		this.#socket?.close(1000, "Theta server stopped");
 		this.#dropConnections();
 		await this.#loop;
 	}
@@ -473,7 +473,7 @@ class RadiusClientByteTransport implements ByteTransport {
 
 	close(): void {
 		if (!this.#markClosed()) return;
-		this.#socket.close(1000, "Pi client closed");
+		this.#socket.close(1000, "Theta client closed");
 	}
 
 	#fail(error: Error): void {
@@ -722,3 +722,4 @@ function toError(error: unknown): Error {
 function errorMessage(error: unknown): string {
 	return toError(error).message;
 }
+

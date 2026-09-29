@@ -166,3 +166,4 @@ export function decodeCbor(bytes: Uint8Array, options?: CborOptions): unknown {
 	}
 	return new CborReader(bytes, resolved).decode();
 }
+

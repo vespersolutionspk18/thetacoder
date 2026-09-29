@@ -13,3 +13,4 @@ export function basetenProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

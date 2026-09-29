@@ -374,12 +374,12 @@ export class HookRegistry implements Hooks {
 		context: Context,
 	): Promise<unknown> {
 		return startHarnessSpan(
-			"pi.harness.hook",
+			"theta.harness.hook",
 			{
-				"pi.lane.name": event.lane,
-				"pi.operation.id": event.runId,
-				"pi.hook.name": name,
-				...(registration.id === undefined ? {} : { "pi.hook.registration_id": registration.id }),
+				"theta.lane.name": event.lane,
+				"theta.operation.id": event.runId,
+				"theta.hook.name": name,
+				...(registration.id === undefined ? {} : { "theta.hook.registration_id": registration.id }),
 			},
 			async (span, spanContext) => {
 				try {
@@ -390,10 +390,10 @@ export class HookRegistry implements Hooks {
 						typeof result === "object" &&
 						"block" in result &&
 						result.block !== undefined;
-					span.setAttributes({ "pi.hook.outcome": blocked ? "blocked" : "completed" });
+					span.setAttributes({ "theta.hook.outcome": blocked ? "blocked" : "completed" });
 					return result;
 				} catch (error) {
-					span.setAttributes({ "pi.hook.outcome": "failed" });
+					span.setAttributes({ "theta.hook.outcome": "failed" });
 					span.setStatus({ status: "error" });
 					throw error;
 				}
@@ -531,3 +531,4 @@ function createStreamOptionsPatch(
 	}
 	return patch;
 }
+

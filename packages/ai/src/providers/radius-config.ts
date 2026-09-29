@@ -1,7 +1,7 @@
 import type { OAuthCredential } from "../auth/types.ts";
 import type { Model, ThinkingLevelMap } from "../types.ts";
 
-export const DEFAULT_RADIUS_GATEWAY = "https://radius.pi.dev";
+export const DEFAULT_RADIUS_GATEWAY = "https://radius.theta.local";
 
 export type RadiusGatewayModel = {
 	id: string;
@@ -9,7 +9,7 @@ export type RadiusGatewayModel = {
 	reasoning: boolean;
 	thinkingLevelMap?: ThinkingLevelMap;
 	input: ("text" | "image")[];
-	cost: Model<"pi-messages">["cost"];
+	cost: Model<"theta-messages">["cost"];
 	contextWindow: number;
 	maxTokens: number;
 };
@@ -58,16 +58,19 @@ export function getRadiusCredentialConfig(credential: OAuthCredential | undefine
 	return sanitizeRadiusGatewayConfig((credential as RadiusOAuthCredential | undefined)?.gatewayConfig);
 }
 
-export function getRadiusModelsFromConfig(providerId: string, config: RadiusGatewayConfig): Model<"pi-messages">[] {
+export function getRadiusModelsFromConfig(providerId: string, config: RadiusGatewayConfig): Model<"theta-messages">[] {
 	return config.models.map((model) => ({
 		...model,
-		api: "pi-messages",
+		api: "theta-messages",
 		provider: providerId,
 		baseUrl: config.baseUrl,
 	}));
 }
 
-export function getRadiusModels(providerId: string, credential: OAuthCredential | undefined): Model<"pi-messages">[] {
+export function getRadiusModels(
+	providerId: string,
+	credential: OAuthCredential | undefined,
+): Model<"theta-messages">[] {
 	const config = getRadiusCredentialConfig(credential);
 	return config ? getRadiusModelsFromConfig(providerId, config) : [];
 }
@@ -94,3 +97,4 @@ export async function loadRadiusGatewayConfig(
 	if (!config) throw new Error(`Invalid Radius config from ${gateway}`);
 	return config;
 }
+

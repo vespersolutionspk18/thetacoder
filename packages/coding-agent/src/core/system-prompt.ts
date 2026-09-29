@@ -4,6 +4,7 @@
 
 import { getDocsPath, getExamplesPath, getReadmePath } from "../config.ts";
 import { formatSkillsForPrompt, type Skill } from "./skills.ts";
+import { selectSkillsForPrompt } from "./skills-selection.ts";
 
 export interface BuildSystemPromptOptions {
 	/** Custom system prompt (replaces default). */
@@ -22,6 +23,16 @@ export interface BuildSystemPromptOptions {
 	contextFiles?: Array<{ path: string; content: string }>;
 	/** Pre-loaded skills. */
 	skills?: Skill[];
+	/**
+	 * F9 selective skills catalog: maximum estimated tokens the skill
+	 * catalog may occupy in the system prompt. When `undefined` (the
+	 * default) every visible skill is included, preserving the existing
+	 * `formatSkillsForPrompt` contract. When set, skills are selected
+	 * with `selectSkillsForPrompt` (pinned first, then
+	 * relevance/compactness score) and the note line reports how many
+	 * were dropped.
+	 */
+	skillsBudgetTokens?: number;
 }
 
 /** Build the system prompt with tools, guidelines, and context */
@@ -45,6 +56,30 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 	const tools = selectedTools || ["read", "bash", "edit", "write"];
 	const skillFileReadTool = (["read", "bash"] as const).find((tool) => tools.includes(tool));
 
+	// F9 selective skills catalog: when a budget is configured, filter the
+	// visible skills through `selectSkillsForPrompt` instead of injecting the
+	// full catalog. No budget (`undefined`) keeps the existing full-catalog
+	// behavior byte-for-byte.
+	let skillDroppedCount = 0;
+	let visibleSkills = skills.filter((s) => !s.disableModelInvocation);
+	if (options.skillsBudgetTokens !== undefined && skillFileReadTool && visibleSkills.length > 0) {
+		const selection = selectSkillsForPrompt(visibleSkills, {
+			budget: options.skillsBudgetTokens,
+		});
+		skillDroppedCount = selection.droppedCount;
+		visibleSkills = selection.skills;
+	}
+
+	const formatSkillsSection = (): string => {
+		const formatted = formatSkillsForPrompt(visibleSkills, skillFileReadTool ?? "read");
+		if (skillDroppedCount > 0) {
+			// The catalog was truncated; tell the model the full list exists so
+			// it can ask for more rather than assume the visible set is all.
+			return `${formatted}\n(${skillDroppedCount} more skills are installed but not shown; ask the user to list skills if none of the above match the task.)`;
+		}
+		return formatted;
+	};
+
 	if (customPrompt) {
 		let prompt = customPrompt;
 
@@ -63,8 +98,8 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 		}
 
 		// Append skills when a tool capable of reading their files is available.
-		if (skillFileReadTool && skills.length > 0) {
-			prompt += formatSkillsForPrompt(skills, skillFileReadTool);
+		if (skillFileReadTool && visibleSkills.length > 0) {
+			prompt += formatSkillsSection();
 		}
 
 		prompt += `\nCurrent working directory: ${promptCwd}\n`;
@@ -124,7 +159,7 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 
 	const guidelines = guidelinesList.map((g) => `- ${g}`).join("\n");
 
-	let prompt = `You are an expert coding assistant operating inside pi, a coding agent harness. You help users by reading files, executing commands, editing code, and writing new files.
+	let prompt = `You are an expert coding assistant operating inside theta, a coding agent harness. You help users by reading files, executing commands, editing code, and writing new files.
 
 Available tools:
 ${toolsList}
@@ -134,14 +169,14 @@ In addition to the tools above, you may have access to other custom tools depend
 Guidelines:
 ${guidelines}
 
-Pi documentation (read only when the user asks about pi itself, its SDK, extensions, themes, skills, or TUI):
+Theta documentation (read only when the user asks about theta itself, its SDK, extensions, themes, skills, or TUI):
 - Main documentation: ${readmePath}
 - Additional docs: ${docsPath}
 - Examples: ${examplesPath} (extensions, custom tools, SDK)
-- When reading pi docs or examples, resolve docs/... under Additional docs and examples/... under Examples, not the current working directory
-- When asked about: extensions (docs/extensions.md, examples/extensions/), themes (docs/themes.md), skills (docs/skills.md), prompt templates (docs/prompt-templates.md), TUI components (docs/tui.md), keybindings (docs/keybindings.md), SDK integrations (docs/sdk.md), custom providers (docs/custom-provider.md), adding models (docs/models.md), pi packages (docs/packages.md), environment variables (docs/environment-variables.md)
-- When working on pi topics, read the docs and examples, and follow .md cross-references before implementing
-- Always read pi .md files completely and follow links to related docs (e.g., tui.md for TUI API details)`;
+- When reading theta docs or examples, resolve docs/... under Additional docs and examples/... under Examples, not the current working directory
+- When asked about: extensions (docs/extensions.md, examples/extensions/), themes (docs/themes.md), skills (docs/skills.md), prompt templates (docs/prompt-templates.md), TUI components (docs/tui.md), keybindings (docs/keybindings.md), SDK integrations (docs/sdk.md), custom providers (docs/custom-provider.md), adding models (docs/models.md), theta packages (docs/packages.md), environment variables (docs/environment-variables.md)
+- When working on theta topics, read the docs and examples, and follow .md cross-references before implementing
+- Always read theta .md files completely and follow links to related docs (e.g., tui.md for TUI API details)`;
 
 	if (appendSection) {
 		prompt += appendSection;
@@ -158,11 +193,12 @@ Pi documentation (read only when the user asks about pi itself, its SDK, extensi
 	}
 
 	// Append skills when a tool capable of reading their files is available.
-	if (skillFileReadTool && skills.length > 0) {
-		prompt += formatSkillsForPrompt(skills, skillFileReadTool);
+	if (skillFileReadTool && visibleSkills.length > 0) {
+		prompt += formatSkillsSection();
 	}
 
 	prompt += `\nCurrent working directory: ${promptCwd}`;
 
 	return prompt;
 }
+

@@ -11,3 +11,4 @@ export function shortHash(str: string): string {
 	h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
 	return (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
 }
+

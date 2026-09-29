@@ -1,5 +1,3 @@
-import { defineFacet, type Facet, type MutableReplicatedState } from "@earendil-works/chord";
-import { BACKGROUND_CONTEXT } from "@earendil-works/chord/context";
 import {
 	type AgentLane,
 	type HarnessEvent,
@@ -8,7 +6,9 @@ import {
 	type LaneWatchEvent,
 	reduceLaneSnapshot,
 	type WatchHandle,
-} from "@earendil-works/pi-agent-core";
+} from "@theta/agent-core";
+import { defineFacet, type Facet, type MutableReplicatedState } from "@theta/chord";
+import { BACKGROUND_CONTEXT } from "@theta/chord/context";
 import { Transcript, type Transcript as TranscriptService, type TranscriptState } from "./transcript.ts";
 
 interface TranscriptRuntime {
@@ -92,7 +92,7 @@ export function createTranscriptService(
 
 export function createTranscriptServiceFacet(lane: AgentLane): Facet {
 	return defineFacet({
-		id: "@pi/transcript",
+		id: "@theta/transcript",
 		setup(env) {
 			const runtime = createTranscriptService(lane, env.replicatedState);
 			env.provide(Transcript, runtime.service);
@@ -126,3 +126,4 @@ function toLaneWatchEvent(event: HarnessEvent): LaneWatchEvent | undefined {
 			return event as LaneWatchEvent;
 	}
 }
+

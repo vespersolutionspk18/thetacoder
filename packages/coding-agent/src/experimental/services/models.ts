@@ -1,5 +1,5 @@
-import { type Context, defineService, type ReplicatedState } from "@earendil-works/chord";
-import type { ThinkingLevel } from "@earendil-works/pi-agent-core";
+import type { ThinkingLevel } from "@theta/agent-core";
+import { type Context, defineService, type ReplicatedState } from "@theta/chord";
 
 export interface ModelRef {
 	provider: string;
@@ -32,4 +32,5 @@ export interface Models {
 	selectThinking(level: ThinkingLevel, context: Context): Promise<void>;
 }
 
-export const Models = defineService<Models>("pi.models");
+export const Models = defineService<Models>("theta.models");
+

@@ -20,3 +20,4 @@ export const sessionRepoBenchmarkTargets = [
 		},
 	},
 ] satisfies readonly BenchmarkTarget<SessionRepoBenchmarkFixture>[];
+

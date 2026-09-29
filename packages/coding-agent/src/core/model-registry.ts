@@ -11,7 +11,7 @@ import type {
 	ModelsSimpleStreamOptions,
 	Provider,
 	ProviderHeaders,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import type { ModelRuntime } from "./model-runtime.ts";
 import type { AuthStatus, ProviderConfigInput } from "./provider-composer.ts";
 
@@ -171,3 +171,4 @@ export class ModelRegistry {
 		return this.runtime.getRegisteredProviderIds();
 	}
 }
+

@@ -121,3 +121,4 @@ describe("Anthropic forceAdaptiveThinking compat override", () => {
 		expect(payload.output_config).toBeUndefined();
 	});
 });
+

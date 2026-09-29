@@ -170,3 +170,4 @@ describe.skipIf(!process.env.ANTHROPIC_API_KEY)("Anthropic thinking disable E2E"
 		expect(countPongs(result.text)).toBeGreaterThanOrEqual(35);
 	});
 });
+

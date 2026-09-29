@@ -13,3 +13,4 @@ export function cloudflareWorkersAIProvider(): Provider<"openai-completions"> {
 		api: cloudflareStreams(openAICompletionsApi()),
 	});
 }
+

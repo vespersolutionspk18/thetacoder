@@ -1,13 +1,13 @@
-import { combineFacetLoaders, type FacetLoader, type JsonValue } from "@earendil-works/chord";
+import { combineFacetLoaders, type FacetLoader, type JsonValue } from "@theta/chord";
 import {
 	createFacetBundleArtifactLoader,
 	createFacetBundleLoader,
 	type FacetBundleArtifact,
 	readFacetBundleManifest,
-} from "@earendil-works/chord/node";
+} from "@theta/chord/node";
 
 const PRESENTATION_FACET_BUNDLES_KEY = "presentationFacetBundles";
-const PI_PLUGIN_API = "@earendil-works/pi-coding-agent/experimental/plugin";
+const PI_PLUGIN_API = "@theta/coding-agent/experimental/plugin";
 
 export function createSessionPluginFacetLoader(manifestPaths: readonly string[]): FacetLoader | undefined {
 	if (manifestPaths.length === 0) return undefined;
@@ -53,3 +53,4 @@ function resolvePluginExternal(specifier: string): string | undefined {
 	const extension = import.meta.url.endsWith(".ts") ? "ts" : "js";
 	return new URL(`../plugin.${extension}`, import.meta.url).href;
 }
+

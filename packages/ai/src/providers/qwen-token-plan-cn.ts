@@ -13,3 +13,4 @@ export function qwenTokenPlanCnProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

@@ -2,7 +2,7 @@
   "name": "facet-sandbox-ivm",
   "private": true,
   "type": "module",
-  "description": "Running pi facets in an isolated-vm isolate: full JIT, no ambient authority.",
+  "description": "Running theta facets in an isolated-vm isolate: full JIT, no ambient authority.",
   "scripts": {
     "demo": "node --experimental-strip-types src/demo-facet.ts",
     "audit": "node --experimental-strip-types src/escape-audit.ts",

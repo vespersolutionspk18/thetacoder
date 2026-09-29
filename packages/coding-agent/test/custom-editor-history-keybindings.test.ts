@@ -1,4 +1,4 @@
-import { setKeybindings, TuiMainScreen } from "@earendil-works/pi-tui";
+import { setKeybindings, TuiMainScreen } from "@theta/tui";
 import { afterEach, describe, expect, it } from "vitest";
 import { defaultEditorTheme } from "../../tui/test/test-themes.ts";
 import { VirtualTerminal } from "../../tui/test/virtual-terminal.ts";
@@ -32,3 +32,4 @@ describe("CustomEditor prompt history keybindings", () => {
 		expect(editor.getText()).toBe("draft");
 	});
 });
+

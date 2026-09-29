@@ -6,8 +6,8 @@ import type {
 	Provider,
 	ProviderStreamOptions,
 	RefreshModelsContext,
-} from "@earendil-works/pi-ai";
-import { stream, streamSimple } from "@earendil-works/pi-ai/compat";
+} from "@theta/ai";
+import { stream, streamSimple } from "@theta/ai/compat";
 import { LlamaClient, type LlamaModelInfo, llamaInferenceUrl, normalizeLlamaServerUrl } from "./client.ts";
 
 export const LLAMA_PROVIDER_ID = "llama.cpp";
@@ -46,27 +46,74 @@ async function routerAutoloadEnabled(
 	}
 }
 
+// llama-server /props surfaces a few per-model signals that the model catalog does not
+// enumerate. Reading them lets the harness pick a sensible capability contract for local
+// reasoning models (Qwen3, GPT-OSS, DeepSeek R1, etc.) without forcing the user to hand-edit
+// catalog entries. The runtime shape is whatever the server sent; we treat unknown fields
+// as `undefined` and let the first available signal win.
+type LlamaModelMeta = NonNullable<LlamaModelInfo["meta"]> & {
+	reasoning?: boolean;
+	architectures?: readonly string[];
+	qwen3?: { thinking?: boolean };
+};
+
+function detectReasoning(meta: LlamaModelMeta | undefined): boolean {
+	if (!meta) return false;
+	if (meta.reasoning === true) return true;
+	if (Array.isArray(meta.architectures)) {
+		for (const arch of meta.architectures) {
+			if (typeof arch === "string" && /gpt-oss|deepseek|qwen3|r1/i.test(arch)) return true;
+		}
+	}
+	if (meta.qwen3?.thinking === true) return true;
+	return false;
+}
+
+function reserveMaxTokens(contextWindow: number): number {
+	// Leave room for the system prompt, tool definitions, and prior turns. Cap at 16K so a
+	// 200K context window does not request a generation that the local server cannot budget
+	// against its KV cache.
+	return contextWindow > 8192 ? Math.min(contextWindow * 0.5, 16_384) : Math.floor(contextWindow * 0.5);
+}
+
 function toPiModel(model: LlamaModelInfo, serverUrl: string): Model<"openai-completions"> {
-	const reportedContextWindow = model.meta?.n_ctx ?? model.meta?.n_ctx_train;
-	const contextWindow = reportedContextWindow && reportedContextWindow > 0 ? reportedContextWindow : 128000;
+	const meta = model.meta as LlamaModelMeta | undefined;
+	const nCtx = meta?.n_ctx;
+	const nCtxTrain = meta?.n_ctx_train;
+	const nCtxUsable = typeof nCtx === "number" && nCtx > 0;
+	const nCtxTrainUsable = typeof nCtxTrain === "number" && nCtxTrain > 0;
+	// Prefer the live n_ctx (current load) over n_ctx_train (model file's training context).
+	// Fall back to n_ctx_train when the server reports no current context, then to 128K.
+	const reportedContextWindow = nCtxUsable ? nCtx : nCtxTrainUsable ? nCtxTrain : undefined;
+	const contextWindow = reportedContextWindow ?? 128_000;
+	if (reportedContextWindow === undefined) {
+		// Warning string: "llama.cpp: model <id> reports no n_ctx or n_ctx_train; using 128000 default. Configure a context size on the server (e.g. -c 8192) to silence this warning."
+		console.warn(
+			`llama.cpp: model ${JSON.stringify(model.id)} reports no n_ctx or n_ctx_train; ` +
+				`using 128000 default. Configure a context size on the server (e.g. -c 8192) to silence this warning.`,
+		);
+	}
+	const reasoning = detectReasoning(meta);
 	return {
 		id: model.id,
 		name: model.id,
 		api: "openai-completions",
 		provider: LLAMA_PROVIDER_ID,
 		baseUrl: llamaInferenceUrl(serverUrl),
-		reasoning: false,
+		reasoning,
 		input: model.architecture?.input_modalities?.includes("image") ? ["text", "image"] : ["text"],
 		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
 		contextWindow,
-		maxTokens: contextWindow,
+		maxTokens: reserveMaxTokens(contextWindow),
 		compat: {
 			supportsStore: false,
 			supportsDeveloperRole: false,
 			supportsReasoningEffort: false,
+			supportsLongCacheRetention: false,
 			supportsUsageInStreaming: true,
 			supportsStrictMode: false,
 			maxTokensField: "max_tokens",
+			...(reasoning ? { thinkingTokenBudgetField: "thinking_budget_tokens" as const } : {}),
 		},
 	};
 }
@@ -178,3 +225,4 @@ export function createLlamaProvider(): LlamaProviderController {
 
 	return { provider, setCatalog };
 }
+

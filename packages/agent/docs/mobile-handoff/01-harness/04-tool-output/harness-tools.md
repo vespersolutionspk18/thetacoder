@@ -460,3 +460,4 @@ no facet present.
   four fallbacks ending in `{}`, it cannot throw — so a replica derives with no
   error path and no agreement protocol. Generalises to: no derived fields in
   replicated state.
+

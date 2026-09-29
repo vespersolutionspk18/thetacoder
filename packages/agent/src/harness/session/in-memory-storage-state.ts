@@ -347,3 +347,4 @@ export class InMemoryStorageState {
 		return this.nextSeq;
 	}
 }
+

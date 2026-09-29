@@ -123,3 +123,4 @@ Durable cadence belongs to the sink, not to Shell or bash. Bash's existing two-s
 - Bounds for structured details; arbitrary JSON cannot be meaningfully tail-windowed.
 - Whether ordinary durable writes ride every live sink publication initially or use a slower measured cadence. Memo and terminal correctness flushes are not optional.
 - Exact global production values after profiling real remote transport and storage.
+

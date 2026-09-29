@@ -44,3 +44,4 @@ export const getCurrentTimeTool: AgentTool<typeof getCurrentTimeSchema, { utcTim
 		return getCurrentTime(args.timezone);
 	},
 };
+

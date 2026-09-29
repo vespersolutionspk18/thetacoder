@@ -142,7 +142,7 @@ static napi_value queue_clipboard(napi_env env, napi_callback_info info, clipboa
 #endif
     napi_value name = 0;
     napi_value promise = 0;
-    if (create_string(env, "pi.clipboard", NAPI_AUTO_LENGTH, &name) != 0 ||
+    if (create_string(env, "theta.clipboard", NAPI_AUTO_LENGTH, &name) != 0 ||
         create_work(env, 0, name, execute_clipboard_work, complete_clipboard_work, job, &job->work) != 0 ||
         create_promise(env, &job->deferred, &promise) != 0 || queue_work(env, job->work) != 0) {
         if (job->work) delete_work(env, job->work);
@@ -168,3 +168,4 @@ static napi_value PI_NAPI_CALL set_clipboard_text(napi_env env, napi_callback_in
 #endif
 
 #endif
+

@@ -1,4 +1,4 @@
-import type { ImageContent, Message, TextContent } from "@earendil-works/pi-ai";
+import type { ImageContent, Message, TextContent } from "@theta/ai";
 import type { AgentMessage } from "../types.ts";
 
 export const COMPACTION_SUMMARY_PREFIX = `The conversation history before this point was compacted into the following summary:
@@ -166,3 +166,4 @@ export function convertToLlm(messages: AgentMessage[]): Message[] {
 		})
 		.filter((m): m is Message => m !== undefined);
 }
+

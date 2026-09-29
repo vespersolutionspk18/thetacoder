@@ -18,3 +18,4 @@ export function opencodeGoProvider(): Provider<"anthropic-messages" | "openai-co
 		},
 	});
 }
+

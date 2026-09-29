@@ -2,18 +2,18 @@
  * Custom Header Extension
  *
  * Demonstrates ctx.ui.setHeader() for replacing the built-in header
- * (logo + keybinding hints) with a custom component showing the pi mascot.
+ * (logo + keybinding hints) with a custom component showing the theta mascot.
  */
 
-import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
-import { VERSION } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, Theme } from "@theta/coding-agent";
+import { VERSION } from "@theta/coding-agent";
 
-// --- PI MASCOT ---
-// Based on pi_mascot.ts - the pi agent character
-function getPiMascot(theme: Theme): string[] {
+// --- THETA MASCOT ---
+// Based on theta_mascot.ts - the theta agent character
+function getThetaMascot(theme: Theme): string[] {
 	// --- COLORS ---
 	// 3b1b Blue: R=80, G=180, B=230
-	const piBlue = (text: string) => theme.fg("accent", text);
+	const thetaBlue = (text: string) => theme.fg("accent", text);
 	const white = (text: string) => text; // Use plain white (or theme.fg("text", text))
 	const black = (text: string) => theme.fg("dim", text); // Use dim for contrast
 
@@ -33,25 +33,25 @@ function getPiMascot(theme: Theme): string[] {
 
 	// 3. Line 2: The Wide Top Bar (The "Overhang")
 	// 14 blocks wide for that serif-style roof
-	const lineBar = `  ${piBlue(BLOCK.repeat(14))}`;
+	const lineBar = `  ${thetaBlue(BLOCK.repeat(14))}`;
 
 	// 4. Lines 3-6: The Legs
 	// Indented 5 spaces relative to the very left edge
 	// Leg width: 2 blocks | Gap: 4 blocks
-	const lineLeg = `     ${piBlue(BLOCK.repeat(2))}    ${piBlue(BLOCK.repeat(2))}`;
+	const lineLeg = `     ${thetaBlue(BLOCK.repeat(2))}    ${thetaBlue(BLOCK.repeat(2))}`;
 
 	// --- ASSEMBLY ---
 	return ["", lineEyes, lineBar, lineLeg, lineLeg, lineLeg, lineLeg, ""];
 }
 
-export default function (pi: ExtensionAPI) {
+export default function (theta: ExtensionAPI) {
 	// Set custom header immediately on load (if UI is available)
-	pi.on("session_start", async (_event, ctx) => {
+	theta.on("session_start", async (_event, ctx) => {
 		if (ctx.mode === "tui") {
 			ctx.ui.setHeader((_tui, theme) => {
 				return {
 					render(_width: number): string[] {
-						const mascotLines = getPiMascot(theme);
+						const mascotLines = getThetaMascot(theme);
 						// Add a subtitle with hint
 						const subtitle = `${theme.fg("muted", "   shitty coding agent")}${theme.fg("dim", ` v${VERSION}`)}`;
 						return [...mascotLines, subtitle];
@@ -63,7 +63,7 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	// Command to restore built-in header
-	pi.registerCommand("builtin-header", {
+	theta.registerCommand("builtin-header", {
 		description: "Restore built-in header with keybinding hints",
 		handler: async (_args, ctx) => {
 			ctx.ui.setHeader(undefined);
@@ -71,3 +71,4 @@ export default function (pi: ExtensionAPI) {
 		},
 	});
 }
+

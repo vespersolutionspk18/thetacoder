@@ -38,3 +38,4 @@ export class CancellableLoader extends Loader {
 		this.stop();
 	}
 }
+

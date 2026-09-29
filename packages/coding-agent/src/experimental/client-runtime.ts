@@ -1,8 +1,8 @@
 import { basename } from "node:path";
-import { BACKGROUND_CONTEXT } from "@earendil-works/chord/context";
-import { Client, ServerError } from "@earendil-works/pi-client";
-import { createUnixTransportFactory, discoverUnixServers, type UnixServerRoute } from "@earendil-works/pi-client/unix";
-import { isServerId, type ServerId } from "@earendil-works/pi-protocol";
+import { BACKGROUND_CONTEXT } from "@theta/chord/context";
+import { Client, ServerError } from "@theta/client";
+import { createUnixTransportFactory, discoverUnixServers, type UnixServerRoute } from "@theta/client/unix";
+import { isServerId, type ServerId } from "@theta/protocol";
 import type { ClientCommand } from "../cli/experimental/commands/client.ts";
 import { RadiusRelayAuthResolver } from "./radius-auth.ts";
 import { createRadiusClientTransportFactory, RadiusClientReconnect } from "./radius-relay.ts";
@@ -45,7 +45,7 @@ export interface ClientRuntime {
 }
 
 export interface OpenClientRuntimeOptions {
-	/** Directory searched when --connect is omitted. Defaults to PI_SERVER_DIR or ~/.pi/server. */
+	/** Directory searched when --connect is omitted. Defaults to THETA_SERVER_DIR or ~/.theta/server. */
 	readonly directory?: string;
 }
 
@@ -228,3 +228,4 @@ function routeFromExplicitPath(path: string): UnixServerRoute {
 	if (!isServerId(serverId)) throw new Error("--connect path must end with <uuidv4-server-id>.sock");
 	return { serverId, path };
 }
+

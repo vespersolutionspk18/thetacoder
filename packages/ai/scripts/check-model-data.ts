@@ -14,3 +14,4 @@ try {
 	console.error("\nModel data is missing or stale. Run `npm run hydrate:model-data` from the repository root.");
 	process.exitCode = 1;
 }
+

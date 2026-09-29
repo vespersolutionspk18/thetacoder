@@ -1,4 +1,4 @@
-import { Box, Markdown, type MarkdownTheme, Spacer, Text } from "@earendil-works/pi-tui";
+import { Box, Markdown, type MarkdownTheme, Spacer, Text } from "@theta/tui";
 import type { CompactionSummaryMessage } from "../../../core/messages.ts";
 import { getMarkdownTheme, theme } from "../theme/theme.ts";
 import { keyText } from "./keybinding-hints.ts";
@@ -57,3 +57,4 @@ export class CompactionSummaryMessageComponent extends Box {
 		}
 	}
 }
+

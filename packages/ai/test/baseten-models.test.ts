@@ -104,3 +104,4 @@ describe("Baseten models", () => {
 		expect(getEnvApiKey("baseten")).toBe("test-baseten-key");
 	});
 });
+

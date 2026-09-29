@@ -14,7 +14,7 @@ let path: string;
 let fileSystem: NodeExecutionEnv;
 
 beforeEach(async () => {
-	root = await mkdtemp(join(tmpdir(), "pi-jsonl-io-"));
+	root = await mkdtemp(join(tmpdir(), "theta-jsonl-io-"));
 	path = join(root, "session.jsonl");
 	fileSystem = new NodeExecutionEnv({ cwd: root });
 });
@@ -106,3 +106,4 @@ describe("JSONL publication", () => {
 		expect(await readFile(path, "utf8")).toBe(`${JSON.stringify(header)}\n`);
 	});
 });
+

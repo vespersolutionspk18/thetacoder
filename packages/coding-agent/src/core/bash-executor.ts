@@ -66,7 +66,7 @@ export async function executeBashWithOperations(
 			return;
 		}
 		const id = randomBytes(8).toString("hex");
-		tempFilePath = join(tmpdir(), `pi-bash-${id}.log`);
+		tempFilePath = join(tmpdir(), `theta-bash-${id}.log`);
 		tempFileStream = createWriteStream(tempFilePath);
 		for (const chunk of outputChunks) {
 			tempFileStream.write(chunk);
@@ -154,3 +154,4 @@ export async function executeBashWithOperations(
 		throw err;
 	}
 }
+

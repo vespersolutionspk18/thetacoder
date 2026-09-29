@@ -63,3 +63,4 @@ describe("Cloudflare provider streams", () => {
 		expect(captured).toBe(model.baseUrl);
 	});
 });
+

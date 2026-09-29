@@ -1,0 +1,10 @@
+{
+	"name": "@theta/example-plugin",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"peerDependencies": {
+		"@theta/chord": "^0.84.4",
+		"@theta/coding-agent": "^0.84.4"
+	}
+}

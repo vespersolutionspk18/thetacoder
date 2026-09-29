@@ -85,3 +85,4 @@ export class AdaptivePublisher<TValue, TUpdate> {
 		}, wait);
 	}
 }
+

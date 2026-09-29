@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { DEFAULT_RADIUS_GATEWAY, normalizeRadiusGatewayUrl } from "@earendil-works/pi-ai/providers/radius-config";
+import { DEFAULT_RADIUS_GATEWAY, normalizeRadiusGatewayUrl } from "@theta/ai/providers/radius-config";
 import { getAuthCredential } from "../cli/auth-command.ts";
 import type { AuthInput } from "../cli/experimental/command-options.ts";
 import { ModelRuntime } from "../core/model-runtime.ts";
@@ -48,7 +48,7 @@ export class RadiusRelayAuthResolver {
 		);
 		if (token !== undefined && token.length > 0) return { gateway: this.#gateway, token };
 		if (options.required) {
-			throw new Error("Radius authentication is required; start Pi and run /login radius, then retry");
+			throw new Error("Radius authentication is required; start Theta and run /login radius, then retry");
 		}
 		return undefined;
 	}
@@ -64,3 +64,4 @@ export class RadiusRelayAuthResolver {
 		return token;
 	}
 }
+

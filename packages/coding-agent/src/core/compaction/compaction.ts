@@ -5,10 +5,10 @@
  * and after compaction the session is reloaded.
  */
 
-import type { AgentMessage, StreamFn, ThinkingLevel } from "@earendil-works/pi-agent-core";
-import { contentText, type RetryCallbacks, type RetryPolicy, retryAssistantCall, uuidv7 } from "@earendil-works/pi-ai";
-import type { AssistantMessage, Context, Model, SimpleStreamOptions, Usage } from "@earendil-works/pi-ai/compat";
-import { completeSimple } from "@earendil-works/pi-ai/compat";
+import type { AgentMessage, StreamFn, ThinkingLevel } from "@theta/agent-core";
+import { contentText, type RetryCallbacks, type RetryPolicy, retryAssistantCall, uuidv7 } from "@theta/ai";
+import type { AssistantMessage, Context, Model, SimpleStreamOptions, Usage } from "@theta/ai/compat";
+import { completeSimple } from "@theta/ai/compat";
 import { convertToLlm } from "../messages.ts";
 import {
 	buildSessionContext,
@@ -46,7 +46,7 @@ function extractFileOperations(
 ): FileOperations {
 	const fileOps = createFileOps();
 
-	// Collect from previous compaction's details (if pi-generated)
+	// Collect from previous compaction's details (if theta-generated)
 	if (prevCompactionIndex >= 0) {
 		const prevCompaction = entries[prevCompactionIndex] as CompactionEntry;
 		if (!prevCompaction.fromHook && prevCompaction.details) {
@@ -885,7 +885,7 @@ export async function compact(
 	let summaryUsage: Usage;
 
 	if (isSplitTurn && turnPrefixMessages.length > 0) {
-		let historyText = "No prior history.";
+		let historyText = previousSummary ?? "No prior history.";
 		let historyUsage: Usage | undefined;
 		if (messagesToSummarize.length > 0) {
 			const historyResult = await generateSummaryWithUsage(
@@ -1010,3 +1010,4 @@ async function generateTurnPrefixSummary(
 		usage: response.usage,
 	};
 }
+

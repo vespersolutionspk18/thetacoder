@@ -13,3 +13,4 @@ export function cerebrasProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

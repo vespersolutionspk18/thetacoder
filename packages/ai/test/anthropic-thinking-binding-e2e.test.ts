@@ -57,3 +57,4 @@ describe.skipIf(!enabled)("Anthropic thinking binding conformance", () => {
 		expect(missingMarker.errorMessage).toContain("Invalid `signature`");
 	});
 });
+

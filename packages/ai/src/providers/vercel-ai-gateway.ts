@@ -13,3 +13,4 @@ export function vercelAIGatewayProvider(): Provider<"anthropic-messages"> {
 		api: anthropicMessagesApi(),
 	});
 }
+

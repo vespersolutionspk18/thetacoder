@@ -1,4 +1,4 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { parseArgs } from "../../../src/cli/args.ts";
 import { createHarness, getUserTexts, type Harness } from "../harness.ts";
@@ -37,3 +37,4 @@ describe("issue #7269 CLI end-of-options delimiter", () => {
 		expect(parsed.diagnostics).toEqual([]);
 	});
 });
+

@@ -72,3 +72,4 @@ export interface EditorComponent extends Component {
 	/** Set max visible items in autocomplete dropdown */
 	setAutocompleteMaxVisible?(maxVisible: number): void;
 }
+

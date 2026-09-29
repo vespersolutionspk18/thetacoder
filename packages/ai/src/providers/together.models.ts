@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const TOGETHER_MODELS: ModelCatalog<typeof values, "together"> =
 	flattenModelCatalog("together", values);
+

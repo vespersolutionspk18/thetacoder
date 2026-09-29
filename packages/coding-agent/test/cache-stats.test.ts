@@ -1,4 +1,4 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
+import type { AssistantMessage } from "@theta/ai";
 import { describe, expect, it } from "vitest";
 import {
 	collectCacheMisses,
@@ -141,3 +141,4 @@ describe("detectCacheMiss", () => {
 		expect(detectCacheMiss([], turn1, models)).toBeUndefined();
 	});
 });
+

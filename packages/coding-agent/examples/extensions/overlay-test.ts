@@ -1,18 +1,18 @@
 /**
  * Overlay Test - validates overlay compositing with inline text inputs
  *
- * Usage: pi --extension ./examples/extensions/overlay-test.ts
+ * Usage: theta --extension ./examples/extensions/overlay-test.ts
  *
  * Run /overlay-test to show a floating overlay with:
  * - Inline text inputs within menu items
  * - Edge case tests (wide chars, styled text, emoji)
  */
 
-import type { ExtensionAPI, ExtensionCommandContext, Theme } from "@earendil-works/pi-coding-agent";
-import { CURSOR_MARKER, type Focusable, matchesKey, visibleWidth } from "@earendil-works/pi-tui";
+import type { ExtensionAPI, ExtensionCommandContext, Theme } from "@theta/coding-agent";
+import { CURSOR_MARKER, type Focusable, matchesKey, visibleWidth } from "@theta/tui";
 
-export default function (pi: ExtensionAPI) {
-	pi.registerCommand("overlay-test", {
+export default function (theta: ExtensionAPI) {
+	theta.registerCommand("overlay-test", {
 		description: "Test overlay rendering with edge cases",
 		handler: async (_args: string, ctx: ExtensionCommandContext) => {
 			const result = await ctx.ui.custom<{ action: string; query?: string } | undefined>(
@@ -151,3 +151,4 @@ class OverlayTestComponent implements Focusable {
 	invalidate(): void {}
 	dispose(): void {}
 }
+

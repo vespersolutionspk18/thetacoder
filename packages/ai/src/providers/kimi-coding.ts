@@ -22,3 +22,4 @@ export function kimiCodingProvider(): Provider<"anthropic-messages"> {
 		api: anthropicMessagesApi(),
 	});
 }
+

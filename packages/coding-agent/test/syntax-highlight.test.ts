@@ -1,4 +1,4 @@
-import { resetCapabilitiesCache, setCapabilities } from "@earendil-works/pi-tui";
+import { resetCapabilitiesCache, setCapabilities } from "@theta/tui";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { highlightCode, initTheme } from "../src/modes/interactive/theme/theme.ts";
 import {
@@ -111,3 +111,4 @@ describe("theme syntax highlighting", () => {
 		expect(highlightCode("<div></div>", "html")[0]).toContain("\x1b[38;2;86;156;214mdiv\x1b[39m");
 	});
 });
+

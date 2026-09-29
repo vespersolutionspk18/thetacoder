@@ -14,8 +14,8 @@ describe("issue #3688 tree cancellation compaction state", () => {
 	it("clears branch summary state when session_before_tree cancels navigation", async () => {
 		const harness = await createHarness({
 			extensionFactories: [
-				(pi) => {
-					pi.on("session_before_tree", () => ({ cancel: true }));
+				(theta) => {
+					theta.on("session_before_tree", () => ({ cancel: true }));
 				},
 			],
 		});
@@ -34,3 +34,4 @@ describe("issue #3688 tree cancellation compaction state", () => {
 		expect(harness.sessionManager.getLeafId()).toBe(currentLeafId);
 	});
 });
+

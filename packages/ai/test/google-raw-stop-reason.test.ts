@@ -90,7 +90,7 @@ import { stream as streamGoogleVertex } from "../src/api/google-vertex.ts";
 import { getModel } from "../src/compat.ts";
 import type { Context } from "../src/types.ts";
 
-const PI_USER_AGENT = `pi (${platform()} ${release()}; ${arch()})`;
+const PI_USER_AGENT = `theta (${platform()} ${release()}; ${arch()})`;
 
 const context: Context = {
 	messages: [{ role: "user", content: "hello", timestamp: Date.now() }],
@@ -184,7 +184,7 @@ describe("Google raw stop reasons", () => {
 });
 
 describe("Google Generative AI user agent", () => {
-	it("uses pi's User-Agent by default", async () => {
+	it("uses theta's User-Agent by default", async () => {
 		expect((await captureGoogleHeaders())["User-Agent"]).toBe(PI_USER_AGENT);
 	});
 
@@ -192,3 +192,4 @@ describe("Google Generative AI user agent", () => {
 		expect((await captureGoogleHeaders({ "User-Agent": "custom-agent" }))["User-Agent"]).toBe("custom-agent");
 	});
 });
+

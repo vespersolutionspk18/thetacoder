@@ -1,4 +1,4 @@
-import type { DeferredHandle } from "@earendil-works/pi-ai";
+import type { DeferredHandle } from "@theta/ai";
 import type { HarnessEvent } from "../../agent-harness.ts";
 import { getTelemetryContext } from "../../context.ts";
 import { SessionInvariantError } from "../../session/session.ts";
@@ -171,3 +171,4 @@ export async function reconcileOperation<TContext extends object | undefined>(
 			return publishAbortedTerminal(lane, drive, state);
 	}
 }
+

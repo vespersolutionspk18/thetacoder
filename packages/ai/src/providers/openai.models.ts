@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const OPENAI_MODELS: ModelCatalog<typeof values, "openai"> =
 	flattenModelCatalog("openai", values);
+

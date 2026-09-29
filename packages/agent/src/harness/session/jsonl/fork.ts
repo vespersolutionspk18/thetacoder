@@ -112,15 +112,15 @@ class JsonlForkIndex {
 	private applyLaneValue(write: Extract<CommittedWrite, { kind: "value" }>): void {
 		const present = write.op === "set";
 		switch (write.namespace) {
-			case "pi.branch.tip":
+			case "theta.branch.tip":
 				if (present) this.branchTips.set(write.key, write.value as string | null);
 				else this.branchTips.delete(write.key);
 				break;
-			case "pi.lane.config":
+			case "theta.lane.config":
 				if (present) this.laneConfigs.add(write.key);
 				else this.laneConfigs.delete(write.key);
 				break;
-			case "pi.lane.state":
+			case "theta.lane.state":
 				if (present) this.laneStates.add(write.key);
 				else this.laneStates.delete(write.key);
 				break;
@@ -326,3 +326,4 @@ export async function runJsonlFork(
 		},
 	);
 }
+

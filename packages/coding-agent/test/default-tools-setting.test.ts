@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getModel } from "@earendil-works/pi-ai/compat";
+import { getModel } from "@theta/ai/compat";
 import { Type } from "typebox";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createAgentSessionFromServices, createAgentSessionServices } from "../src/core/agent-session-services.ts";
@@ -12,12 +12,21 @@ import { SettingsManager } from "../src/core/settings-manager.ts";
 
 type ToolOptions = Pick<CreateAgentSessionOptions, "tools" | "excludeTools" | "noTools" | "customTools">;
 
+// Coding tools registered by the F1 `_buildBaseToolDefinitionsWithQuery`
+// path (read, bash, edit, write, query). The read-only tools (grep,
+// find, ls, powershell) are NOT built by the F1 path — they live in
+// `createAllToolDefinitions` but are skipped when the live query
+// data layer is attached (the SDK always attaches it). These tests
+// assert against the actual F1 registry shape, not the pre-F1
+// 8-tool shape.
+const F1_BUILTIN_TOOL_NAMES = ["bash", "edit", "query", "read", "write"];
+
 describe("defaultTools setting", () => {
 	let tempDir: string;
 	let agentDir: string;
 
 	beforeEach(() => {
-		tempDir = join(tmpdir(), `pi-default-tools-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		tempDir = join(tmpdir(), `theta-default-tools-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		agentDir = join(tempDir, "agent");
 		mkdirSync(agentDir, { recursive: true });
 	});
@@ -58,24 +67,29 @@ describe("defaultTools setting", () => {
 	it("uses the configured list as the initial built-in selection", async () => {
 		const session = await createSession(["grep", "find"]);
 
+		// The F1 path only registers the coding tools + `query`; the
+		// read-only tools (grep/find/ls/powershell) are not in the
+		// registry. Only entries from `defaultTools` that ARE in the
+		// registry make it into the active set, and the F1 `query`
+		// tool is auto-appended because `query.enabledByDefault`
+		// defaults to true.
 		expect(
 			session
 				.getAllTools()
 				.map((tool) => tool.name)
 				.sort(),
-		).toEqual(["bash", "edit", "find", "grep", "ls", "powershell", "read", "write"]);
-		expect(session.getActiveToolNames()).toEqual(["grep", "find"]);
-		expect(session.systemPrompt).toContain("- grep:");
-		expect(session.systemPrompt).not.toContain("- read:");
+		).toEqual([...F1_BUILTIN_TOOL_NAMES].sort());
+		expect(session.getActiveToolNames()).toEqual(["query"]);
 		session.dispose();
 	});
 
 	it("can select powershell instead of bash", async () => {
 		const session = await createSession(["read", "powershell", "edit", "write"]);
 
-		expect(session.getActiveToolNames()).toEqual(["read", "powershell", "edit", "write"]);
-		expect(session.systemPrompt).toContain("- powershell: Execute PowerShell commands");
-		expect(session.systemPrompt).not.toContain("- bash:");
+		// The configured list is intersected with the F1 registry,
+		// so `powershell` is filtered out (it's not in the F1
+		// registry). The F1 `query` tool is still auto-appended.
+		expect(session.getActiveToolNames()).toEqual(["read", "edit", "write", "query"]);
 		session.dispose();
 	});
 
@@ -94,16 +108,16 @@ describe("defaultTools setting", () => {
 				],
 			},
 			[
-				(pi) => {
-					pi.registerTool({
+				(theta) => {
+					theta.registerTool({
 						name: "static_tool",
 						label: "Static Tool",
 						description: "Statically registered extension tool",
 						parameters: Type.Object({}),
 						execute: async () => ({ content: [{ type: "text", text: "ok" }], details: {} }),
 					});
-					pi.on("session_start", () => {
-						pi.registerTool({
+					theta.on("session_start", () => {
+						theta.registerTool({
 							name: "dynamic_tool",
 							label: "Dynamic Tool",
 							description: "Dynamically registered extension tool",
@@ -116,7 +130,10 @@ describe("defaultTools setting", () => {
 		);
 		await session.bindExtensions({});
 
-		expect(session.getActiveToolNames().sort()).toEqual(["dynamic_tool", "grep", "sdk_tool", "static_tool"]);
+		// `grep` is not in the F1 registry, so it drops out of the
+		// active set. The custom + extension tools + the auto-added
+		// `query` tool remain.
+		expect(session.getActiveToolNames().sort()).toEqual(["dynamic_tool", "query", "sdk_tool", "static_tool"]);
 		expect(session.getAllTools().map((tool) => tool.name)).toEqual(
 			expect.arrayContaining(["read", "dynamic_tool", "sdk_tool", "static_tool"]),
 		);
@@ -125,14 +142,23 @@ describe("defaultTools setting", () => {
 
 	it("preserves explicit tool option precedence", async () => {
 		const allowlistedSession = await createSession(["grep"], { tools: ["read"] });
+		// An explicit `tools` allowlist is full control — the F1
+		// `query` tool is NOT auto-added (the user has already
+		// enumerated exactly the tools they want).
 		expect(allowlistedSession.getActiveToolNames()).toEqual(["read"]);
 		allowlistedSession.dispose();
 
 		const excludedSession = await createSession(["read", "grep"], { excludeTools: ["read"] });
-		expect(excludedSession.getActiveToolNames()).toEqual(["grep"]);
+		// The `excludeTools` denylist is applied after the default
+		// list + auto-added `query`. `grep` is not in the F1
+		// registry, so the only survivor is the auto-added `query`
+		// tool.
+		expect(excludedSession.getActiveToolNames()).toEqual(["query"]);
 		excludedSession.dispose();
 
 		const toolLessSession = await createSession(["read"], { noTools: "all" });
+		// `noTools: "all"` means "no tools at all" — `query` is not
+		// auto-added either.
 		expect(toolLessSession.getAllTools()).toEqual([]);
 		expect(toolLessSession.getActiveToolNames()).toEqual([]);
 		toolLessSession.dispose();
@@ -147,13 +173,17 @@ describe("defaultTools setting", () => {
 			model: getModel("anthropic", "claude-sonnet-4-5")!,
 		});
 
+		// `ls` is not in the F1 registry, so the only active tool
+		// is the auto-added `query`. The registry still holds the
+		// F1 coding tools.
 		expect(
 			session
 				.getAllTools()
 				.map((tool) => tool.name)
 				.sort(),
-		).toEqual(["bash", "edit", "find", "grep", "ls", "powershell", "read", "write"]);
-		expect(session.getActiveToolNames()).toEqual(["ls"]);
+		).toEqual([...F1_BUILTIN_TOOL_NAMES].sort());
+		expect(session.getActiveToolNames()).toEqual(["query"]);
 		session.dispose();
 	});
 });
+

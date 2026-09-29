@@ -115,3 +115,4 @@ describe("google-shared convertMessages — signed empty blocks", () => {
 		expect(JSON.stringify(modelTurn)).not.toContain(VALID_SIG);
 	});
 });
+

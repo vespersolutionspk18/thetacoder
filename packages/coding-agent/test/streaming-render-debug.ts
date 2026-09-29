@@ -4,8 +4,8 @@
  * Run with: npx tsx test/streaming-render-debug.ts
  */
 
-import type { AssistantMessage } from "@earendil-works/pi-ai";
-import { ProcessTerminal, type TUI, TuiMainScreen } from "@earendil-works/pi-tui";
+import type { AssistantMessage } from "@theta/ai";
+import { ProcessTerminal, type TUI, TuiMainScreen } from "@theta/tui";
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -95,3 +95,4 @@ async function main() {
 }
 
 main().catch(console.error);
+

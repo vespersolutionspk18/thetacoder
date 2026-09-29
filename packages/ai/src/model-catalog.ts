@@ -25,3 +25,4 @@ export function flattenModelCatalog<const TProvider extends ProviderId, const TG
 ): ModelCatalog<TGroups, TProvider> {
 	return Object.assign({}, ...Object.values(groups)) as ModelCatalog<TGroups, TProvider>;
 }
+

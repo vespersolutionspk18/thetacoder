@@ -1,5 +1,5 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
-import { fauxAssistantMessage, fauxToolCall } from "@earendil-works/pi-ai";
+import type { AgentTool } from "@theta/agent-core";
+import { fauxAssistantMessage, fauxToolCall } from "@theta/ai";
 import { Type } from "typebox";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, type Harness } from "../harness.ts";
@@ -38,8 +38,8 @@ describe("issue #7253: manual compaction during an active response", () => {
 			settings: { compaction: { enabled: true, reserveTokens: 200, keepRecentTokens: 2 } },
 			tools: [createNoopTool()],
 			extensionFactories: [
-				(pi) => {
-					pi.on("session_before_compact", async (event) => ({
+				(theta) => {
+					theta.on("session_before_compact", async (event) => ({
 						compaction: {
 							summary: `${event.reason} summary`,
 							firstKeptEntryId: event.preparation.firstKeptEntryId,
@@ -81,3 +81,4 @@ describe("issue #7253: manual compaction during an active response", () => {
 		expect(entries.filter((entry) => entry.type === "compaction")).toHaveLength(1);
 	});
 });
+

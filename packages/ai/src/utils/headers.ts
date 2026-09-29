@@ -16,3 +16,4 @@ export function providerHeadersToRecord(headers: ProviderHeaders | undefined): R
 	}
 	return Object.keys(result).length > 0 ? result : undefined;
 }
+

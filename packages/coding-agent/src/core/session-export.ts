@@ -40,3 +40,4 @@ export function exportSessionToJsonl(
 	writeFileSync(filePath, `${lines.join("\n")}\n`);
 	return filePath;
 }
+

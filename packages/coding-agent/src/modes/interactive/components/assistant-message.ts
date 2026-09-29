@@ -1,5 +1,5 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
-import { Container, Markdown, type MarkdownTheme, MouseRegion, Spacer, Text } from "@earendil-works/pi-tui";
+import type { AssistantMessage } from "@theta/ai";
+import { Container, Markdown, type MarkdownTheme, MouseRegion, Spacer, Text } from "@theta/tui";
 import type { MarkdownTransformer } from "../../../core/extensions/types.ts";
 import { getMarkdownTheme, theme } from "../theme/theme.ts";
 import { createMarkdownTransform } from "./markdown-transform.ts";
@@ -200,3 +200,4 @@ export class AssistantMessageComponent extends Container {
 		}
 	}
 }
+

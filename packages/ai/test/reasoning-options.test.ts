@@ -34,3 +34,4 @@ describe("getEffortThinkingLevelMap", () => {
 		expect(getEffortThinkingLevelMap([{ type: "effort", values: [null, "default"] }])).toBeUndefined();
 	});
 });
+

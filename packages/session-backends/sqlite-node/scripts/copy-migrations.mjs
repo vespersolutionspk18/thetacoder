@@ -5,3 +5,4 @@ const target = new URL("../dist/sqlite/migrations/", import.meta.url);
 
 await mkdir(target, { recursive: true });
 await cp(source, target, { recursive: true });
+

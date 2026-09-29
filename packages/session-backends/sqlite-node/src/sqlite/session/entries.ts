@@ -6,7 +6,7 @@ import type {
 	EntryScan,
 	EntryStructure,
 	MessageEntry,
-} from "@earendil-works/pi-agent-core";
+} from "@theta/agent-core";
 import { joinSqlFragments, type SqlQuery, sql } from "../sql.ts";
 import type { SqliteDatabase, SqliteStatement } from "../types.ts";
 
@@ -159,3 +159,4 @@ export function scanEntryRows(db: SqliteDatabase, sessionId: string, query: Entr
 	return sql`SELECT id, parent_id, seq, type, custom_type, timestamp, payload
 		FROM entries WHERE ${joinSqlFragments(filters, " AND ")} ${order} ${limit}`.all<EntryRow>(db);
 }
+

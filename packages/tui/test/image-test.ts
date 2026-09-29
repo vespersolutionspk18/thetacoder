@@ -55,3 +55,4 @@ const editor = {
 
 tui.setFocus(editor as any);
 tui.start();
+

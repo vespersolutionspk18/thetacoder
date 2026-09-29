@@ -79,3 +79,4 @@ describe("KeybindingsManager", () => {
 		assert.deepStrictEqual(keybindings.getKeys("tui.editor.cursorLeft"), ["left", "ctrl+b"]);
 	});
 });
+

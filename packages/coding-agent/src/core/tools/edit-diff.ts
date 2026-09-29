@@ -16,6 +16,24 @@ export function detectLineEnding(content: string): "\r\n" | "\n" {
 	return crlfIdx < lfIdx ? "\r\n" : "\n";
 }
 
+/**
+ * Compute a stable content identity string for optimistic-concurrency checks.
+ * Strips BOM, LF-normalizes, then returns `length + ":" + sha256(buf as utf-8)`.
+ * Used by edit/write to verify the on-disk content matches a previously read version.
+ */
+export async function contentIdentity(content: string): Promise<string> {
+	const { text } = splitBom(content);
+	const normalized = normalizeToLF(text);
+	const buf = Buffer.from(normalized, "utf-8");
+	// Indirect the import path so browser bundlers (e.g. esbuild in
+	// scripts/check-browser-smoke.mjs) do not try to statically resolve
+	// `node:crypto` when this module is part of a browser-facing entry.
+	const moduleName = "node" + ":" + "crypto";
+	const { createHash } = (await import(/* @vite-ignore */ moduleName)) as typeof import("node:crypto");
+	const hash = createHash("sha256").update(buf).digest("hex");
+	return `${buf.length}:${hash}`;
+}
+
 export function normalizeToLF(text: string): string {
 	return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
@@ -510,11 +528,16 @@ export interface EditDiffError {
 /**
  * Compute the diff for one or more edit operations without applying them.
  * Used for preview rendering in the TUI before the tool executes.
+ *
+ * If `expectedVersion` is provided, the file's current content identity is
+ * computed first; a mismatch short-circuits with `{ error: "Stale observation" }`
+ * so the TUI can show the stale preview without performing the full diff.
  */
 export async function computeEditsDiff(
 	path: string,
 	edits: Edit[],
 	cwd: string,
+	expectedVersion?: string,
 ): Promise<EditDiffResult | EditDiffError> {
 	const absolutePath = resolveToCwd(path, cwd);
 
@@ -529,6 +552,14 @@ export async function computeEditsDiff(
 
 		// Read the file
 		const rawContent = await readFile(absolutePath, "utf-8");
+
+		// Optimistic-concurrency precheck: short-circuit on stale identity.
+		if (expectedVersion !== undefined) {
+			const currentVersion = await contentIdentity(rawContent);
+			if (currentVersion !== expectedVersion) {
+				return { error: "Stale observation" };
+			}
+		}
 
 		// Strip BOM before matching (LLM won't include invisible BOM in oldText)
 		const { text: content } = splitBom(rawContent);
@@ -554,3 +585,4 @@ export async function computeEditDiff(
 ): Promise<EditDiffResult | EditDiffError> {
 	return computeEditsDiff(path, [{ oldText, newText }], cwd);
 }
+

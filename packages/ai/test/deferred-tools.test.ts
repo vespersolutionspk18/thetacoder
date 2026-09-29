@@ -548,3 +548,4 @@ describe("deferred tools", () => {
 		expect(marked.trailingTokens).toBeGreaterThan(plain.trailingTokens + 500);
 	});
 });
+

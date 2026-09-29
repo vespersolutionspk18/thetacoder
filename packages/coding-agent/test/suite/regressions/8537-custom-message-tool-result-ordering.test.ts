@@ -1,5 +1,5 @@
-import type { AgentMessage, AgentTool } from "@earendil-works/pi-agent-core";
-import { fauxAssistantMessage, fauxToolCall } from "@earendil-works/pi-ai";
+import type { AgentMessage, AgentTool } from "@theta/agent-core";
+import { fauxAssistantMessage, fauxToolCall } from "@theta/ai";
 import { Type } from "typebox";
 import { afterEach, describe, expect, it } from "vitest";
 import { convertToLlm } from "../../../src/core/messages.ts";
@@ -142,3 +142,4 @@ describe("#8537 custom messages injected during tool execution", () => {
 		}
 	});
 });
+

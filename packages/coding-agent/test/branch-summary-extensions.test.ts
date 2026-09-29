@@ -1,4 +1,4 @@
-import type { Usage } from "@earendil-works/pi-ai/compat";
+import type { Usage } from "@theta/ai/compat";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, type Harness } from "./suite/harness.ts";
 import { assistantMsg, userMsg } from "./utilities.ts";
@@ -23,8 +23,8 @@ describe("Branch summary extensions", () => {
 		};
 		const harness = await createHarness({
 			extensionFactories: [
-				(pi) => {
-					pi.on("session_before_tree", () => ({
+				(theta) => {
+					theta.on("session_before_tree", () => ({
 						summary: {
 							summary: "Summary provided by extension",
 							usage,
@@ -55,3 +55,4 @@ describe("Branch summary extensions", () => {
 		expect(stats.cost).toBe(1);
 	});
 });
+

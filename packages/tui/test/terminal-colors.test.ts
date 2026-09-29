@@ -250,3 +250,4 @@ describe("TUI.queryTerminalBackgroundColor", () => {
 		}
 	});
 });
+

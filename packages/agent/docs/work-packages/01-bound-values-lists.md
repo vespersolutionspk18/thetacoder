@@ -10,8 +10,8 @@ Replace the retained register/custom-state storage surface with bound `Value<T>`
 
 ## Decisions fixed for this package
 
-1. **Core and application namespaces.** Every core address uses the exact documented `pi.*` namespace. Applications use their own non-reserved namespaces through the same public `value()` / `list()` constructors. `fact.custom` and its API are deleted, not renamed to a built-in custom namespace.
-2. **Forks.** Generic forks copy only explicitly handled core addresses: Branch tip/lane configuration plus fresh lane state, session name, and labels whose targets copy. They copy no `pi.op.*`, `pi.pending.*`, list, ledger, or arbitrary application address. A later application feature must add an address-specific fork policy before relying on copied application state.
+1. **Core and application namespaces.** Every core address uses the exact documented `theta.*` namespace. Applications use their own non-reserved namespaces through the same public `value()` / `list()` constructors. `fact.custom` and its API are deleted, not renamed to a built-in custom namespace.
+2. **Forks.** Generic forks copy only explicitly handled core addresses: Branch tip/lane configuration plus fresh lane state, session name, and labels whose targets copy. They copy no `theta.op.*`, `theta.pending.*`, list, ledger, or arbitrary application address. A later application feature must add an address-specific fork policy before relying on copied application state.
 3. **Trusted kind discipline.** Using one `(namespace, key)` as both a value and a list is a trusted-programming defect. Backends do not add cross-kind collision checks, triggers, registries, or catalogs.
 4. **Operation names.** Keep source `OperationMeta` for immutable acceptance metadata and `Operation` for the process-local `{ meta: OperationMeta, state: OperationState }` projection. `operationMeta(id)` binds `Value<OperationMeta>`; the composite is never persisted as one value.
 5. **Query ordering and bounds.** `scanValues()` returns key-ascending results. `readList()` limits only one query page, never total list length or bytes: reject non-positive or non-safe limits, default to 1,000, and clamp larger values to 10,000.
@@ -147,7 +147,7 @@ If the final old-API grep identifies another retained source/test call site, it 
 5. **Migrate runtime2 shell call sites.** Replace lane/harness raw writes with built-in constructors/helpers. `restore.ts` uses `scanValues(branchTipInventoryPrefix())` plus exact `getValue` lookups and performs no `readList()` call. Do not add acceptance, drive, hydration, or cleanup behavior.
 6. **Replace the SQLite WIP schema and adapter.** Edit `001_initial.sql` in place, implement scalar operations and indexed list append/delete/paging in `session/values.ts`, keep every write inside the existing `BEGIN IMMEDIATE` writer-lease transaction, update both fork snapshot paths, and retain all entry/usage/branch/lease behavior from current `dev`.
 7. **Migrate public events, tests, and the coding-agent helper.** Remove old type assertions and raw namespaces. Change `fact_update` to `value_update`. Keep the two remote prompt tests skipped for the existing WP00 reason; WP01 must not alter runtime execution.
-8. **Update telemetry and documentation.** Change `pi.session.write` item kinds from `register` to `value` and `list`, regenerate `telemetry-schema.md`, run the old-API sweeps, and record any branch-policy-deferred changelog requirement. Do not edit a changelog on `gramps` unless it becomes a pull-request branch or the user requests it.
+8. **Update telemetry and documentation.** Change `theta.session.write` item kinds from `register` to `value` and `list`, regenerate `telemetry-schema.md`, run the old-API sweeps, and record any branch-policy-deferred changelog requirement. Do not edit a changelog on `gramps` unless it becomes a pull-request branch or the user requests it.
 
 ## Backend requirements
 
@@ -202,7 +202,7 @@ Ascending and descending list queries use the primary key with an exclusive sequ
 - empty key works; empty namespace and `\u0000` components reject;
 - exact built-in namespaces/key grammars and exactly five prefix constructors;
 - application-wide and dynamic non-reserved addresses require no second operation-time key;
-- no registry, catalog, privilege constructor, global value map, or runtime `pi.*` gate.
+- no registry, catalog, privilege constructor, global value map, or runtime `theta.*` gate.
 
 ### Shared scalar/list conformance
 
@@ -324,4 +324,5 @@ Never run unrestricted Vitest, `npm test`, paid-provider tests, or `npm run buil
 
 ## Stop condition
 
-Stop when every retained backend and Session surface uses bound values/lists; all core addresses use the exact `pi.*` grammar; arbitrary application addresses work but generic forks exclude them; old register/fact/custom-state APIs and physical names are absent; base restore performs no list read; schema/compatibility decisions above are implemented; focused, conformance, TypeScript, telemetry-doc, diff, and repository checks pass. Report the final schema and fork behavior. Do not begin runtime acceptance, assistant/tool consumers, or any later work package.
+Stop when every retained backend and Session surface uses bound values/lists; all core addresses use the exact `theta.*` grammar; arbitrary application addresses work but generic forks exclude them; old register/fact/custom-state APIs and physical names are absent; base restore performs no list read; schema/compatibility decisions above are implemented; focused, conformance, TypeScript, telemetry-doc, diff, and repository checks pass. Report the final schema and fork behavior. Do not begin runtime acceptance, assistant/tool consumers, or any later work package.
+

@@ -50,3 +50,4 @@ describe("Server listener composition", () => {
 		expect(second.closeCount).toBe(0);
 	});
 });
+

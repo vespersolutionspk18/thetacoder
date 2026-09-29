@@ -88,3 +88,4 @@ describe("InteractiveMode startup input", () => {
 		expect(context.pendingUserInputs).toEqual([]);
 	});
 });
+

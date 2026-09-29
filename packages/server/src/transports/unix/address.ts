@@ -7,3 +7,4 @@ export function getUnixSocketPath(serverId: string, serverDirectory: string): st
 	}
 	return join(serverDirectory, `${serverId}.sock`);
 }
+

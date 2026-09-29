@@ -11,7 +11,7 @@ import {
 	type SimpleStreamOptions,
 	type Usage,
 	uuidv7,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import type { AgentMessage, ThinkingLevel } from "../../types.ts";
 import { type Context, getTelemetryContext } from "../context.ts";
 import { convertToLlm, createBranchSummaryMessage, createCompactionSummaryMessage } from "../messages.ts";
@@ -772,7 +772,7 @@ export async function compactWithRequest(
 	let summaryUsage: Usage;
 
 	if (isSplitTurn && turnPrefixMessages.length > 0) {
-		let historyText = "No prior history.";
+		let historyText = previousSummary ?? "No prior history.";
 		let historyUsage: Usage | undefined;
 		if (messagesToSummarize.length > 0) {
 			const historyResult = await generateSummaryWithRequest(
@@ -863,3 +863,4 @@ async function generateTurnPrefixSummary(
 		usage: response.usage,
 	});
 }
+

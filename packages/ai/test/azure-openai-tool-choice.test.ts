@@ -77,3 +77,4 @@ describe("Azure OpenAI tool choice", () => {
 		expect((payload as { tools?: unknown[] }).tools).toHaveLength(1);
 	});
 });
+

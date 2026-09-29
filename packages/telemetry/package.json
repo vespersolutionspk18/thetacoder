@@ -1,8 +1,9 @@
 {
-	"name": "@earendil-works/pi-telemetry",
+	"name": "@theta/telemetry",
 	"version": "0.85.1",
-	"description": "Vendor-neutral telemetry contracts and typed schema utilities for pi",
+	"description": "Vendor-neutral telemetry contracts and typed schema utilities for theta",
 	"type": "module",
+	"private": true,
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
@@ -22,22 +23,15 @@
 	"scripts": {
 		"clean": "shx rm -rf dist",
 		"build": "tsgo -p tsconfig.build.json",
-		"test": "vitest --run",
-		"prepublishOnly": "npm run clean && npm run build"
-	},
+		"test": "vitest --run"
+},
 	"keywords": [
 		"telemetry",
 		"tracing",
 		"observability"
 	],
-	"author": "Mario Zechner",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
-		"directory": "packages/telemetry"
-	},
-	"engines": {
+		"license": "UNLICENSED",
+		"engines": {
 		"node": ">=22.19.0"
 	},
 	"devDependencies": {

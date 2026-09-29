@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const ANTHROPIC_MODELS: ModelCatalog<typeof values, "anthropic"> =
 	flattenModelCatalog("anthropic", values);
+

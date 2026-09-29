@@ -1,6 +1,6 @@
 import { constants } from "node:fs";
 import { access as fsAccess } from "node:fs/promises";
-import type { AgentTool } from "@earendil-works/pi-agent-core";
+import type { AgentTool, ToolOutcome } from "@theta/agent-core";
 import { spawn } from "child_process";
 import { type Static, Type } from "typebox";
 import { waitForChildProcess } from "../../utils/child-process.ts";
@@ -49,6 +49,8 @@ export type BashToolInput = Static<typeof bashSchema>;
 export interface BashToolDetails {
 	truncation?: TruncationResult;
 	fullOutputPath?: string;
+	/** Structured outcome synthesized by the agent loop. */
+	outcome?: ToolOutcome;
 }
 
 /**
@@ -145,9 +147,9 @@ export function createLocalShellOperations(shellName: string, resolveShellConfig
 }
 
 /**
- * Create bash operations using pi's built-in local shell execution backend.
+ * Create bash operations using theta's built-in local shell execution backend.
  *
- * This is useful for extensions that intercept user_bash and still want pi's
+ * This is useful for extensions that intercept user_bash and still want theta's
  * standard local shell behavior while wrapping or rewriting commands.
  */
 export function createLocalBashOperations(options?: { shellPath?: string }): BashOperations {
@@ -197,7 +199,7 @@ export interface BashToolOptions {
 	commandPrefix?: string;
 	/** Optional explicit shell path from settings */
 	shellPath?: string;
-	/** Expose current Pi session metadata as PI_* environment variables. Default: true */
+	/** Expose current Theta session metadata as PI_* environment variables. Default: true */
 	exposeSessionEnvironment?: boolean;
 	/** Hook to adjust command, cwd, or env before execution */
 	spawnHook?: BashSpawnHook;
@@ -379,7 +381,7 @@ const bashToolConfig: ShellToolConfig = {
 	prompt: "$",
 	promptSnippet: bashToolSystemPromptContribution.snippet,
 	promptGuidelines: bashToolSystemPromptContribution.guidelines,
-	tempFilePrefix: "pi-bash",
+	tempFilePrefix: "theta-bash",
 };
 
 export function createBashToolDefinition(
@@ -398,3 +400,4 @@ export function createBashTool(cwd: string, options?: BashToolOptions): AgentToo
 	});
 	return tool;
 }
+

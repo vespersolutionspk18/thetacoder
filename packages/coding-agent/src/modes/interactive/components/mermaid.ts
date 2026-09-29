@@ -1,4 +1,4 @@
-import { Marked, type Token } from "@earendil-works/pi-tui";
+import { Marked, type Token } from "@theta/tui";
 import { type MermaidArt, render, type Span } from "grok-mermaid";
 import type { MarkdownTransformer } from "../../../core/extensions/types.ts";
 import type { MermaidRenderingMode } from "../../../core/settings-manager.ts";
@@ -87,3 +87,4 @@ export function createMermaidMarkdownTransformer(options: MermaidTransformerOpti
 			.join("");
 	};
 }
+

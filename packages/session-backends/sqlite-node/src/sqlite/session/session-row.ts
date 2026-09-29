@@ -1,5 +1,5 @@
-import type { SessionMetadata } from "@earendil-works/pi-agent-core";
-import type { Usage } from "@earendil-works/pi-ai";
+import type { SessionMetadata } from "@theta/agent-core";
+import type { Usage } from "@theta/ai";
 import { sql } from "../sql.ts";
 import type { SqliteDatabase } from "../types.ts";
 
@@ -100,3 +100,4 @@ export function deleteSessionRows(db: SqliteDatabase, sessionId: string): void {
 	if (result.changes !== 1)
 		throw new Error(`Expected to delete one SQLite session ${sessionId}, deleted ${result.changes}`);
 }
+

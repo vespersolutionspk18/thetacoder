@@ -63,3 +63,4 @@ export class TruncatedText implements Component {
 		return result;
 	}
 }
+

@@ -5,7 +5,7 @@ import {
 	type Message,
 	type Model,
 	type UserMessage,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import { Type } from "typebox";
 import { describe, expect, it } from "vitest";
 import { agentLoop, agentLoopContinue } from "../src/agent-loop.ts";
@@ -1608,3 +1608,4 @@ describe("agentLoopContinue with AgentMessage", () => {
 		expect(messages[0].role).toBe("assistant");
 	});
 });
+

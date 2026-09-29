@@ -31,3 +31,4 @@ describe("contentText", () => {
 		expect(contentText(toolResultContent, "")).toBe("firstsecond");
 	});
 });
+

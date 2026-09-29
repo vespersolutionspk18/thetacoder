@@ -44,3 +44,4 @@ export class KillRing {
 		return this.ring.length;
 	}
 }
+

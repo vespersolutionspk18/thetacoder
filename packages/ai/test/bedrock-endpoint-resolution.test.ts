@@ -206,3 +206,4 @@ describe("bedrock endpoint resolution", () => {
 		expect(config.authSchemePreference).toEqual(["httpBearerAuth"]);
 	});
 });
+

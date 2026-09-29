@@ -13,3 +13,4 @@ export function mistralProvider(): Provider<"mistral-conversations"> {
 		api: mistralConversationsApi(),
 	});
 }
+

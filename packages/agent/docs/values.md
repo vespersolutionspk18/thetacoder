@@ -32,7 +32,7 @@ When an application genuinely has keyed instances, it constructs the address for
 const workspaceEvents = (workspaceId: string) =>
   list<ApplicationEvent>("my-app.events", workspaceId);
 
-await session.readList(workspaceEvents("pi"), { limit: 100 }, context);
+await session.readList(workspaceEvents("theta"), { limit: 100 }, context);
 ```
 
 Storage may physically index the address as `(kind, namespace, key)`, but that representation does not leak into each read or write call. Storage, Session, harness code, and applications use the same address vocabulary. There is no global value-type map, dynamic registry, token catalog, or separate application-state storage mechanism.
@@ -106,7 +106,7 @@ The phantom function makes `T` invariant: an address for one type cannot silentl
 Rules:
 
 - `namespace` must be non-empty;
-- namespace `pi` and every `pi.*` namespace are reserved for built-ins by contract;
+- namespace `theta` and every `theta.*` namespace are reserved for built-ins by contract;
 - applications that construct a reserved address are defective trusted in-process code; no runtime privilege split, registry, or catalog exists;
 - neither component may contain the Memory backend's internal separator (`\u0000`);
 - an empty key is valid and is the natural address for one application-wide value or list;
@@ -124,17 +124,17 @@ An address names one value or one list. Internal code uses small constructors wh
 
 ```ts
 export const branchTip = (lane: string) =>
-  value<string | null>("pi.branch.tip", lane);
+  value<string | null>("theta.branch.tip", lane);
 
 export const operationState = (operationId: string) =>
-  value<OperationState>("pi.op.state", operationId);
+  value<OperationState>("theta.op.state", operationId);
 
 export const operationToolArgs = (
   operationId: string,
   stepId: string,
   sourceIndex: number,
 ) => value<Record<string, JsonValue>>(
-  "pi.op.tool_args",
+  "theta.op.tool_args",
   `${operationId}:${stepId}:${sourceIndex}`,
 );
 
@@ -142,7 +142,7 @@ export const pendingAssistantFrames = (
   operationId: string,
   responseEntryId: string,
 ) => list<AssistantMessageFrame>(
-  "pi.pending.assistant_frame",
+  "theta.pending.assistant_frame",
   `${operationId}:${responseEntryId}`,
 );
 ```
@@ -171,7 +171,7 @@ export const applicationState = value<MyApplicationState>("my-app.state");
 export const applicationEvents = list<MyApplicationEvent>("my-app.events");
 ```
 
-Applications should use a stable, collision-resistant namespace prefix. Namespace `pi` and the complete `pi.*` prefix are reserved for built-ins by contract; similar-looking names such as `pi2` remain legal. The same `value()` and `list()` constructors serve core and application code. Tests assert that every built-in address uses its reserved prefix. There is no runtime privilege split, registry, or catalog.
+Applications should use a stable, collision-resistant namespace prefix. Namespace `theta` and the complete `theta.*` prefix are reserved for built-ins by contract; similar-looking names such as `pi2` remain legal. The same `value()` and `list()` constructors serve core and application code. Tests assert that every built-in address uses its reserved prefix. There is no runtime privilege split, registry, or catalog.
 
 ## Built-in addresses
 
@@ -179,69 +179,69 @@ Built-in constructors live together in `packages/agent/src/harness/session/value
 
 ```ts
 export const branchTip = (lane: string) =>
-  value<string | null>("pi.branch.tip", lane);
+  value<string | null>("theta.branch.tip", lane);
 export const laneConfig = (lane: string) =>
-  value<LaneConfiguration>("pi.lane.config", lane);
+  value<LaneConfiguration>("theta.lane.config", lane);
 export const laneState = (lane: string) =>
-  value<LaneState>("pi.lane.state", lane);
+  value<LaneState>("theta.lane.state", lane);
 export const operationResult = (operationId: string) =>
-  value<OperationResultRecord>("pi.result", operationId);
+  value<OperationResultRecord>("theta.result", operationId);
 
 /** Used only by scanValues() to enumerate Branch names. */
 export const branchTipInventoryPrefix = () =>
-  value<string | null>("pi.branch.tip");
+  value<string | null>("theta.branch.tip");
 
 export const operationMeta = (operationId: string) =>
-  value<OperationMeta>("pi.op.meta", operationId);
+  value<OperationMeta>("theta.op.meta", operationId);
 export const operationState = (operationId: string) =>
-  value<OperationState>("pi.op.state", operationId);
+  value<OperationState>("theta.op.state", operationId);
 export const operationToolArgs = (operationId: string, stepId: string, sourceIndex: number) =>
   value<Record<string, JsonValue>>(
-    "pi.op.tool_args",
+    "theta.op.tool_args",
     `${operationId}:${stepId}:${sourceIndex}`,
   );
 export const operationToolMemo = (operationId: string, invocationId: string, name: string) =>
-  value<JsonValue>("pi.op.tool_memo", `${operationId}:${invocationId}:${name}`);
+  value<JsonValue>("theta.op.tool_memo", `${operationId}:${invocationId}:${name}`);
 export const operationPreparation = (operationId: string, taskId: string) =>
   value<DurableStructuralPreparation>(
-    "pi.op.preparation",
+    "theta.op.preparation",
     `${operationId}:${taskId}`,
   );
 
 /** Prefix addresses are exported only for namespace-scoped scanValues(). */
 export const operationToolArgsPrefix = (operationId: string, stepId?: string) =>
   value<Record<string, JsonValue>>(
-    "pi.op.tool_args",
+    "theta.op.tool_args",
     stepId === undefined ? `${operationId}:` : `${operationId}:${stepId}:`,
   );
 export const operationToolMemoPrefix = (operationId: string, invocationId?: string) =>
   value<JsonValue>(
-    "pi.op.tool_memo",
+    "theta.op.tool_memo",
     invocationId === undefined ? `${operationId}:` : `${operationId}:${invocationId}:`,
   );
 export const operationPreparationPrefix = (operationId: string) =>
-  value<DurableStructuralPreparation>("pi.op.preparation", `${operationId}:`);
+  value<DurableStructuralPreparation>("theta.op.preparation", `${operationId}:`);
 
 export const pendingEntry = (entryId: string) =>
-  value<PendingEntry>("pi.pending.entry", entryId);
+  value<PendingEntry>("theta.pending.entry", entryId);
 export const pendingToolOutput = (operationId: string, invocationId: string) =>
   value<AgentToolResult<unknown>>(
-    "pi.pending.tool_output",
+    "theta.pending.tool_output",
     `${operationId}:${invocationId}`,
   );
 export const pendingAssistantFrames = (operationId: string, responseEntryId: string) =>
   list<AssistantMessageFrame>(
-    "pi.pending.assistant_frame",
+    "theta.pending.assistant_frame",
     `${operationId}:${responseEntryId}`,
   );
 export const pendingToolOutputPrefix = (operationId: string) =>
-  value<AgentToolResult<unknown>>("pi.pending.tool_output", `${operationId}:`);
+  value<AgentToolResult<unknown>>("theta.pending.tool_output", `${operationId}:`);
 
-export const sessionName = value<string>("pi.session.name");
-export const entryLabel = (entryId: string) => value<string>("pi.entry.label", entryId);
+export const sessionName = value<string>("theta.session.name");
+export const entryLabel = (entryId: string) => value<string>("theta.entry.label", entryId);
 ```
 
-`OperationMeta` is immutable acceptance metadata stored at `pi.op.meta`. The process-local `Operation` projection is `{ meta: OperationMeta, state: OperationState }`, assembled from the separate metadata and state values; it is never stored at one address.
+`OperationMeta` is immutable acceptance metadata stored at `theta.op.meta`. The process-local `Operation` projection is `{ meta: OperationMeta, state: OperationState }`, assembled from the separate metadata and state values; it is never stored at one address.
 
 The five exported scan-prefix constructors are `branchTipInventoryPrefix`, `operationToolArgsPrefix`, `operationToolMemoPrefix`, `operationPreparationPrefix`, and `pendingToolOutputPrefix`. Their addresses are consumed only by `scanValues()`.
 
@@ -447,7 +447,7 @@ Assistant partial durability is the first built-in list consumer:
 const frames = pendingAssistantFrames(operationId, responseEntryId);
 ```
 
-`AssistantMessageFrame`, `AssistantMessageFrameEncoder`, and `reduceAssistantMessageFrames()` come from `@earendil-works/pi-ai`. Do not define a second frame codec or reducer.
+`AssistantMessageFrame`, `AssistantMessageFrameEncoder`, and `reduceAssistantMessageFrames()` come from `@theta/ai`. Do not define a second frame codec or reducer.
 
 For every convertible non-terminal provider event, the assistant procedure:
 
@@ -567,8 +567,8 @@ For a missing cursor, omit the sequence predicate. Every write participates in t
 Logical records carry the bound address's physical components:
 
 ```jsonl
-{"kind":"list","op":"append","seq":41,"namespace":"pi.pending.assistant_frame","key":"O:R","value":{"type":"text_delta","contentIndex":0,"delta":"hi"}}
-{"kind":"list","op":"delete","seq":52,"namespace":"pi.pending.assistant_frame","key":"O:R"}
+{"kind":"list","op":"append","seq":41,"namespace":"theta.pending.assistant_frame","key":"O:R","value":{"type":"text_delta","contentIndex":0,"delta":"hi"}}
+{"kind":"list","op":"delete","seq":52,"namespace":"theta.pending.assistant_frame","key":"O:R"}
 ```
 
 Scalar records use `kind:"value"` with `op:"set"|"delete"`. WP01 keeps JSONL format 4 and storage version 1 but replaces the unfinished record spelling in place; pre-WP01 format-4 files are unsupported and no legacy `kind:"register"` decoder remains.
@@ -592,9 +592,9 @@ Deleted lists produce no snapshot records. Snapshot rewrites persist `nextSeq` i
 
 Fork and precise-rewrite code decides policy per concrete address grammar:
 
-- operation-owned `pi.op.*` scalar values are not copied into an idle fork;
-- immutable `pi.result` operation records are not copied by forks;
-- `pi.pending.entry`, `pi.pending.tool_output`, and `pi.pending.assistant_frame` values/lists are not copied;
+- operation-owned `theta.op.*` scalar values are not copied into an idle fork;
+- immutable `theta.result` operation records are not copied by forks;
+- `theta.pending.entry`, `theta.pending.tool_output`, and `theta.pending.assistant_frame` values/lists are not copied;
 - lane and semantic session values follow their existing scope rules;
 - application-defined values/lists are not copied by the generic fork; a consuming feature must add an explicit address-specific policy before relying on copied application state.
 
@@ -625,7 +625,7 @@ Append-path tests prove that no `readList` call occurs before append commit. Fra
 
 1. One bound address has one stable namespace/key/kind and one trusted value type in a storage version.
 2. Address object identity has no durable meaning.
-3. Namespace `pi` and every `pi.*` are reserved by contract; every built-in namespace starts with `pi.`, and application use is a trusted-programming defect.
+3. Namespace `theta` and every `theta.*` are reserved by contract; every built-in namespace starts with `theta.`, and application use is a trusted-programming defect.
 4. Exactly five built-in prefix constructors encapsulate Branch inventory and operation cleanup grammar; their results are consumed only by namespace-scoped `scanValues()`.
 5. Scalar and list addresses must not occupy the same physical location; this is a trusted-programming rule, not a runtime cross-kind collision check.
 6. Typed reads and helper-constructed writes preserve `T`.
@@ -656,9 +656,9 @@ Append-path tests prove that no `readList` call occurs before append commit. Fra
 - incompatible definitions of one physical address are documented/tested as a programming defect;
 - empty keys work, while empty namespaces and separator-containing components reject;
 - core and application code use the same `value()` and `list()` constructors, with no private constructor, privilege token, registry, or catalog;
-- built-in address constructors produce exact `pi.branch.tip`, `pi.lane.*`, `pi.op.*`, `pi.pending.*`, `pi.session.name`, and `pi.entry.label` namespace/key/kind triples;
-- every built-in namespace starts with `pi.`, while application fixtures use non-reserved namespaces;
-- `branchTipInventoryPrefix()` binds the empty-key `pi.branch.tip` inventory prefix and is used only to enumerate Branches through `scanValues`;
+- built-in address constructors produce exact `theta.branch.tip`, `theta.lane.*`, `theta.op.*`, `theta.pending.*`, `theta.session.name`, and `theta.entry.label` namespace/key/kind triples;
+- every built-in namespace starts with `theta.`, while application fixtures use non-reserved namespaces;
+- `branchTipInventoryPrefix()` binds the empty-key `theta.branch.tip` inventory prefix and is used only to enumerate Branches through `scanValues`;
 - tool-args prefixes cover one operation and optionally one step, tool-memo prefixes cover one operation and optionally one invocation, preparation and tool-output prefixes cover exactly one operation;
 - each prefix constructor result is used only by `scanValues`, and no inventory or cleanup call constructs a raw reserved namespace;
 - application addresses work without declaration merging or core catalogs;
@@ -733,3 +733,4 @@ Expected primary changes:
 - update telemetry schema sources and regenerate `telemetry-schema.md`; do not edit that generated file manually.
 
 WP01 stops after generic addresses/storage and projection-only restore coverage. `assistant-durability.md` specifies the later consuming lifecycle; assistant execution, deferred polling, recovery, snapshot hydration, memo/checkpoint capabilities, and operation cleanup land only with their runtime work packages.
+

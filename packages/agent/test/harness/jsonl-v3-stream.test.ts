@@ -159,3 +159,4 @@ describe("streaming legacy v3 normalization", () => {
 		expect(source.nextSeq).toBe(3);
 	});
 });
+

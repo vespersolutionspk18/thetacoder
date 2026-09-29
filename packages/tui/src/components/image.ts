@@ -125,3 +125,4 @@ export class Image implements Component {
 		return lines;
 	}
 }
+

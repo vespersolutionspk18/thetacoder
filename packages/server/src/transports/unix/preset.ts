@@ -1,4 +1,4 @@
-import type { SessionMetadata } from "@earendil-works/pi-agent-core";
+import type { SessionMetadata } from "@theta/agent-core";
 import { Server } from "../../server.ts";
 import type { ServerHost } from "../../types.ts";
 import { createUnixListener } from "./listener.ts";
@@ -26,3 +26,4 @@ export function createUnixServer<TMetadata extends SessionMetadata>(
 		onError: options.onError,
 	});
 }
+

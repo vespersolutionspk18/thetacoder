@@ -137,3 +137,4 @@ describe("openai-completions provider retries", () => {
 		expect(mockState.requestOptions).toEqual([expect.objectContaining({ maxRetries: 0 })]);
 	});
 });
+

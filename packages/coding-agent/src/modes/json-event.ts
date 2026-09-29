@@ -1,4 +1,4 @@
-import type { Usage } from "@earendil-works/pi-ai";
+import type { Usage } from "@theta/ai";
 import type { AgentSessionEvent } from "../core/agent-session.ts";
 
 type WithoutPartial<T> = T extends { partial: unknown } ? Omit<T, "partial"> : T;
@@ -59,3 +59,4 @@ export function toJsonEvent(event: AgentSessionEvent): JsonAgentSessionEvent {
 		assistantMessageEvent: toJsonAssistantMessageEvent(event.assistantMessageEvent),
 	};
 }
+

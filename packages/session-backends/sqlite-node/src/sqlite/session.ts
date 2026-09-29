@@ -13,7 +13,7 @@ import type {
 	StoredValue,
 	Value,
 	ValueList,
-} from "@earendil-works/pi-agent-core";
+} from "@theta/agent-core";
 import type { SqliteSessionMetadata } from "./session/session-row.ts";
 
 export interface SqliteOpenSessionOptions {
@@ -211,3 +211,4 @@ export class SqliteOpenSession implements Session<SqliteSessionMetadata> {
 		return result;
 	}
 }
+

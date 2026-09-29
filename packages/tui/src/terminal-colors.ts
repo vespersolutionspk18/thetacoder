@@ -71,3 +71,4 @@ export function parseTerminalColorSchemeReport(data: string): TerminalColorSchem
 	}
 	return match[1] === "2" ? "light" : "dark";
 }
+

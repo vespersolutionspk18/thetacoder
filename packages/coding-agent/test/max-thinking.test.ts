@@ -26,7 +26,7 @@ describe("max thinking level", () => {
 	});
 
 	it("falls back to thinkingXhigh for legacy themes", () => {
-		const testDir = mkdtempSync(join(tmpdir(), "pi-max-theme-"));
+		const testDir = mkdtempSync(join(tmpdir(), "theta-max-theme-"));
 		tempDirs.push(testDir);
 		const currentDir = dirname(fileURLToPath(import.meta.url));
 		const darkTheme = JSON.parse(
@@ -43,3 +43,4 @@ describe("max thinking level", () => {
 		);
 	});
 });
+

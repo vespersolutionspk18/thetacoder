@@ -7,8 +7,8 @@
  */
 
 import { randomUUID } from "node:crypto";
-import type { AgentLane, Context, HarnessEvent, LaneSnapshot, WatchHandle } from "@earendil-works/pi-agent-core";
-import type { Models } from "@earendil-works/pi-ai";
+import type { AgentLane, Context, HarnessEvent, LaneSnapshot, WatchHandle } from "@theta/agent-core";
+import type { Models } from "@theta/ai";
 import type {
 	CommandResult,
 	LaneServiceApi,
@@ -124,3 +124,4 @@ export class LaneService implements LaneServiceApi {
 function message(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
+

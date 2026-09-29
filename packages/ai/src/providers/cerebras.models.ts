@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const CEREBRAS_MODELS: ModelCatalog<typeof values, "cerebras"> =
 	flattenModelCatalog("cerebras", values);
+

@@ -18,3 +18,4 @@ export function getReplicatedStateInternals(value: unknown): ReplicatedStateInte
 	if (typeof value !== "object" || value === null) return undefined;
 	return sources.get(value);
 }
+

@@ -19,3 +19,4 @@ export class InstrumentedStorage extends StorageDecorator {
 		return this.delegate.commit(writes, context);
 	}
 }
+

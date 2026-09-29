@@ -9,7 +9,7 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
-import { Markdown, type MarkdownTheme } from "@earendil-works/pi-tui";
+import { Markdown, type MarkdownTheme } from "@theta/tui";
 import chalk from "chalk";
 import lockfile from "proper-lockfile";
 import { selectConfig } from "./cli/config-selector.ts";
@@ -36,7 +36,7 @@ import { SettingsManager } from "./core/settings-manager.ts";
 import { hasTrustRequiringProjectResources, ProjectTrustStore } from "./core/trust-manager.ts";
 import { spawnProcess, spawnProcessSync, waitForChildProcess } from "./utils/child-process.ts";
 import { canonicalizePath, getCwdRelativePath } from "./utils/paths.ts";
-import { getPiUserAgent } from "./utils/pi-user-agent.ts";
+import { getThetaUserAgent } from "./utils/theta-user-agent.ts";
 import { formatVersionCheckError, getLatestPiRelease, isNewerPackageVersion } from "./utils/version-check.ts";
 import {
 	cleanupWindowsSelfUpdateQuarantine,
@@ -47,7 +47,7 @@ export type PackageCommand = "install" | "remove" | "update" | "list";
 
 type UpdateTarget = { type: "all" } | { type: "self" } | { type: "extensions"; source?: string } | { type: "models" };
 
-const DEFAULT_INSTALLER_API_BASE = "https://pi.dev/api/installer/releases";
+const DEFAULT_INSTALLER_API_BASE = "https://theta.local/api/installer/releases";
 const MANAGED_INSTALL_MARKER = "managed-install.json";
 const MANAGED_RELEASE_VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
@@ -58,7 +58,7 @@ function getActiveManagedInstallRoot(): string | undefined {
 	const managedRoot = resolve(configuredRoot);
 	const releasesDir = canonicalizePath(join(managedRoot, "releases"));
 	// The launcher environment is inherited by child processes. Do not classify a
-	// source checkout or another Pi installation launched from managed Pi as managed.
+	// source checkout or another Theta installation launched from managed Theta as managed.
 	if (getCwdRelativePath(canonicalizePath(getPackageDir()), releasesDir) === undefined) return undefined;
 
 	const markerPath = join(managedRoot, MANAGED_INSTALL_MARKER);
@@ -68,7 +68,7 @@ function getActiveManagedInstallRoot(): string | undefined {
 			layout?: unknown;
 			schemaVersion?: unknown;
 		};
-		if (marker.kind !== "pi-managed-install" || marker.schemaVersion !== 1 || marker.layout !== "releases-v1") {
+		if (marker.kind !== "theta-managed-install" || marker.schemaVersion !== 1 || marker.layout !== "releases-v1") {
 			throw new Error();
 		}
 	} catch {
@@ -79,7 +79,7 @@ function getActiveManagedInstallRoot(): string | undefined {
 }
 
 async function fetchInstallerArtifact(url: string, label: string): Promise<string> {
-	const response = await fetch(url, { headers: { "User-Agent": getPiUserAgent(VERSION) } });
+	const response = await fetch(url, { headers: { "User-Agent": getThetaUserAgent(VERSION) } });
 	if (!response.ok) {
 		throw new Error(`Could not download managed installer ${label} from ${url}: HTTP ${response.status}`);
 	}
@@ -115,11 +115,11 @@ function verifyManagedRelease(releaseDir: string, expectedVersion: string): void
 	});
 	if (result.error || result.status !== 0) {
 		const reason = result.error?.message || result.stderr.trim() || `exit code ${result.status ?? "unknown"}`;
-		throw new Error(`Could not verify managed Pi ${expectedVersion}: ${reason}`);
+		throw new Error(`Could not verify managed Theta ${expectedVersion}: ${reason}`);
 	}
 	const installedVersion = result.stdout.trim();
 	if (installedVersion !== expectedVersion) {
-		throw new Error(`Managed Pi smoke test returned version ${installedVersion}; expected ${expectedVersion}.`);
+		throw new Error(`Managed Theta smoke test returned version ${installedVersion}; expected ${expectedVersion}.`);
 	}
 }
 
@@ -178,7 +178,7 @@ async function runManagedSelfUpdate(managedRoot: string, version: string): Promi
 		releaseLock = await lockfile.lock(join(managedRoot, "update"), { realpath: false });
 	} catch (error: unknown) {
 		if (error instanceof Error && "code" in error && error.code === "ELOCKED") {
-			throw new Error("Another managed Pi update is already running.");
+			throw new Error("Another managed Theta update is already running.");
 		}
 		throw error;
 	}
@@ -269,7 +269,7 @@ function getPackageCommandUsage(command: PackageCommand): string {
 		case "remove":
 			return `${APP_NAME} remove <source> [-l] [--approve|--no-approve]`;
 		case "update":
-			return `${APP_NAME} update [source|self|pi] [--self|--extensions|--models|--all] [--extension <source>] [--approve|--no-approve] [--force]`;
+			return `${APP_NAME} update [source|self|theta] [--self|--extensions|--models|--all] [--extension <source>] [--approve|--no-approve] [--force]`;
 		case "list":
 			return `${APP_NAME} list [--approve|--no-approve]`;
 	}
@@ -337,24 +337,24 @@ Examples:
 			console.log(`${chalk.bold("Usage:")}
   ${getPackageCommandUsage("update")}
 
-Update pi, installed packages, or model catalogs.
+Update theta, installed packages, or model catalogs.
 
 Options:
-  --self                  Update pi only (default when no target is given)
+  --self                  Update theta only (default when no target is given)
   --extensions            Update installed packages only
   --models                Refresh model catalogs only
-  --all                   Update pi and installed packages
+  --all                   Update theta and installed packages
   --extension <source>    Update one package only
   -a, --approve           Trust project-local files for this command
   -na, --no-approve       Ignore project-local files for this command
-  --force                 Reinstall pi even if the current version is latest
+  --force                 Reinstall theta even if the current version is latest
 
 Short forms:
-  ${APP_NAME} update                Update pi only
-  ${APP_NAME} update --all          Update pi and all extensions
+  ${APP_NAME} update                Update theta only
+  ${APP_NAME} update --all          Update theta and all extensions
   ${APP_NAME} update --models       Refresh model catalogs only
   ${APP_NAME} update <source>       Update one package
-  ${APP_NAME} update pi             Update pi only (self works as alias to pi)
+  ${APP_NAME} update theta             Update theta only (self works as alias to theta)
 `);
 			return;
 
@@ -531,7 +531,7 @@ function parsePackageCommand(args: string[]): PackageCommandOptions | undefined 
 			}
 			updateTarget = { type: "extensions", source: extensionFlagSource };
 		} else if (source) {
-			const sourceIsSelf = source === "self" || source === "pi";
+			const sourceIsSelf = source === "self" || source === "theta";
 			if (sourceIsSelf) {
 				updateTarget = extensionsFlag ? { type: "all" } : { type: "self" };
 			} else {
@@ -1100,3 +1100,4 @@ export async function handlePackageCommand(
 		return true;
 	}
 }
+

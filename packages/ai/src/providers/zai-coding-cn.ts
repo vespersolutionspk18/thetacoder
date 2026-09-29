@@ -13,3 +13,4 @@ export function zaiCodingCnProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

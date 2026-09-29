@@ -1,4 +1,4 @@
-import type { AssistantMessageFrame } from "@earendil-works/pi-ai";
+import type { AssistantMessageFrame } from "@theta/ai";
 import type { AgentToolResult } from "../../types.ts";
 import type { Context } from "../context.ts";
 import type { SessionReader, Write } from "../session/types.ts";
@@ -115,3 +115,4 @@ export function openToolProgress<TContext extends object | undefined>(
 		},
 	);
 }
+

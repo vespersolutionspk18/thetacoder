@@ -6,3 +6,4 @@ export function clampOpenAIPromptCacheKey(key: string | undefined): string | und
 	if (chars.length <= OPENAI_PROMPT_CACHE_KEY_MAX_LENGTH) return key;
 	return chars.slice(0, OPENAI_PROMPT_CACHE_KEY_MAX_LENGTH).join("");
 }
+

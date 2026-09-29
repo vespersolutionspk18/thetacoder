@@ -27,7 +27,7 @@ if ! command -v "$compiler" >/dev/null 2>&1; then
     echo "Linux C compiler not found: $compiler" >&2
     exit 1
 fi
-build_dir="$(mktemp -d "${TMPDIR:-/tmp}/pi-tui-linux.XXXXXX")"
+build_dir="$(mktemp -d "${TMPDIR:-/tmp}/theta-tui-linux.XXXXXX")"
 trap 'rm -rf "$build_dir"' EXIT
 
 common_flags=(
@@ -63,3 +63,4 @@ output_dir="$script_dir/prebuilds/linux-$arch"
 mkdir -p "$output_dir"
 install -m 755 "$x11_output" "$output_dir/linux-platform-x11.node"
 printf 'Built %s\n' "$output_dir/linux-platform-x11.node"
+

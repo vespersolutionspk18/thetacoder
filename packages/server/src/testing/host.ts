@@ -1,6 +1,6 @@
-import type { JsonValue, ServiceCall } from "@earendil-works/chord";
-import type { Context, Session, SessionMetadata } from "@earendil-works/pi-agent-core";
-import { BACKGROUND_CONTEXT, MemorySessionRepo } from "@earendil-works/pi-agent-core";
+import type { Context, Session, SessionMetadata } from "@theta/agent-core";
+import { BACKGROUND_CONTEXT, MemorySessionRepo } from "@theta/agent-core";
+import type { JsonValue, ServiceCall } from "@theta/chord";
 import { SessionAmbiguousError, SessionNotFoundError } from "../errors.ts";
 import type { RoutedServerServiceHost, RoutedSessionHandle, ServerHost } from "../types.ts";
 
@@ -123,7 +123,7 @@ export function createTestServerServices(): RoutedServerServiceHost {
 				async invokeService(call, _publish, context) {
 					if (
 						call.instance === undefined &&
-						call.serviceId === "pi.session-management" &&
+						call.serviceId === "theta.session-management" &&
 						call.member === "attach" &&
 						call.args.length === 1 &&
 						typeof call.args[0] === "string"
@@ -133,7 +133,7 @@ export function createTestServerServices(): RoutedServerServiceHost {
 					}
 					if (
 						call.instance === undefined &&
-						call.serviceId === "pi.session-management" &&
+						call.serviceId === "theta.session-management" &&
 						call.member === "detach" &&
 						call.args.length === 0
 					) {
@@ -213,3 +213,4 @@ export class TestServerHost implements ServerHost {
 		return harnesses.at(-1)!;
 	}
 }
+

@@ -19,9 +19,9 @@ import { splitDeferredTools } from "../utils/deferred-tools.ts";
 import { formatProviderError, normalizeProviderError } from "../utils/error-body.ts";
 import { AssistantMessageEventStream } from "../utils/event-stream.ts";
 import { headersToRecord } from "../utils/headers.ts";
-import { getPiUserAgent } from "../utils/pi-user-agent.ts";
 import { getProviderEnvValue } from "../utils/provider-env.ts";
 import { retryProviderRequest } from "../utils/provider-retry.ts";
+import { getThetaUserAgent } from "../utils/theta-user-agent.ts";
 import { createGrammarToolInputProperties } from "./constrained-sampling.ts";
 import { buildCopilotDynamicHeaders, hasCopilotVisionInput } from "./github-copilot-headers.ts";
 import { clampOpenAIPromptCacheKey } from "./openai-prompt-cache.ts";
@@ -29,7 +29,7 @@ import { convertResponsesMessages, convertResponsesTools, processResponsesStream
 import { buildBaseOptions } from "./simple-options.ts";
 
 const OPENAI_TOOL_CALL_PROVIDERS = new Set(["openai", "openai-codex", "opencode"]);
-// OpenAI Responses rejects max_output_tokens below 16: https://github.com/earendil-works/pi/issues/6265
+// OpenAI Responses rejects max_output_tokens below 16: https://github.com/earendil-works/theta/issues/6265
 const OPENAI_RESPONSES_MIN_OUTPUT_TOKENS = 16;
 
 function hasHeader(headers: ProviderHeaders | undefined, name: string): boolean {
@@ -237,7 +237,7 @@ function createClient(
 	sessionId?: string,
 ) {
 	const compat = getCompat(model);
-	const headers: ProviderHeaders = { "User-Agent": getPiUserAgent(), ...model.headers };
+	const headers: ProviderHeaders = { "User-Agent": getThetaUserAgent(), ...model.headers };
 	if (model.provider === "github-copilot") {
 		const hasImages = hasCopilotVisionInput(context.messages);
 		const copilotHeaders = buildCopilotDynamicHeaders({
@@ -388,3 +388,4 @@ function applyServiceTierPricing(
 	usage.cost.cacheWrite *= multiplier;
 	usage.cost.total = usage.cost.input + usage.cost.output + usage.cost.cacheRead + usage.cost.cacheWrite;
 }
+

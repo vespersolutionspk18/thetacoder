@@ -22,3 +22,4 @@ export function StringEnum<T extends readonly string[]>(
 		...(options?.default && { default: options.default }),
 	});
 }
+

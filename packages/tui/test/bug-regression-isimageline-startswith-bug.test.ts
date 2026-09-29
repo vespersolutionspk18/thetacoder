@@ -235,3 +235,4 @@ describe("Bug regression: isImageLine() crash with image escape sequences", () =
 		});
 	});
 });
+

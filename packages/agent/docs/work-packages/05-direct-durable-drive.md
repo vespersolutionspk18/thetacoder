@@ -90,7 +90,7 @@ Every leaf carries one uniform scope `{ control, settings, latestAssistantEntryI
 
 ### Durable operation results (R2)
 
-Every terminal transaction writes one small immutable result record at `operationResult(operationId)` (namespace `pi.result`, operation id key). The record is lane-lived; keeping it outside `pi.op.*` keeps that namespace's "deleted no later than the terminal transaction" grammar total and exception-free. `LaneState.lastOperationId` points at the newest record. `laneLastResult` (value, address constructor, and type union) is deleted.
+Every terminal transaction writes one small immutable result record at `operationResult(operationId)` (namespace `theta.result`, operation id key). The record is lane-lived; keeping it outside `theta.op.*` keeps that namespace's "deleted no later than the terminal transaction" grammar total and exception-free. `LaneState.lastOperationId` points at the newest record. `laneLastResult` (value, address constructor, and type union) is deleted.
 
 - `drive(id)` becomes total for settled operations: current id → install/join; record exists → return the record itself; neither → `OperationMismatch`.
 - Recovery and attachment never read result records; they are observation only.
@@ -269,7 +269,7 @@ Replace the three per-family outcome unions and `laneLastResult` with one immuta
 ```ts
 type TerminalStatus = "completed" | "declined" | "aborted" | "failed";
 
-/** Stored at operationResult(operationId) — namespace "pi.result" — by the terminal transaction. Immutable, lane-lived. */
+/** Stored at operationResult(operationId) — namespace "theta.result" — by the terminal transaction. Immutable, lane-lived. */
 interface OperationResultRecord {
   operationId: string;
   kind: "run" | "compaction" | "navigation";   // meta.intent.kind; matches OperationAdmission.kind
@@ -290,7 +290,7 @@ The record is a disposition plus a pointer to the transcript segment `(fromTipId
 ### Files
 
 - `src/harness/session/types.ts` — add the record; delete the `LaneLastResult` union; `LaneState` gains `lastOperationId: string | null`; delete `failure_drain`, `RunFailureDrainOperation`, and `FailureProvenance`.
-- `src/harness/session/values.ts` — `operationResult(operationId) = value<OperationResultRecord>("pi.result", operationId)`; delete `laneLastResult`. The `pi.op.*` lifetime grammar stays total: no operation-lived namespace survives its terminal transaction.
+- `src/harness/session/values.ts` — `operationResult(operationId) = value<OperationResultRecord>("theta.result", operationId)`; delete `laneLastResult`. The `theta.op.*` lifetime grammar stays total: no operation-lived namespace survives its terminal transaction.
 - `src/harness/agent-harness.ts` — delete `RunOutcome`, `CompactionOutcome`, `NavigationOutcome`, `OptionalFinalAssistant`, `TerminalOperationOutcome`, `ResumeOutcome`, and the transitional `OperationOutcome` union; `DriveOutcome.settled` carries `OperationResultRecord` directly (no duplicate `operationId` field); result aliases become
   `RunResult = Result<OperationResultRecord | SuspendedRun, …>`,
   `CompactionResult = Result<{ compaction: OperationResultRecord; run?: OperationResultRecord | SuspendedRun }, …>`,
@@ -309,7 +309,7 @@ The record is a disposition plus a pointer to the transcript segment `(fromTipId
 
 - Records are written exactly once, by the terminal transaction, and never deleted, updated, or read by recovery.
 - Terminal-control invariant (§1): a terminal transaction under durable `cancel_requested` records `aborted`; no path commits any other status under cancellation. M7 adds the enforcing test; M9 adds the Part 9 invariant.
-- Forks exclude `pi.result` values.
+- Forks exclude `theta.result` values.
 - `drive(id)` arms: current → install/join; record → returned directly; neither → `OperationMismatch`.
 
 ### Focused validation
@@ -375,7 +375,7 @@ A `cancel_requested` boundary defers to reconciliation and never takes its conti
 
 ### Focused validation
 
-Everything the M6 foundation covered, re-expressed over neutral leaves, plus: reachability accept/reject matrix (including corrupted boundary/intent combinations faulting restore); each boundary arm × {success, hook result, decline, failure, model absence} × {running, cancelled}; a post-terminal leak scan asserting every `pi.op.*` address is gone for every leaf while the `pi.result` record is present; crash/reopen at every leaf under every intent that can reach it.
+Everything the M6 foundation covered, re-expressed over neutral leaves, plus: reachability accept/reject matrix (including corrupted boundary/intent combinations faulting restore); each boundary arm × {success, hook result, decline, failure, model absence} × {running, cancelled}; a post-terminal leak scan asserting every `theta.op.*` address is gone for every leaf while the `theta.result` record is present; crash/reopen at every leaf under every intent that can reach it.
 
 ## 9. M7 — Cancellation reconciliation and total switch
 
@@ -466,8 +466,8 @@ One install and same-id joins; stale-id isolation; record lookup for old ids; ca
 
 **Implemented.** `docs/harness.md` is reconciled to the runtime and normative on its own. Updated sections include:
 
-- §1.3 address table and lifetime grammar: new lane-lived `pi.result` namespace, `laneLastResult` removed, `LaneState.inbox`/`lastOperationId`; `pi.op.*` stays strictly operation-lived;
-- §1.7 JSONL/SQLite examples referencing `pi.lane.lastResult`; state the bounded growth tradeoff — one small immutable record per operation, retained forever, carried through JSONL snapshot compaction;
+- §1.3 address table and lifetime grammar: new lane-lived `theta.result` namespace, `laneLastResult` removed, `LaneState.inbox`/`lastOperationId`; `theta.op.*` stays strictly operation-lived;
+- §1.7 JSONL/SQLite examples referencing `theta.lane.lastResult`; state the bounded growth tradeoff — one small immutable record per operation, retained forever, carried through JSONL snapshot compaction;
 - §2.9 precise rewrite: decide and document the policy for records whose `tipId` the rewrite removes (retain-dangling or delete);
 - §3.1–§3.2 state shapes: 13 neutral leaves, `OperationScope`, `SummaryTask`/`ResultBoundary` (kind derived from boundary), `Control` without drained fields, `CheckpointData` without `skipInboxOnce`/`thresholdCheckedTriggerEntryId`;
 - §3.5 graph (one summary quadruple, boundary arms);
@@ -500,7 +500,7 @@ rg -i 'promotion|drainedSteer|drainedFollowUp|laneLastResult|lastResult|skipInbo
 
 ### Review scope
 
-- Inventory every harness and pi-ai path that sets, preserves, derives, or consumes `SimpleStreamOptions.sessionId`, including prompt-cache keys, affinity headers, WebSocket/session-resource caches, deferred requests, and structural summary requests. Ordinary harness generation now forwards the derived lane identity; legacy `src/agent.ts` keeps its independent conversation id; structural summary requests mint fresh ids.
+- Inventory every harness and theta-ai path that sets, preserves, derives, or consumes `SimpleStreamOptions.sessionId`, including prompt-cache keys, affinity headers, WebSocket/session-resource caches, deferred requests, and structural summary requests. Ordinary harness generation now forwards the derived lane identity; legacy `src/agent.ts` keeps its independent conversation id; structural summary requests mint fresh ids.
 - Define a provider-request cache lineage distinct from the durable Session id and operation id. Concurrent lanes must never share one lineage merely because they belong to the same Session.
 - Derive ordinary assistant lineage as `Session metadata id + ":" + lane name`; do not store another durable identifier. It remains stable for the lane's lifetime and differs across lanes in one Session.
 - Preserve same-lane reuse across ordinary assistant turns and retries. Compaction, navigation, branch replacement, and model changes may miss an old prefix, but cannot incorrectly reuse it; do not add rotation machinery.
@@ -523,7 +523,7 @@ Ordinary assistant requests use the derived lane identity, structural requests k
 
 ## 13. Mobile assistant-output handoff
 
-**Tracked follow-up; not part of the M8/M10 public-drive gate.** A trivial mini coding-agent Session produced an approximately 300 KB JSONL file because live assistant streaming persists many `pi.pending.assistant_frame` list appends. Logical frame cleanup does not reclaim bytes already appended to the JSONL history, so short conversations can have disproportionate durable storage and replay cost.
+**Tracked follow-up; not part of the M8/M10 public-drive gate.** A trivial mini coding-agent Session produced an approximately 300 KB JSONL file because live assistant streaming persists many `theta.pending.assistant_frame` list appends. Logical frame cleanup does not reclaim bytes already appended to the JSONL history, so short conversations can have disproportionate durable storage and replay cost.
 
 The authoritative follow-up is the [mobile assistant-output handoff](../mobile-handoff/01-harness/05-assistant-output/message-update.md) and its numbered prerequisites in the [mobile handoff README](../mobile-handoff/README.md). It addresses the complete path rather than only batching frames: Chord op tracking, scoped pending-output durability, tool/assistant output reduction, and `message_update` replication amplification. Preserve the existing crash contract: an admitted assistant effect remains reconstructible, progress observation remains useful, and settlement retires operation-owned pending state.
 
@@ -604,3 +604,4 @@ Final exit conditions:
 - harness.md is self-consistent with the implementation (M9);
 - provider cache/affinity identity is lane-safe across concurrent and context-reset histories (M10);
 - independent final review reports no blocker.
+

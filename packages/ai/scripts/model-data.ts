@@ -278,3 +278,4 @@ export function validateGeneratedModelData(packageRoot: string): void {
 	const structure = readModelDataStructure(packageRoot);
 	validateModelDataDirectory(structure, join(packageRoot, "src", "providers", "data"));
 }
+

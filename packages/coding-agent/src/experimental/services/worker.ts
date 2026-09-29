@@ -1,3 +1,4 @@
+import type { AgentHarness, AgentLane } from "@theta/agent-core";
 import {
 	type Context,
 	createFacetHost,
@@ -10,8 +11,7 @@ import {
 	type RemoteServiceEndpoint,
 	type ServiceCall,
 	type ServiceProviderUpdate,
-} from "@earendil-works/chord";
-import type { AgentHarness, AgentLane } from "@earendil-works/pi-agent-core";
+} from "@theta/chord";
 import type { ModelRuntime } from "../../core/model-runtime.ts";
 import type { SettingsManager } from "../../core/settings-manager.ts";
 import { AgentController } from "./agent-controller.ts";
@@ -52,14 +52,14 @@ export async function createSessionWorkerServices(options: {
 	publish(scope: WorkerServiceScope, subscriptionId: string, update: ServiceProviderUpdate): Promise<void>;
 }): Promise<SessionWorkerServices> {
 	const agentControllerRuntimeFacet = defineFacet({
-		id: "@pi/agent-controller-runtime",
+		id: "@theta/agent-controller-runtime",
 		setup(env) {
 			env.provide(AgentController, createAgentController(options.lane));
 		},
 	});
 	let reloadPlugins = (): Promise<void> => Promise.reject(new Error("Session plugins are not ready"));
 	const pluginRuntimeFacet = defineFacet({
-		id: "@pi/session-plugins-runtime",
+		id: "@theta/session-plugins-runtime",
 		setup(env) {
 			env.provide(SessionPlugins, { reload: () => reloadPlugins() });
 		},
@@ -150,3 +150,4 @@ export async function createSessionWorkerServices(options: {
 function serviceScopeKey(scope: WorkerServiceScope): string {
 	return `${scope.serverConnectionId}\0${scope.attachmentId}`;
 }
+

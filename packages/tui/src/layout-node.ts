@@ -1,6 +1,6 @@
 import type { Component } from "./tui.ts";
 
-export const LAYOUT_NODE = Symbol.for("@earendil-works/pi-tui/layout-node");
+export const LAYOUT_NODE = Symbol.for("@theta/tui/layout-node");
 
 export interface LayoutViewport {
 	width: number;
@@ -49,3 +49,4 @@ export function getLayoutNode(component: Component): LayoutNode | undefined {
 	const candidate = component as Partial<LayoutComponent>;
 	return typeof candidate[LAYOUT_NODE] === "function" ? candidate[LAYOUT_NODE]() : undefined;
 }
+

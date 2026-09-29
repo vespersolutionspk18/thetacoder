@@ -1,4 +1,4 @@
-import { setKeybindings, type TUI } from "@earendil-works/pi-tui";
+import { setKeybindings, type TUI } from "@theta/tui";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { KeybindingsManager } from "../../../src/core/keybindings.ts";
 import { ModelSelectorComponent } from "../../../src/modes/interactive/components/model-selector.ts";
@@ -101,3 +101,4 @@ describe("issue #3217 scoped model ordering", () => {
 		expect(orderedIds).toEqual([modelTwo.id, modelOne.id, modelThree.id]);
 	});
 });
+

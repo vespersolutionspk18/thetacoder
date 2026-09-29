@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, parse } from "node:path";
-import { fauxAssistantMessage, fauxToolCall, registerFauxProvider } from "@earendil-works/pi-ai/compat";
+import { fauxAssistantMessage, fauxToolCall, registerFauxProvider } from "@theta/ai/compat";
 import { Type } from "typebox";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -42,7 +42,7 @@ describe("AgentSessionRuntime characterization", () => {
 		options?: { cwd?: string; bootstrapModel?: boolean; bootstrapThinkingLevel?: boolean },
 	) {
 		const tempDir =
-			options?.cwd ?? join(tmpdir(), `pi-runtime-suite-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+			options?.cwd ?? join(tmpdir(), `theta-runtime-suite-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		mkdirSync(tempDir, { recursive: true });
 
 		const faux = registerFauxProvider({
@@ -63,8 +63,8 @@ describe("AgentSessionRuntime characterization", () => {
 			thinkingLevel: options?.bootstrapThinkingLevel === false ? undefined : undefined,
 			resourceLoaderOptions: {
 				extensionFactories: [
-					(pi: ExtensionAPI) => {
-						pi.registerProvider(faux.getModel().provider, {
+					(theta: ExtensionAPI) => {
+						theta.registerProvider(faux.getModel().provider, {
 							baseUrl: faux.getModel().baseUrl,
 							apiKey: "faux-key",
 							api: faux.api,
@@ -79,7 +79,7 @@ describe("AgentSessionRuntime characterization", () => {
 								maxTokens: registeredModel.maxTokens,
 							})),
 						});
-						extensionFactory(pi);
+						extensionFactory(theta);
 					},
 				],
 				noSkills: true,
@@ -123,8 +123,8 @@ describe("AgentSessionRuntime characterization", () => {
 	}
 
 	it("persists message_end assistant replacements to the session manager", async () => {
-		const { runtime } = await createRuntimeForTest((pi: ExtensionAPI) => {
-			pi.on("message_end", (event) => {
+		const { runtime } = await createRuntimeForTest((theta: ExtensionAPI) => {
+			theta.on("message_end", (event) => {
 				if (event.message.role !== "assistant") return;
 
 				return {
@@ -168,8 +168,8 @@ describe("AgentSessionRuntime characterization", () => {
 		const toolStartedPromise = new Promise<void>((resolve) => {
 			toolStarted = resolve;
 		});
-		const { runtime, faux } = await createRuntimeForTest((pi: ExtensionAPI) => {
-			pi.registerTool({
+		const { runtime, faux } = await createRuntimeForTest((theta: ExtensionAPI) => {
+			theta.registerTool({
 				name: "block",
 				label: "Block",
 				description: "Blocks until aborted",
@@ -247,14 +247,14 @@ describe("AgentSessionRuntime characterization", () => {
 
 	it("emits session_before_switch and session_start for new and resume flows", async () => {
 		const events: RecordedSessionEvent[] = [];
-		const { runtime } = await createRuntimeForTest((pi: ExtensionAPI) => {
-			pi.on("session_before_switch", (event) => {
+		const { runtime } = await createRuntimeForTest((theta: ExtensionAPI) => {
+			theta.on("session_before_switch", (event) => {
 				events.push(event);
 			});
-			pi.on("session_shutdown", (event) => {
+			theta.on("session_shutdown", (event) => {
 				events.push(event);
 			});
-			pi.on("session_start", (event) => {
+			theta.on("session_start", (event) => {
 				events.push(event);
 			});
 		});
@@ -293,14 +293,14 @@ describe("AgentSessionRuntime characterization", () => {
 	it("honors session_before_switch cancellation for new and resume", async () => {
 		const events: RecordedSessionEvent[] = [];
 		let cancelReason: "new" | "resume" | undefined;
-		const { runtime } = await createRuntimeForTest((pi: ExtensionAPI) => {
-			pi.on("session_before_switch", (event) => {
+		const { runtime } = await createRuntimeForTest((theta: ExtensionAPI) => {
+			theta.on("session_before_switch", (event) => {
 				events.push(event);
 				if (event.reason === cancelReason) {
 					return { cancel: true };
 				}
 			});
-			pi.on("session_start", (event) => {
+			theta.on("session_start", (event) => {
 				events.push(event);
 			});
 		});
@@ -314,7 +314,7 @@ describe("AgentSessionRuntime characterization", () => {
 		expect(runtime.session.sessionFile).toBe(originalSessionFile);
 
 		events.length = 0;
-		const otherDir = join(tmpdir(), `pi-runtime-other-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		const otherDir = join(tmpdir(), `theta-runtime-other-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		mkdirSync(otherDir, { recursive: true });
 		const otherSession = SessionManager.create(otherDir);
 		otherSession.appendMessage({ role: "user", content: [{ type: "text", text: "other" }], timestamp: Date.now() });
@@ -328,18 +328,18 @@ describe("AgentSessionRuntime characterization", () => {
 	it("emits session_before_fork and session_start and honors cancellation", async () => {
 		const events: RecordedSessionEvent[] = [];
 		let cancelNextFork = false;
-		const { runtime } = await createRuntimeForTest((pi: ExtensionAPI) => {
-			pi.on("session_before_fork", (event) => {
+		const { runtime } = await createRuntimeForTest((theta: ExtensionAPI) => {
+			theta.on("session_before_fork", (event) => {
 				events.push(event);
 				if (cancelNextFork) {
 					cancelNextFork = false;
 					return { cancel: true };
 				}
 			});
-			pi.on("session_shutdown", (event) => {
+			theta.on("session_shutdown", (event) => {
 				events.push(event);
 			});
-			pi.on("session_start", (event) => {
+			theta.on("session_start", (event) => {
 				events.push(event);
 			});
 		});
@@ -428,7 +428,7 @@ describe("AgentSessionRuntime characterization", () => {
 	});
 
 	it("duplicates the current active branch in-memory when forking at the current position", async () => {
-		const tempDir = join(tmpdir(), `pi-runtime-suite-in-memory-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		const tempDir = join(tmpdir(), `theta-runtime-suite-in-memory-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		mkdirSync(tempDir, { recursive: true });
 
 		const faux = registerFauxProvider({
@@ -448,8 +448,8 @@ describe("AgentSessionRuntime characterization", () => {
 			model: faux.getModel(),
 			resourceLoaderOptions: {
 				extensionFactories: [
-					(pi: ExtensionAPI) => {
-						pi.registerProvider(faux.getModel().provider, {
+					(theta: ExtensionAPI) => {
+						theta.registerProvider(faux.getModel().provider, {
 							baseUrl: faux.getModel().baseUrl,
 							apiKey: "faux-key",
 							api: faux.api,
@@ -545,8 +545,8 @@ describe("AgentSessionRuntime characterization", () => {
 	});
 
 	it("updates the runtime session cwd on cross-cwd session replacement", async () => {
-		const firstDir = join(tmpdir(), `pi-runtime-cwd-a-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-		const secondDir = join(tmpdir(), `pi-runtime-cwd-b-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		const firstDir = join(tmpdir(), `theta-runtime-cwd-a-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		const secondDir = join(tmpdir(), `theta-runtime-cwd-b-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		mkdirSync(firstDir, { recursive: true });
 		mkdirSync(secondDir, { recursive: true });
 		const { runtime, faux, tempDir } = await createRuntimeForTest(() => {}, { cwd: firstDir });
@@ -557,8 +557,8 @@ describe("AgentSessionRuntime characterization", () => {
 			authStorage: otherAuthStorage,
 			resourceLoaderOptions: {
 				extensionFactories: [
-					(pi: ExtensionAPI) => {
-						pi.registerProvider(faux.getModel().provider, {
+					(theta: ExtensionAPI) => {
+						theta.registerProvider(faux.getModel().provider, {
 							baseUrl: faux.getModel().baseUrl,
 							apiKey: "faux-key",
 							api: faux.api,
@@ -630,8 +630,8 @@ describe("AgentSessionRuntime characterization", () => {
 			authStorage: otherAuthStorage,
 			resourceLoaderOptions: {
 				extensionFactories: [
-					(pi: ExtensionAPI) => {
-						pi.registerProvider(faux.getModel().provider, {
+					(theta: ExtensionAPI) => {
+						theta.registerProvider(faux.getModel().provider, {
 							baseUrl: faux.getModel().baseUrl,
 							apiKey: "faux-key",
 							api: faux.api,
@@ -691,3 +691,4 @@ describe("AgentSessionRuntime characterization", () => {
 		expect(runtime.session.thinkingLevel).toBe("off");
 	});
 });
+

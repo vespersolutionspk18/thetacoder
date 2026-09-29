@@ -122,3 +122,4 @@ tui.start();
 // Protocol negotiation completes asynchronously after the first render.
 // Refresh briefly/continuously so the displayed protocol state is not stale.
 setInterval(() => tui.requestRender(), 100);
+

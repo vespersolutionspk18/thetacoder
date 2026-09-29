@@ -17,7 +17,7 @@ function loadDarkTheme(): { name: string; colors: Record<string, string | number
 }
 
 function writeTheme(theme: { name: string; colors: Record<string, string | number> }): string {
-	const testDir = mkdtempSync(join(tmpdir(), "pi-scrollbar-theme-"));
+	const testDir = mkdtempSync(join(tmpdir(), "theta-scrollbar-theme-"));
 	tempDirs.push(testDir);
 	const themePath = join(testDir, `${theme.name}.json`);
 	writeFileSync(themePath, JSON.stringify(theme));
@@ -76,3 +76,4 @@ describe("fullscreen theme colors", () => {
 		expect(loadedTheme.getFgAnsi("searchMatchText")).toBe("\x1b[38;2;34;51;68m");
 	});
 });
+

@@ -1,4 +1,4 @@
-import { uuidv7 } from "@earendil-works/pi-ai/utils/uuid";
+import { uuidv7 } from "@theta/ai/utils/uuid";
 import type { AgentMessage } from "../../types.ts";
 import type { Context } from "../context.ts";
 import { insertEntry } from "./commit.ts";
@@ -473,3 +473,4 @@ export class StorageBackedSession<TMetadata extends SessionMetadata = SessionMet
 		if (this.state !== "open") throw this.closedError;
 	}
 }
+

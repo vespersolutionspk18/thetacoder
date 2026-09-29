@@ -422,3 +422,4 @@ export { formatDimensionNote, type ResizedImage, resizeImage } from "./utils/ima
 export { detectSupportedImageMimeTypeFromFile } from "./utils/mime.ts";
 // Shell utilities
 export { getPowerShellConfig, getShellConfig } from "./utils/shell.ts";
+

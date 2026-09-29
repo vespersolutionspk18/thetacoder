@@ -1,4 +1,4 @@
-import type { AssistantMessage, AssistantMessageEvent, Model } from "@earendil-works/pi-ai";
+import type { AssistantMessage, AssistantMessageEvent, Model } from "@theta/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { type ProxyAssistantMessageEvent, streamProxy } from "../src/proxy.ts";
 
@@ -77,7 +77,7 @@ describe("streamProxy", () => {
 		});
 	});
 
-	// Regression tests for https://github.com/earendil-works/pi/issues/8996
+	// Regression tests for https://github.com/earendil-works/theta/issues/8996
 	it("processes terminal metadata when the event is not newline-terminated", async () => {
 		const start = `data: ${JSON.stringify({ type: "start" })}\n\n`;
 		const done = `data: ${JSON.stringify({ type: "done", reason: "stop", usage, providerThinkingLevel: "high" })}`;
@@ -127,3 +127,4 @@ describe("streamProxy", () => {
 		expect(result.errorMessage).toContain("Connection closed by proxy server");
 	});
 });
+

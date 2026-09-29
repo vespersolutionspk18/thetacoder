@@ -138,3 +138,4 @@ describe("openrouter images", () => {
 		expect(output.output.some((item) => item.type === "image")).toBe(true);
 	});
 });
+

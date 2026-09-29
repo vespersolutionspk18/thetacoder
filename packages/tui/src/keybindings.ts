@@ -318,3 +318,4 @@ export function getKeybindings(): KeybindingsManager {
 	}
 	return globalKeybindings;
 }
+

@@ -160,3 +160,4 @@ describe("Session worker lifecycle", () => {
 		lifecycle.close();
 	});
 });
+

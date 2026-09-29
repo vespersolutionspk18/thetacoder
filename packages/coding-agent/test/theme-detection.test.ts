@@ -1,4 +1,4 @@
-import { type RgbColor, resetCapabilitiesCache, setCapabilities } from "@earendil-works/pi-tui";
+import { type RgbColor, resetCapabilitiesCache, setCapabilities } from "@theta/tui";
 import { afterEach, describe, expect, it } from "vitest";
 import {
 	detectTerminalBackgroundFromEnv,
@@ -172,3 +172,4 @@ describe("theme setting helpers", () => {
 		expect(resolveThemeSetting("light/dark/extra", "dark")).toBeUndefined();
 	});
 });
+

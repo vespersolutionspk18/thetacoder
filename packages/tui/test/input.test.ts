@@ -662,3 +662,4 @@ describe("Input component", () => {
 		});
 	});
 });
+

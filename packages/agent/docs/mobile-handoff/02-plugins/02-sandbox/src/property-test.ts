@@ -135,3 +135,4 @@ check("dispose with a pending promise does not crash", disposeOk);
 console.log(`\n${pass} passed, ${failures.length} failed`);
 for (const f of failures.slice(0, 10)) console.log("  FAIL", f);
 process.exit(failures.length === 0 ? 0 : 1);
+

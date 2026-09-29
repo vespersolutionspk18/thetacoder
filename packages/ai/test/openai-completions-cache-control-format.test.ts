@@ -229,3 +229,4 @@ describe("openai-completions cacheControlFormat", () => {
 		expect(typeof params.messages[params.messages.length - 1]?.content).toBe("string");
 	});
 });
+

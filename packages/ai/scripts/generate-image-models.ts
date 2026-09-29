@@ -160,3 +160,4 @@ if (process.argv[1] && resolve(process.argv[1]) === __filename) {
 		process.exit(1);
 	});
 }
+

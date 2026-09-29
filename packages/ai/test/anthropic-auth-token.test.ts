@@ -54,7 +54,7 @@ vi.mock("@anthropic-ai/sdk", () => {
 	return { default: FakeAnthropic };
 });
 
-const PI_USER_AGENT = `pi (${platform()} ${release()}; ${arch()})`;
+const PI_USER_AGENT = `theta (${platform()} ${release()}; ${arch()})`;
 const neverAbortedSignal = new AbortController().signal;
 
 const context: Context = {
@@ -198,7 +198,7 @@ describe("Anthropic auth token env", () => {
 });
 
 describe("Anthropic-compatible user agents", () => {
-	it("uses pi's User-Agent by default for Anthropic Messages requests", async () => {
+	it("uses theta's User-Agent by default for Anthropic Messages requests", async () => {
 		await streamAnthropic(anthropicModel, context, { apiKey: "anthropic-key" }).result();
 
 		const headers = mockState.constructorOpts?.defaultHeaders as Record<string, string>;
@@ -233,3 +233,4 @@ describe("Anthropic-compatible user agents", () => {
 		expect(mockState.createParams?.betas).toBeUndefined();
 	});
 });
+

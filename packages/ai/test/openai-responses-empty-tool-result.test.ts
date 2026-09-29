@@ -56,3 +56,4 @@ describe("OpenAI Responses convertResponsesMessages empty tool result", () => {
 		expect(functionCallOutput?.output).not.toContain("see attached image");
 	});
 });
+

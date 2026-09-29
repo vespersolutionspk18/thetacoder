@@ -442,3 +442,4 @@ export class StdinBuffer extends EventEmitter<StdinBufferEventMap> {
 		this.clear();
 	}
 }
+

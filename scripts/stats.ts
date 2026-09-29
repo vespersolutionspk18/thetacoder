@@ -115,7 +115,7 @@ function parseArgs(): Args {
 	const args = process.argv.slice(2);
 	let days = 7;
 	let cwd = process.cwd();
-	let sessionsBase = join(homedir(), ".pi", "agent", "sessions");
+	let sessionsBase = join(homedir(), ".theta", "agent", "sessions");
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
@@ -131,7 +131,7 @@ function parseArgs(): Args {
 Options:
   -n, --days <days>         Number of local calendar days to include (default: 7)
   -d, --dir, --cwd <path>   Project cwd to inspect (default: current cwd)
-  --sessions-base <path>    Sessions base directory (default: ~/.pi/agent/sessions)
+  --sessions-base <path>    Sessions base directory (default: ~/.theta/agent/sessions)
   -h, --help                Show this help`);
 			process.exit(0);
 		}
@@ -231,3 +231,4 @@ for (const day of [...stats.keys()].sort()) {
 
 console.log("".padEnd(160, "-"));
 printTotals("TOTAL", grandTotal);
+

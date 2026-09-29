@@ -40,3 +40,4 @@ export function getImageModels<TProvider extends KnownImagesProvider>(
 		? (Array.from(models.values()) as ImagesModel<ImageModelApi<TProvider, keyof (typeof IMAGE_MODELS)[TProvider]>>[])
 		: [];
 }
+

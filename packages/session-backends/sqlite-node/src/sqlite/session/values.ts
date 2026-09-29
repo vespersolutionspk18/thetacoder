@@ -6,7 +6,7 @@ import {
 	type Value,
 	type ValueList,
 	value,
-} from "@earendil-works/pi-agent-core";
+} from "@theta/agent-core";
 import { type SqlQuery, sql } from "../sql.ts";
 import type { SqliteDatabase } from "../types.ts";
 
@@ -144,3 +144,4 @@ export function readListValueRows<T>(
 		.all<ListValueRow>(db)
 		.map((row) => ({ seq: row.seq, value: JSON.parse(row.value) as T }));
 }
+

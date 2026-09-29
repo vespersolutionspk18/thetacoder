@@ -1,7 +1,7 @@
 # Coding-Agent Application Hosts and Facets
 
 The application-neutral facet, service, and replicated-state runtime is provided by
-`@earendil-works/chord`. This document specifies how Pi composes that runtime with Pi-owned
+`@theta/chord`. This document specifies how Theta composes that runtime with Theta-owned
 service contracts, process roles, routing, and lifecycle policy.
 
 > **Status:** Design specification for the experimental facet and service architecture.
@@ -137,16 +137,16 @@ The host records a private generation-scoped ledger:
 
 ```text
 env.provide(Models, implementation)
-→ @pi/providers-builtin:session provides pi.models/singleton
+→ @theta/providers-builtin:session provides theta.models/singleton
 
 env.use(Models)
-→ @pi/model-selection:tui requires pi.models/singleton
+→ @theta/model-selection:tui requires theta.models/singleton
 
 env.provideMany(QuestionDialogs)
-→ @pi/question:session provides pi.question-dialog/keyed
+→ @theta/question:session provides theta.question-dialog/keyed
 
 env.observe(QuestionDialogs, handler)
-→ @pi/question:tui requires pi.question-dialog/keyed
+→ @theta/question:tui requires theta.question-dialog/keyed
 ```
 
 The first `provide()`, `provideMany()`, `use()`, or `observe()` for a token must occur during facet setup. Commands, hooks, event handlers, and activation callbacks use handles acquired during setup; they cannot introduce an undeclared service dependency later. Dynamic instances use the setup-owned `ServiceSpawner`, so spawning and closing instances do not change the graph.
@@ -180,7 +180,7 @@ export interface Models {
 	select(model: ModelRef, context: Context): Promise<void>;
 }
 
-export const Models = defineService<Models>("pi.models");
+export const Models = defineService<Models>("theta.models");
 ```
 
 Everything transported in a remote contract is strict JSON: arguments, results, and replicated state. Business-level absence uses JSON `null`, never `undefined`. An unhydrated `ReplicatedState.value === undefined` is local control-plane readiness, not a transported state value. `Context` is control-plane data in a declared position; the proxy strips it and it is never serialized.
@@ -191,7 +191,7 @@ The snippets below use the facet shape but compress application details.
 
 ```ts
 export const providersBuiltinSessionFacet = defineFacet({
-	id: "@pi/providers-builtin",
+	id: "@theta/providers-builtin",
 
 	setup(env) {
 		const providers = new ProviderRegistry(); // process-local, non-JSON
@@ -242,7 +242,7 @@ This shows the generic command-service pattern.
 
 ```ts
 export const modelSelectionTuiFacet = defineFacet({
-	id: "@pi/model-selection",
+	id: "@theta/model-selection",
 
 	setup(env) {
 		const models = env.use(Models);
@@ -304,9 +304,9 @@ interface AgentFacetScope {
 	lane(name: string, context: Context): Promise<AgentLaneFacetView>;
 }
 
-const Agent = defineService<AgentFacetScope>("pi.local.agent", { local: true });
-const Providers = defineService<ProviderContributionRegistry>("pi.local.providers", { local: true });
-const Tools = defineService<ToolContributionRegistry>("pi.local.tools", { local: true });
+const Agent = defineService<AgentFacetScope>("theta.local.agent", { local: true });
+const Providers = defineService<ProviderContributionRegistry>("theta.local.providers", { local: true });
+const Tools = defineService<ToolContributionRegistry>("theta.local.tools", { local: true });
 ```
 
 "Local" and "unrestricted" are separate decisions. The scope narrows authority for lifecycle and composition — hooks and event subscriptions registered through it are automatically owned by the facet and disposed with it. `AgentLaneFacetView` exposes Branch methods directly alongside agent operations. `ScopedSessionData` exposes purpose-bounded durable operations. The host keeps the unrestricted concrete instances and reserves: `AgentHarness.close()` and `Session.close()`; raw `Session.mutate()`, `beginMutation()`, and `SessionMutator` (unless a narrowly trusted durability extension explicitly owns them); `idGenerator` and backend/storage objects; Branch creation; whole-registry setters such as `setTools()`; unscoped hook/event registration; transport exposure and remote-reference registration. This is a composition and lifecycle boundary, not a security sandbox: session facets are trusted code in the authoritative process. A future extension policy may explicitly grant broader local capability, but built-ins should receive no implicit bypass.
@@ -347,7 +347,7 @@ interface TuiHost {
 	select<T>(title: string, items: SelectItem<T>[], options: { signal: AbortSignal }): Promise<T | undefined>;
 }
 
-const Tui = defineService<TuiHost>("pi.local.tui", { local: true });
+const Tui = defineService<TuiHost>("theta.local.tui", { local: true });
 ```
 
 The first implemented presentation hookpoint is narrower than this eventual `TuiHost`: a process-local `SlashCommands` registry. Built-in presentation facets and plugin presentation facets acquire the same registry and add command metadata plus callbacks during activation. The returned cleanup removes the contribution, so facet reload and unload update autocomplete and dispatch without rebuilding the TUI. Command callbacks receive narrow selection, status, and prompt-submission operations rather than the raw renderer or editor.
@@ -365,7 +365,7 @@ The runtime form is:
 ```ts
 export function createAgentControllerRuntimeFacet(lane: AgentLane) {
 	return defineFacet({
-		id: "@pi/agent-controller-runtime",
+		id: "@theta/agent-controller-runtime",
 		setup(env) {
 			env.provide(AgentController, createAgentController(lane));
 		},
@@ -386,7 +386,7 @@ interface Accounts {
 	readonly state: ReplicatedState<{ providers: Array<{ provider: string; configured: boolean }> }>;
 	remove(provider: string, context: Context): Promise<void>;
 }
-const Accounts = defineService<Accounts>("pi.accounts");
+const Accounts = defineService<Accounts>("theta.accounts");
 ```
 
 The auth extension's Session facet uses `Credentials` directly; presentations see provider IDs and `configured` booleans — never secrets. If some settings must not be remotely writable, split them the same way; do not rely on presentation-side convention.
@@ -431,10 +431,10 @@ Services fit one owner, many consumers. Providers and tools invert that: **many 
 
 ```text
 fresh ProviderDraft
-→ built-in provider contribution        (@pi/providers-builtin)
-→ remote catalogue contribution         (@pi/providers-catalog)
-→ models.json transformation            (@pi/providers-models-json)
-→ authentication/availability marking   (@pi/auth)
+→ built-in provider contribution        (@theta/providers-builtin)
+→ remote catalogue contribution         (@theta/providers-catalog)
+→ models.json transformation            (@theta/providers-models-json)
+→ authentication/availability marking   (@theta/auth)
 → validated ProviderState
 ```
 
@@ -515,7 +515,7 @@ interface FleetFacetScope {
 	readonly attachments: AttachmentsView;  // bind/unbind a client's selected session
 }
 
-const Fleet = defineService<FleetFacetScope>("pi.local.fleet", { local: true });
+const Fleet = defineService<FleetFacetScope>("theta.local.fleet", { local: true });
 ```
 
 The raw `SessionRepo`, storage handles, unrestricted process-kill authority, routing map, and routing machinery stay with the server application:
@@ -553,7 +553,7 @@ export interface SessionDirectory {
 	readonly state: ReplicatedState<{ revision: number; sessions: SessionRecordSummary[] }>;
 }
 
-export const SessionDirectory = defineService<SessionDirectory>("pi.session-directory");
+export const SessionDirectory = defineService<SessionDirectory>("theta.session-directory");
 
 export interface SessionManagement {
 	create(options: { title: string }, context: Context): Promise<SessionRecordSummary>;
@@ -562,7 +562,7 @@ export interface SessionManagement {
 	detach(context: Context): Promise<void>;
 }
 
-export const SessionManagement = defineService<SessionManagement>("pi.session-management");
+export const SessionManagement = defineService<SessionManagement>("theta.session-management");
 ```
 
 ### Server facet
@@ -570,7 +570,7 @@ export const SessionManagement = defineService<SessionManagement>("pi.session-ma
 ```ts
 // server.ts
 export const sessionDirectoryServerFacet = defineFacet({
-	id: "@pi/session-directory",
+	id: "@theta/session-directory",
 	setup(env) {
 		const { managed, attachments } = env.use(Fleet);
 		const state = env.replicatedState({ revision: 0, sessions: [] as SessionRecordSummary[] });
@@ -627,7 +627,7 @@ Every call is authorized against the client identity that transport policy insta
 ```ts
 // tui.ts
 export const sessionPickerTuiFacet = defineFacet({
-	id: "@pi/session-picker",
+	id: "@theta/session-picker",
 	setup(env) {
 		const directory = env.use(SessionDirectory);
 		const management = env.use(SessionManagement);
@@ -720,7 +720,7 @@ interface QuestionDialogs {
 	submitAnswer(response: QuestionResponse, context: Context): Promise<void>;
 }
 
-const QuestionDialogs = defineService<QuestionDialogs>("pi.question-dialog");
+const QuestionDialogs = defineService<QuestionDialogs>("theta.question-dialog");
 ```
 
 `QuestionDialogs` declares only the contract. Each invocation explicitly adds one keyed instance. Its `request` state is addressed by the service, invocation key, hidden generation, and member name.
@@ -743,7 +743,7 @@ function questionResult(request: QuestionRequest, answer: string | null, wasCust
 ```ts
 // session.ts
 export const questionSessionFacet = defineFacet({
-	id: "@pi/question",
+	id: "@theta/question",
 	setup(env) {
 		const dialogs = env.provideMany(QuestionDialogs);
 		const tools = env.use(Tools);
@@ -761,7 +761,7 @@ export const questionSessionFacet = defineFacet({
 						return questionResult(params, null, false, "No options provided");
 					}
 
-					const memoName = "pi.question.answer";
+					const memoName = "theta.question.answer";
 					let response = (await invocation.getMemo(memoName)) as QuestionResponse | undefined;
 
 					if (response === undefined) {
@@ -813,7 +813,7 @@ type QuestionChoice =
 	| { outcome: "custom" };
 
 export const questionTuiFacet = defineFacet({
-	id: "@pi/question",
+	id: "@theta/question",
 	setup(env) {
 		const tui = env.use(Tui);
 		env.observe(QuestionDialogs, async (dialog, context) => {
@@ -1030,8 +1030,8 @@ interface DiffReviews {
 	submit(context: Context): Promise<void>;
 }
 
-const DiffReviewManager = defineService<DiffReviewManager>("pi.diff-review-manager");
-const DiffReviews = defineService<DiffReviews>("pi.diff-review");
+const DiffReviewManager = defineService<DiffReviewManager>("theta.diff-review-manager");
+const DiffReviews = defineService<DiffReviews>("theta.diff-review");
 ```
 
 The client never supplies a patch, author, or review ID. The session computes a bounded immutable patch, creates the ID, and derives each author from the authenticated identity in `Context`. `commentId` is only an idempotency key; it grants no authority.
@@ -1156,3 +1156,4 @@ The shared reducer is pure and deterministic. `apply()` synchronously reduces th
 Supporting this requires an explicit RPC member kind. The providing object carries the `DeltaState` definition ID; the provider announces that ID in member metadata; and the consuming host resolves the same imported definition before applying deltas locally. The contract is adopted only together with that registration and hydration protocol.
 
 `DeltaState` would solve only live replication. It would not provide durable storage, mutation serialization, multi-writer merging, offline editing, or automatic mutation replay. A durable canvas would still serialize its own mutations, persist an admitted delta before publishing it, and coordinate log compaction with appends. Durable log cursors remain application/storage metadata and are independent of the host's transport revision.
+

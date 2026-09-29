@@ -37,3 +37,4 @@ export interface FacetBundleArtifact {
 	readonly source: string;
 	readonly sourceMapContents?: string;
 }
+

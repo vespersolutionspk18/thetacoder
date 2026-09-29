@@ -1,4 +1,4 @@
-import type { Api, CredentialInfo, Model } from "@earendil-works/pi-ai";
+import type { Api, CredentialInfo, Model } from "@theta/ai";
 import { resolveCliModel } from "../core/model-resolver.ts";
 import type { ModelRuntime } from "../core/model-runtime.ts";
 import type { Args } from "./args.ts";
@@ -85,3 +85,4 @@ export async function resolveCredentialForPrint(
 		`Multiple configured providers matched (${credentials.map(({ providerId }) => providerId).join(", ")}). Specify --provider.`,
 	);
 }
+

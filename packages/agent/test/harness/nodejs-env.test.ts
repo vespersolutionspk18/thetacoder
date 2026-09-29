@@ -85,7 +85,7 @@ class FailingSpillExecutionEnv extends NodeExecutionEnv {
 		options: Parameters<NodeExecutionEnv["createTempFile"]>[0],
 		context: Parameters<NodeExecutionEnv["createTempFile"]>[1],
 	) {
-		if (options?.prefix === "pi-output-") {
+		if (options?.prefix === "theta-output-") {
 			return { ok: true as const, value: join(this.cwd, "missing", "spill.log") };
 		}
 		return super.createTempFile(options, context);
@@ -140,8 +140,8 @@ describe("NodeExecutionEnv", () => {
 	it("expands home-relative paths and file URLs", async () => {
 		const root = createTempDir();
 		const env = new NodeExecutionEnv({ cwd: root });
-		expect(getOrThrow(await env.absolutePath("~/pi-node-env-test", BACKGROUND_CONTEXT))).toBe(
-			join(homedir(), "pi-node-env-test"),
+		expect(getOrThrow(await env.absolutePath("~/theta-node-env-test", BACKGROUND_CONTEXT))).toBe(
+			join(homedir(), "theta-node-env-test"),
 		);
 		const filePath = join(root, "file with spaces.txt");
 		expect(getOrThrow(await env.absolutePath(pathToFileURL(filePath).href, BACKGROUND_CONTEXT))).toBe(filePath);
@@ -519,7 +519,7 @@ describe("NodeExecutionEnv", () => {
 		expect(result.truncation.totalBytes).toBe(0);
 	});
 
-	// Regression test for https://github.com/earendil-works/pi/issues/8992
+	// Regression test for https://github.com/earendil-works/theta/issues/8992
 	it.skipIf(process.platform === "win32")("maps signal-killed processes to a non-zero exit code", async () => {
 		const root = createTempDir();
 		const env = new NodeExecutionEnv({ cwd: root });
@@ -704,3 +704,4 @@ describe("NodeExecutionEnv", () => {
 		expect(result.output.length).toBeLessThan(fullOutput.length);
 	});
 });
+

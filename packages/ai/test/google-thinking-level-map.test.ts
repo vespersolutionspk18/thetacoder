@@ -168,3 +168,4 @@ describe("Google thinking level maps", () => {
 		expect(payload).toMatchObject({ config: { thinkingConfig: { thinkingBudget: 4321 } } });
 	});
 });
+

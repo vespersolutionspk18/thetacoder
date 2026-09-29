@@ -1399,3 +1399,4 @@ function decodeModifyOtherKeysPrintable(data: string): string | undefined {
 export function decodePrintableKey(data: string): string | undefined {
 	return decodeKittyPrintable(data) ?? decodeModifyOtherKeysPrintable(data);
 }
+

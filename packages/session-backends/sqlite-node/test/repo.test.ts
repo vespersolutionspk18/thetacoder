@@ -1,9 +1,9 @@
 import { access, mkdtemp, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative } from "node:path";
-import * as storedValues from "@earendil-works/pi-agent-core";
-import * as sessionWrites from "@earendil-works/pi-agent-core";
-import { BACKGROUND_CONTEXT } from "@earendil-works/pi-agent-core";
+import * as storedValues from "@theta/agent-core";
+import * as sessionWrites from "@theta/agent-core";
+import { BACKGROUND_CONTEXT } from "@theta/agent-core";
 import { describe, expect, it } from "vitest";
 import type { SqliteDatabase, SqliteDatabaseFactory, SqliteStatement } from "../src/index.ts";
 import { createNodeSqliteFactory, SqliteSessionRepo, sql } from "../src/index.ts";
@@ -20,7 +20,7 @@ const IDLE_LANE_STATE = {
 } satisfies storedValues.LaneState;
 
 async function withTempDir<T>(run: (directory: string) => Promise<T>): Promise<T> {
-	const directory = await mkdtemp(join(tmpdir(), "pi-sqlite-session-"));
+	const directory = await mkdtemp(join(tmpdir(), "theta-sqlite-session-"));
 	try {
 		return await run(directory);
 	} finally {
@@ -942,3 +942,4 @@ describe("SqliteSessionRepo", () => {
 		});
 	});
 });
+

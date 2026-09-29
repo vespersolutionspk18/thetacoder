@@ -4,9 +4,10 @@
 		"baseUrl": "../../..",
 		"noEmit": true,
 		"paths": {
-			"@earendil-works/pi-ai": ["packages/ai/src/index.ts"],
-			"@earendil-works/pi-ai/*": ["packages/ai/src/*"]
+			"@theta/ai": ["packages/ai/src/index.ts"],
+			"@theta/ai/*": ["packages/ai/src/*"]
 		}
 	},
 	"include": ["./**/*.ts", "../src/**/*.ts"]
 }
+

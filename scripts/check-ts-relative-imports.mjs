@@ -72,3 +72,4 @@ if (failures.length > 0) {
 	for (const failure of failures) console.error(`  ${failure}`);
 	process.exit(1);
 }
+

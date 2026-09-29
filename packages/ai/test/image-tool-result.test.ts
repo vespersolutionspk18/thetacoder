@@ -467,7 +467,7 @@ describe("Tool Results with Images", () => {
 	});
 
 	// =========================================================================
-	// OAuth-based providers (credentials from ~/.pi/agent/oauth.json)
+	// OAuth-based providers (credentials from ~/.theta/agent/oauth.json)
 	// =========================================================================
 
 	describe("Anthropic OAuth Provider (claude-sonnet-4-5)", () => {
@@ -548,3 +548,4 @@ describe("Tool Results with Images", () => {
 		);
 	});
 });
+

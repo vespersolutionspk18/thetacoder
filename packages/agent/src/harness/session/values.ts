@@ -1,4 +1,4 @@
-import type { AssistantMessageFrame } from "@earendil-works/pi-ai";
+import type { AssistantMessageFrame } from "@theta/ai";
 import type { AgentToolResult } from "../../types.ts";
 import type {
 	DurableStructuralPreparation,
@@ -155,41 +155,42 @@ export function resolveListReadOptions(options: ListReadOptions = {}): ResolvedL
 	};
 }
 
-export const branchTip = (branch: string) => value<string | null>("pi.branch.tip", branch);
-export const branchTipInventoryPrefix = () => value<string | null>("pi.branch.tip");
-export const laneConfig = (lane: string) => value<LaneConfiguration>("pi.lane.config", lane);
-export const laneState = (lane: string) => value<LaneState>("pi.lane.state", lane);
-export const operationResult = (operationId: string) => value<OperationResultRecord>("pi.result", operationId);
+export const branchTip = (branch: string) => value<string | null>("theta.branch.tip", branch);
+export const branchTipInventoryPrefix = () => value<string | null>("theta.branch.tip");
+export const laneConfig = (lane: string) => value<LaneConfiguration>("theta.lane.config", lane);
+export const laneState = (lane: string) => value<LaneState>("theta.lane.state", lane);
+export const operationResult = (operationId: string) => value<OperationResultRecord>("theta.result", operationId);
 
-export const operationMeta = (operationId: string) => value<OperationMeta>("pi.op.meta", operationId);
-export const operationState = (operationId: string) => value<OperationState>("pi.op.state", operationId);
+export const operationMeta = (operationId: string) => value<OperationMeta>("theta.op.meta", operationId);
+export const operationState = (operationId: string) => value<OperationState>("theta.op.state", operationId);
 export const operationToolArgs = (operationId: string, stepId: string, sourceIndex: number) =>
-	value<Record<string, JsonValue>>("pi.op.tool_args", `${operationId}:${stepId}:${sourceIndex}`);
+	value<Record<string, JsonValue>>("theta.op.tool_args", `${operationId}:${stepId}:${sourceIndex}`);
 export const operationToolMemo = (operationId: string, invocationId: string, name: string) =>
-	value<JsonValue>("pi.op.tool_memo", `${operationId}:${invocationId}:${name}`);
+	value<JsonValue>("theta.op.tool_memo", `${operationId}:${invocationId}:${name}`);
 export const operationPreparation = (operationId: string, taskId: string) =>
-	value<DurableStructuralPreparation>("pi.op.preparation", `${operationId}:${taskId}`);
+	value<DurableStructuralPreparation>("theta.op.preparation", `${operationId}:${taskId}`);
 
 export const operationToolArgsPrefix = (operationId: string, stepId?: string) =>
 	value<Record<string, JsonValue>>(
-		"pi.op.tool_args",
+		"theta.op.tool_args",
 		stepId === undefined ? `${operationId}:` : `${operationId}:${stepId}:`,
 	);
 export const operationToolMemoPrefix = (operationId: string, invocationId?: string) =>
 	value<JsonValue>(
-		"pi.op.tool_memo",
+		"theta.op.tool_memo",
 		invocationId === undefined ? `${operationId}:` : `${operationId}:${invocationId}:`,
 	);
 export const operationPreparationPrefix = (operationId: string) =>
-	value<DurableStructuralPreparation>("pi.op.preparation", `${operationId}:`);
+	value<DurableStructuralPreparation>("theta.op.preparation", `${operationId}:`);
 
-export const pendingEntry = (entryId: string) => value<PendingEntry>("pi.pending.entry", entryId);
+export const pendingEntry = (entryId: string) => value<PendingEntry>("theta.pending.entry", entryId);
 export const pendingToolOutput = (operationId: string, invocationId: string) =>
-	value<AgentToolResult<unknown>>("pi.pending.tool_output", `${operationId}:${invocationId}`);
+	value<AgentToolResult<unknown>>("theta.pending.tool_output", `${operationId}:${invocationId}`);
 export const pendingAssistantFrames = (operationId: string, responseEntryId: string) =>
-	list<AssistantMessageFrame>("pi.pending.assistant_frame", `${operationId}:${responseEntryId}`);
+	list<AssistantMessageFrame>("theta.pending.assistant_frame", `${operationId}:${responseEntryId}`);
 export const pendingToolOutputPrefix = (operationId: string) =>
-	value<AgentToolResult<unknown>>("pi.pending.tool_output", `${operationId}:`);
+	value<AgentToolResult<unknown>>("theta.pending.tool_output", `${operationId}:`);
 
-export const sessionName = value<string>("pi.session.name");
-export const entryLabel = (entryId: string) => value<string>("pi.entry.label", entryId);
+export const sessionName = value<string>("theta.session.name");
+export const entryLabel = (entryId: string) => value<string>("theta.entry.label", entryId);
+

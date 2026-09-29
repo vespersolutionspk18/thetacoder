@@ -1,5 +1,5 @@
-import type { ServiceStateEncoder } from "@earendil-works/chord";
-import type { ClientMessageDecoder, RpcTarget } from "@earendil-works/pi-protocol";
+import type { ServiceStateEncoder } from "@theta/chord";
+import type { ClientMessageDecoder, RpcTarget } from "@theta/protocol";
 
 import type { MaybePromise, RoutedServerServiceAttachment } from "./types.ts";
 
@@ -35,3 +35,4 @@ export interface ConnectionState {
 export function isTerminalConnection(state: ConnectionState): boolean {
 	return state.disconnected || state.stage === "closing" || state.stage === "closed";
 }
+

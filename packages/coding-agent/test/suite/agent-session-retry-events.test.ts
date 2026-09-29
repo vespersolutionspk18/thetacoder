@@ -1,5 +1,5 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
-import { fauxAssistantMessage, fauxThinking, fauxToolCall } from "@earendil-works/pi-ai";
+import type { AgentTool } from "@theta/agent-core";
+import { fauxAssistantMessage, fauxThinking, fauxToolCall } from "@theta/ai";
 import { Type } from "typebox";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, type Harness } from "./harness.ts";
@@ -100,8 +100,8 @@ describe("AgentSession retry and event characterization", () => {
 		const harness = await createHarness({
 			settings: { retry: { enabled: true, maxRetries: 3, baseDelayMs: 1 } },
 			extensionFactories: [
-				(pi) => {
-					pi.on("message_end", async (event) => {
+				(theta) => {
+					theta.on("message_end", async (event) => {
 						if (event.message.role === "assistant") {
 							await new Promise((resolve) => setTimeout(resolve, 40));
 						}
@@ -204,11 +204,11 @@ describe("AgentSession retry and event characterization", () => {
 		const order: string[] = [];
 		const harness = await createHarness({
 			extensionFactories: [
-				(pi) => {
-					pi.on("message_start", async (event) => {
+				(theta) => {
+					theta.on("message_start", async (event) => {
 						order.push(`extension:${event.type}:${event.message.role}`);
 					});
-					pi.on("message_end", async (event) => {
+					theta.on("message_end", async (event) => {
 						order.push(`extension:${event.type}:${event.message.role}`);
 					});
 				},
@@ -362,3 +362,4 @@ describe("AgentSession retry and event characterization", () => {
 		}
 	});
 });
+

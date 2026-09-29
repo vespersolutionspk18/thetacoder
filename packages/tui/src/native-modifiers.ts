@@ -11,3 +11,4 @@ export function isNativeModifierPressed(key: ModifierKey): boolean {
 		return false;
 	}
 }
+

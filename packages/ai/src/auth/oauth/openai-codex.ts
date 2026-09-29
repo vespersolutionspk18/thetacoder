@@ -291,7 +291,7 @@ async function pollOpenAICodexDeviceAuth(device: DeviceAuthInfo, signal: AbortSi
 }
 
 async function createAuthorizationFlow(
-	originator: string = "pi",
+	originator: string = "theta",
 ): Promise<{ verifier: string; state: string; url: string }> {
 	const { verifier, challenge } = await generatePKCE();
 	const state = createState();
@@ -542,3 +542,4 @@ export const openaiCodexOAuth: OAuthAuth = {
 		return { apiKey: credential.access };
 	},
 };
+

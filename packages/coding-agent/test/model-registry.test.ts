@@ -1,14 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type {
-	AnthropicMessagesCompat,
-	Api,
-	Context,
-	Model,
-	OpenAICompletionsCompat,
-} from "@earendil-works/pi-ai/compat";
-import { getApiProvider, getModels, getSupportedThinkingLevels } from "@earendil-works/pi-ai/compat";
+import type { AnthropicMessagesCompat, Api, Context, Model, OpenAICompletionsCompat } from "@theta/ai/compat";
+import { getApiProvider, getModels, getSupportedThinkingLevels } from "@theta/ai/compat";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { AuthStorage } from "../src/core/auth-storage.ts";
 import type { ModelsJsonProvider } from "../src/core/model-config.ts";
@@ -22,7 +16,7 @@ describe("ModelRegistry", () => {
 	let authStorage: AuthStorage;
 
 	beforeEach(() => {
-		tempDir = join(tmpdir(), `pi-test-model-registry-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+		tempDir = join(tmpdir(), `theta-test-model-registry-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 		mkdirSync(tempDir, { recursive: true });
 		modelsJsonPath = join(tempDir, "models.json");
 		authStorage = AuthStorage.inMemory();
@@ -2010,3 +2004,4 @@ describe("ModelRegistry", () => {
 		});
 	});
 });
+

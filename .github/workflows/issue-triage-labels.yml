@@ -140,3 +140,4 @@ jobs:
               });
               console.log(`Removed ${UNTRIAGED_LABEL} from #${issue.number}`);
             }
+

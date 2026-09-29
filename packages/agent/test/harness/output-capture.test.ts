@@ -149,3 +149,4 @@ describe("OutputCapture", () => {
 		expect(errors).toEqual([]);
 	});
 });
+

@@ -1,5 +1,5 @@
-import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import type { AssistantMessage, Context, Model } from "@earendil-works/pi-ai";
+import type { AgentMessage } from "@theta/agent-core";
+import type { AssistantMessage, Context, Model } from "@theta/ai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	type CompactionPreparation,
@@ -13,8 +13,8 @@ const { completeSimpleMock } = vi.hoisted(() => ({
 	completeSimpleMock: vi.fn(),
 }));
 
-vi.mock("@earendil-works/pi-ai/compat", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@earendil-works/pi-ai/compat")>();
+vi.mock("@theta/ai/compat", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@theta/ai/compat")>();
 	return {
 		...actual,
 		completeSimple: completeSimpleMock,
@@ -147,6 +147,32 @@ describe("generateSummary reasoning options", () => {
 		expect(prompt).toContain("<conversation>");
 	});
 
+	it("preserves previousSummary in split-turn with empty history", async () => {
+		const userMsg: AgentMessage = {
+			role: "user",
+			content: "Summarize this.",
+			timestamp: Date.now(),
+		};
+		const assistantMsg: AssistantMessage = {
+			...mockSummaryResponse,
+			content: [{ type: "text", text: "Assistant reply" }],
+		};
+		const preparation: CompactionPreparation = {
+			firstKeptEntryId: "entry-keep",
+			messagesToSummarize: [],
+			turnPrefixMessages: [userMsg, assistantMsg],
+			isSplitTurn: true,
+			tokensBefore: 100,
+			previousSummary: "S_old important decision",
+			fileOps: { read: new Set(), written: new Set(), edited: new Set() },
+			settings: { enabled: true, reserveTokens: 2000, keepRecentTokens: 20 },
+		};
+
+		const result = await compact(preparation, createModel(false), "test-key");
+
+		expect(result.summary).toContain("S_old important decision");
+	});
+
 	it("rejects tool calls from conversation summaries", async () => {
 		completeSimpleMock.mockResolvedValueOnce(mockToolCallResponse);
 
@@ -245,7 +271,7 @@ describe("generateSummary reasoning options", () => {
 		expect(completeSimpleMock.mock.calls[0][2]).not.toHaveProperty("reasoning");
 	});
 
-	it("leaves Anthropic refusal fallback handling to pi-ai model metadata", async () => {
+	it("leaves Anthropic refusal fallback handling to theta-ai model metadata", async () => {
 		await generateSummary(
 			messages,
 			createModel(true, 8192, {
@@ -295,3 +321,4 @@ describe("generateSummary reasoning options", () => {
 		expect(completeSimpleMock.mock.calls.map((call) => call[2]?.maxTokens)).toEqual([128000, 128000]);
 	});
 });
+

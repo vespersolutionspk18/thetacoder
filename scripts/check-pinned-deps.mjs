@@ -4,7 +4,7 @@ import { join } from "node:path";
 const dependencySections = ["dependencies", "devDependencies", "optionalDependencies"];
 const exactVersionPattern = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const ignoredDirectories = new Set([".git", "dist", "node_modules"]);
-const internalPackageNames = new Set(["@earendil-works/chord"]);
+const internalPackageNames = new Set(["@theta/chord"]);
 const packageJsonFiles = [];
 
 function collectPackageJsonFiles(directory) {
@@ -23,7 +23,7 @@ function collectPackageJsonFiles(directory) {
 }
 
 function isInternalWorkspaceDependency(name) {
-	return name.startsWith("@earendil-works/pi-") || internalPackageNames.has(name);
+	return name.startsWith("@theta/") || internalPackageNames.has(name);
 }
 
 function isNonRegistrySpecifier(specifier) {
@@ -62,3 +62,4 @@ if (failures.length > 0) {
 	for (const failure of failures) console.error(`  ${failure}`);
 	process.exit(1);
 }
+

@@ -142,3 +142,4 @@ describe.skipIf(!hasAnthropicCredentials)("Anthropic interleaved thinking", () =
 		await assertSecondToolCallWithInterleavedThinking(llm, "high");
 	});
 });
+

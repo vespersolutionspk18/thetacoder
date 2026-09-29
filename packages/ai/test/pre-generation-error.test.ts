@@ -38,3 +38,4 @@ describe("direct API authentication", () => {
 		expectMissingAuthThrows(() => streamOpenAIResponses(model("openai-responses"), { messages: [] }, {}));
 	});
 });
+

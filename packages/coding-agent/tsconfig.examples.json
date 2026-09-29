@@ -3,10 +3,10 @@
 	"compilerOptions": {
 		"noEmit": true,
 		"paths": {
-			"@earendil-works/pi-coding-agent": ["./src/index.ts"],
-			"@earendil-works/pi-coding-agent/hooks": ["./src/core/hooks/index.ts"],
-			"@earendil-works/pi-tui": ["../tui/src/index.ts"],
-			"@earendil-works/pi-ai": ["../ai/src/index.ts"],
+			"@theta/coding-agent": ["./src/index.ts"],
+			"@theta/coding-agent/hooks": ["./src/core/hooks/index.ts"],
+			"@theta/tui": ["../tui/src/index.ts"],
+			"@theta/ai": ["../ai/src/index.ts"],
 			"typebox": ["../../node_modules/typebox"]
 		},
 		"skipLibCheck": true
@@ -14,3 +14,4 @@
 	"include": ["examples/**/*.ts"],
 	"exclude": ["node_modules", "dist"]
 }
+

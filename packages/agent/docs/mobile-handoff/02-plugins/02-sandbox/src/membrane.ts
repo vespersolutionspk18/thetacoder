@@ -195,3 +195,4 @@ export async function createCompartment({ memoryLimit = 256 } = {}) {
 const RESERVED = new Set(["constructor"]);
 const methodNames = (o) => { const out = []; for (let p = o; p && p !== Object.prototype; p = Object.getPrototypeOf(p)) for (const k of Object.getOwnPropertyNames(p)) if (!RESERVED.has(k) && typeof o[k] === "function" && !out.includes(k)) out.push(k); return out; };
 const hasMethods = (o) => methodNames(o).length > 0;
+

@@ -614,3 +614,4 @@ describe("faux provider", () => {
 		).rejects.toThrow(`No API provider registered for api: ${registration.api}`);
 	});
 });
+

@@ -1,4 +1,4 @@
-import { type Context, defineService } from "@earendil-works/chord";
+import { type Context, defineService } from "@theta/chord";
 
 export interface PresentationSelectItem {
 	readonly value: string;
@@ -17,4 +17,5 @@ export interface PresentationUI {
 	showStatus(message: string, context: Context): void;
 }
 
-export const PresentationUI = defineService<PresentationUI>("pi.local.presentation-ui", { local: true });
+export const PresentationUI = defineService<PresentationUI>("theta.local.presentation-ui", { local: true });
+

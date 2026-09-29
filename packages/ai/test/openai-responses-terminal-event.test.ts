@@ -354,3 +354,4 @@ describe("OpenAI Responses terminal event handling", () => {
 		expect(output.rawStopReason).toBe("failed");
 	});
 });
+

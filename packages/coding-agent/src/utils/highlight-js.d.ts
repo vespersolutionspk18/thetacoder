@@ -34,3 +34,4 @@ declare module "highlight.js/lib/languages/*.js" {
 	const language: HighlightJsLanguageFactory;
 	export default language;
 }
+

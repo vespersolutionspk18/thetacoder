@@ -1,4 +1,4 @@
-import type { JsonValue } from "@earendil-works/chord";
+import type { JsonValue } from "@theta/chord";
 import Type, { type Static } from "typebox";
 import { Check } from "typebox/value";
 
@@ -108,3 +108,4 @@ export type ResponseEnvelope = Static<typeof ResponseEnvelopeSchema>;
 export type ServiceEventEnvelope = Static<typeof ServiceEventEnvelopeSchema>;
 export type AttachmentEnvelope = Static<typeof AttachmentEnvelopeSchema>;
 export type ServerMessage = Static<typeof ServerMessageSchema>;
+

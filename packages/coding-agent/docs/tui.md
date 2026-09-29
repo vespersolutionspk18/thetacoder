@@ -1,10 +1,10 @@
-> pi can create TUI components. Ask it to build one for your use case.
+> theta can create TUI components. Ask it to build one for your use case.
 
 # TUI Components
 
 Extensions and custom tools can render custom TUI components for interactive user interfaces. This page covers the component system and available building blocks.
 
-**Source:** [`@earendil-works/pi-tui`](https://github.com/earendil-works/pi/tree/main/packages/tui)
+**Source:** [`@theta/tui`](https://github.com/earendil-works/theta/tree/main/packages/tui)
 
 ## Component Interface
 
@@ -35,7 +35,7 @@ The TUI appends a full SGR reset and OSC 8 reset at the end of each rendered lin
 Components that display a text cursor and need IME (Input Method Editor) support should implement the `Focusable` interface:
 
 ```typescript
-import { CURSOR_MARKER, type Component, type Focusable } from "@earendil-works/pi-tui";
+import { CURSOR_MARKER, type Component, type Focusable } from "@theta/tui";
 
 class MyInput implements Component, Focusable {
   focused: boolean = false;  // Set by TUI when focus changes
@@ -54,14 +54,14 @@ When a `Focusable` component has focus, TUI:
 3. Positions the hardware terminal cursor at that location
 4. Shows the hardware cursor only when `showHardwareCursor` is enabled
 
-The cursor remains hidden by default. This keeps the fake cursor rendering, while still positioning the hardware cursor for terminals that track IME candidate windows with hidden cursors. Some terminals require a visible hardware cursor for IME positioning; enable it with the renderer's `showHardwareCursor` constructor argument or `setShowHardwareCursor(true)`. Pi also maps `PI_HARDWARE_CURSOR=1` to this setting before it creates its renderer. The `Editor` and `Input` built-in components already implement this interface.
+The cursor remains hidden by default. This keeps the fake cursor rendering, while still positioning the hardware cursor for terminals that track IME candidate windows with hidden cursors. Some terminals require a visible hardware cursor for IME positioning; enable it with the renderer's `showHardwareCursor` constructor argument or `setShowHardwareCursor(true)`. Theta also maps `PI_HARDWARE_CURSOR=1` to this setting before it creates its renderer. The `Editor` and `Input` built-in components already implement this interface.
 
 ### Container Components with Embedded Inputs
 
 When a container component (dialog, selector, etc.) contains an `Input` or `Editor` child, the container must implement `Focusable` and propagate the focus state to the child. Otherwise, the hardware cursor won't be positioned correctly for IME input.
 
 ```typescript
-import { Container, type Focusable, Input } from "@earendil-works/pi-tui";
+import { Container, type Focusable, Input } from "@theta/tui";
 
 class SearchDialog extends Container implements Focusable {
   private searchInput: Input;
@@ -91,7 +91,7 @@ Without this propagation, typing with an IME (Chinese, Japanese, Korean, etc.) w
 **In extensions** via `ctx.ui.custom()`:
 
 ```typescript
-pi.on("session_start", async (_event, ctx) => {
+theta.on("session_start", async (_event, ctx) => {
   const result = await ctx.ui.custom<string | null>((tui, theme, keybindings, done) =>
     new MyComponent({
       theme,
@@ -203,10 +203,10 @@ See [overlay-qa-tests.ts](../examples/extensions/overlay-qa-tests.ts) for compre
 
 ## Built-in Components
 
-Import from `@earendil-works/pi-tui`:
+Import from `@theta/tui`:
 
 ```typescript
-import { Text, Box, Container, Spacer, Markdown } from "@earendil-works/pi-tui";
+import { Text, Box, Container, Spacer, Markdown } from "@theta/tui";
 ```
 
 ### Text
@@ -288,7 +288,7 @@ const image = new Image(
 Use `matchesKey()` for key detection:
 
 ```typescript
-import { matchesKey, Key } from "@earendil-works/pi-tui";
+import { matchesKey, Key } from "@theta/tui";
 
 handleInput(data: string) {
   if (matchesKey(data, Key.up)) {
@@ -314,7 +314,7 @@ handleInput(data: string) {
 Fullscreen mode routes normalized press, release, click, move, drag, and wheel events to components and overlays. Return `{ handled: true }` to suppress default behavior, `capture: true` to retain drag/release ownership, `focus: true` to request keyboard focus, and `render: true` when a hover or release visibly changes the component. Press, click, drag, and wheel render by default; no-op move/release events do not.
 
 ```typescript
-import { MouseRegion } from "@earendil-works/pi-tui";
+import { MouseRegion } from "@theta/tui";
 
 const clickable = new MouseRegion(content, (event) => {
   if (event.type !== "click" || event.button !== "left") return undefined;
@@ -330,7 +330,7 @@ Unhandled wheel input scrolls the nearest `ScrollView`; unhandled primary-button
 **Critical:** Each line from `render()` must not exceed the `width` parameter.
 
 ```typescript
-import { visibleWidth, truncateToWidth } from "@earendil-works/pi-tui";
+import { visibleWidth, truncateToWidth } from "@theta/tui";
 
 render(width: number): string[] {
   // Truncate long lines
@@ -351,7 +351,7 @@ Example: Interactive selector
 import {
   matchesKey, Key,
   truncateToWidth, visibleWidth
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 
 class MySelector {
   private items: string[];
@@ -403,7 +403,7 @@ class MySelector {
 Usage in an extension:
 
 ```typescript
-pi.registerCommand("pick", {
+theta.registerCommand("pick", {
   description: "Pick an item",
   handler: async (_args, ctx) => {
     const items = ["Option A", "Option B", "Option C"];
@@ -467,8 +467,8 @@ renderResult(result, options, theme, context) {
 **For Markdown**, use `getMarkdownTheme()`:
 
 ```typescript
-import { getMarkdownTheme } from "@earendil-works/pi-coding-agent";
-import { Markdown } from "@earendil-works/pi-tui";
+import { getMarkdownTheme } from "@theta/coding-agent";
+import { Markdown } from "@theta/tui";
 
 renderResult(result, options, theme, context) {
   const mdTheme = getMarkdownTheme();
@@ -629,14 +629,14 @@ These patterns cover the most common UI needs in extensions. **Copy these patter
 
 ### Pattern 1: Selection Dialog (SelectList)
 
-For letting users pick from a list of options. Use `SelectList` from `@earendil-works/pi-tui` with `DynamicBorder` for framing.
+For letting users pick from a list of options. Use `SelectList` from `@theta/tui` with `DynamicBorder` for framing.
 
 ```typescript
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { DynamicBorder } from "@earendil-works/pi-coding-agent";
-import { Container, type SelectItem, SelectList, Text } from "@earendil-works/pi-tui";
+import type { ExtensionAPI } from "@theta/coding-agent";
+import { DynamicBorder } from "@theta/coding-agent";
+import { Container, type SelectItem, SelectList, Text } from "@theta/tui";
 
-pi.registerCommand("pick", {
+theta.registerCommand("pick", {
   handler: async (_args, ctx) => {
     const items: SelectItem[] = [
       { value: "opt1", label: "Option 1", description: "First option" },
@@ -692,9 +692,9 @@ pi.registerCommand("pick", {
 For operations that take time and should be cancellable. `BorderedLoader` shows a spinner and handles escape to cancel.
 
 ```typescript
-import { BorderedLoader } from "@earendil-works/pi-coding-agent";
+import { BorderedLoader } from "@theta/coding-agent";
 
-pi.registerCommand("fetch", {
+theta.registerCommand("fetch", {
   handler: async (_args, ctx) => {
     const result = await ctx.ui.custom<string | null>((tui, theme, _kb, done) => {
       const loader = new BorderedLoader(tui, theme, "Fetching data...");
@@ -721,13 +721,13 @@ pi.registerCommand("fetch", {
 
 ### Pattern 3: Settings/Toggles (SettingsList)
 
-For toggling multiple settings. Use `SettingsList` from `@earendil-works/pi-tui` with `getSettingsListTheme()`.
+For toggling multiple settings. Use `SettingsList` from `@theta/tui` with `getSettingsListTheme()`.
 
 ```typescript
-import { getSettingsListTheme } from "@earendil-works/pi-coding-agent";
-import { Container, type SettingItem, SettingsList, Text } from "@earendil-works/pi-tui";
+import { getSettingsListTheme } from "@theta/coding-agent";
+import { Container, type SettingItem, SettingsList, Text } from "@theta/tui";
 
-pi.registerCommand("settings", {
+theta.registerCommand("settings", {
   handler: async (_args, ctx) => {
     const items: SettingItem[] = [
       { id: "verbose", label: "Verbose mode", currentValue: "off", values: ["on", "off"] },
@@ -779,7 +779,7 @@ ctx.ui.setStatus("my-ext", undefined);
 
 ### Pattern 4b: Working Indicator Customization
 
-Customize the inline working indicator shown while pi is streaming a response.
+Customize the inline working indicator shown while theta is streaming a response.
 
 ```typescript
 // Static indicator
@@ -799,7 +799,7 @@ ctx.ui.setWorkingIndicator({
 // Hide the indicator entirely
 ctx.ui.setWorkingIndicator({ frames: [] });
 
-// Restore pi's default spinner
+// Restore theta's default spinner
 ctx.ui.setWorkingIndicator();
 ```
 
@@ -864,8 +864,8 @@ Token stats available via `ctx.sessionManager.getBranch()` and `ctx.model`.
 Replace the main input editor with a custom implementation. Useful for modal editing (vim), different keybindings (emacs), or specialized input handling.
 
 ```typescript
-import { CustomEditor, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { matchesKey, truncateToWidth } from "@earendil-works/pi-tui";
+import { CustomEditor, type ExtensionAPI } from "@theta/coding-agent";
+import { matchesKey, truncateToWidth } from "@theta/tui";
 
 type Mode = "normal" | "insert";
 
@@ -916,8 +916,8 @@ class VimEditor extends CustomEditor {
   }
 }
 
-export default function (pi: ExtensionAPI) {
-  pi.on("session_start", (_event, ctx) => {
+export default function (theta: ExtensionAPI) {
+  theta.on("session_start", (_event, ctx) => {
     // Factory receives the TUI, theme, and keybindings from the app
     ctx.ui.setEditorComponent((tui, theme, keybindings) =>
       new VimEditor(tui, theme, keybindings)
@@ -959,3 +959,4 @@ export default function (pi: ExtensionAPI) {
 - **Custom editor**: [examples/extensions/modal-editor.ts](../examples/extensions/modal-editor.ts) - Vim-like modal editing
 - **Snake game**: [examples/extensions/snake.ts](../examples/extensions/snake.ts) - Full game with keyboard input, game loop
 - **Custom tool rendering**: [examples/extensions/todo.ts](../examples/extensions/todo.ts) - renderCall and renderResult
+

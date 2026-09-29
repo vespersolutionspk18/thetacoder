@@ -1,4 +1,4 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, getAssistantTexts, type Harness } from "../harness.ts";
 
@@ -31,3 +31,4 @@ describe("issue #3317 network connection lost retry", () => {
 		expect(getAssistantTexts(harness)).toContain("recovered after reconnect");
 	});
 });
+

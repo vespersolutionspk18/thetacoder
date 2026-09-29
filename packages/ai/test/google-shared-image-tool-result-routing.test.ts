@@ -100,3 +100,4 @@ describe("google-shared image tool result routing", () => {
 		expect(imageResponse?.parts?.[0]?.inlineData).toBeTruthy();
 	});
 });
+

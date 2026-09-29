@@ -16,3 +16,4 @@ export interface TelemetryAdapterConformanceCase {
 	readonly name: string;
 	run(): Promise<void>;
 }
+

@@ -25,3 +25,4 @@ c.load(`churn(5000);`, 60000);
 globalThis.gc?.(); await new Promise((r) => setTimeout(r, 200));
 console.log(`  5000 more + gc: ${Date.now() - t} ms, refs now ${c.debugRefCount().guestRefs}`);
 c.dispose();
+

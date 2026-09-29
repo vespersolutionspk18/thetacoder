@@ -5,7 +5,7 @@ import { stream as streamMistral } from "../src/api/mistral-conversations.ts";
 import { getModel } from "../src/compat.ts";
 import type { Context, FetchFunction, ProviderResponse } from "../src/types.ts";
 
-const PI_USER_AGENT = `pi (${platform()} ${release()}; ${arch()})`;
+const PI_USER_AGENT = `theta (${platform()} ${release()}; ${arch()})`;
 
 function createSseResponse(events: unknown[], headers?: Record<string, string>): Response {
 	const body = `${events.map((event) => `data: ${JSON.stringify(event)}`).join("\r\n\r\n")}\r\n\r\ndata: [DONE]\r\n\r\n`;
@@ -170,7 +170,7 @@ describe("Mistral HTTP transport", () => {
 					content: [
 						{ type: "thinking", thinking: "reason" },
 						{ type: "text", text: "answer" },
-						{ type: "toolCall", id: "abc123456", name: "lookup", arguments: { query: "pi" } },
+						{ type: "toolCall", id: "abc123456", name: "lookup", arguments: { query: "theta" } },
 					],
 					usage: {
 						input: 0,
@@ -218,7 +218,7 @@ describe("Mistral HTTP transport", () => {
 					{
 						id: "abc123456",
 						type: "function",
-						function: { name: "lookup", arguments: '{"query":"pi"}' },
+						function: { name: "lookup", arguments: '{"query":"theta"}' },
 						index: 0,
 					},
 				],
@@ -293,7 +293,7 @@ describe("Mistral HTTP transport", () => {
 							tool_calls: [
 								{
 									index: 0,
-									function: { name: "", arguments: '"pi"}' },
+									function: { name: "", arguments: '"theta"}' },
 								},
 							],
 						},
@@ -317,7 +317,7 @@ describe("Mistral HTTP transport", () => {
 		expect(message.content).toEqual([
 			{ type: "thinking", thinking: "reason" },
 			{ type: "text", text: "answer" },
-			{ type: "toolCall", id: "abc123456", name: "lookup", arguments: { query: "pi" } },
+			{ type: "toolCall", id: "abc123456", name: "lookup", arguments: { query: "theta" } },
 		]);
 		expect(message.usage).toMatchObject({ input: 7, output: 4, cacheRead: 3, cacheWrite: 0, totalTokens: 14 });
 	});
@@ -429,3 +429,4 @@ describe("Mistral HTTP transport", () => {
 		expect(message.errorMessage).toBe('Mistral API error (403): {"message":"blocked by gateway"}');
 	});
 });
+

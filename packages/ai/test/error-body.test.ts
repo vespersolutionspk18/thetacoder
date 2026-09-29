@@ -224,3 +224,4 @@ describe("formatProviderError", () => {
 		expect(formatProviderError(norm)).toBe('{"reason":"boom"}');
 	});
 });
+

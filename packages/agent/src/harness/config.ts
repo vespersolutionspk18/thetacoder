@@ -1,4 +1,4 @@
-import type { RetryPolicy } from "@earendil-works/pi-ai";
+import type { RetryPolicy } from "@theta/ai";
 import type { CompactionSettings } from "./compaction/compaction.ts";
 
 export const DEFAULT_RETRY_POLICY: RetryPolicy = { enabled: true, maxRetries: 3, baseDelayMs: 1_000 };
@@ -33,3 +33,4 @@ export function validateCompactionSettings(settings: CompactionSettings): void {
 		throw new RangeError("Compaction token counts must be finite non-negative safe integers");
 	}
 }
+

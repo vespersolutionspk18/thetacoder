@@ -584,3 +584,4 @@ function sameServiceMemberShape(
 ): boolean {
 	return left.size === right.size && [...left].every(([name, kind]) => right.get(name) === kind);
 }
+

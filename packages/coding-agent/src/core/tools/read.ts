@@ -1,11 +1,18 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
-import type { Api, ImageContent, Model, TextContent } from "@earendil-works/pi-ai";
+import type { AgentTool, ToolOutcome } from "@theta/agent-core";
+import type { Api, ImageContent, Model, TextContent } from "@theta/ai";
 import { constants } from "fs";
-import { access as fsAccess, readFile as fsReadFile } from "fs/promises";
+import { access as fsAccess, readFile as fsReadFile, stat as fsStat } from "fs/promises";
 import { type Static, Type } from "typebox";
 import { processImage } from "../../utils/image-process.ts";
 import { detectSupportedImageMimeTypeFromFile } from "../../utils/mime.ts";
 import type { ExtensionContext, ToolDefinition } from "../extensions/types.ts";
+import { contentIdentity } from "./edit-diff.ts";
+import {
+	type FileContentCacheEntry,
+	getFileContentCacheEntry,
+	invalidateFileContentCache,
+	putFileContentCacheEntry,
+} from "./file-content-cache.ts";
 import { resolveReadPathAsync } from "./path-utils.ts";
 import { readRenderers } from "./renderers/read.ts";
 import { wrapToolDefinition } from "./tool-definition-wrapper.ts";
@@ -19,13 +26,24 @@ const readSchema = Type.Object({
 
 export const readToolSystemPromptContribution = {
 	snippet: "Read file contents",
-	guidelines: ["Use read to examine files instead of cat or sed."],
+	guidelines: [
+		"Use read to examine files instead of cat or sed.",
+		"details.contentIdentity is a precondition token for edit/write. Pass it back as `expectedVersion` on a matching `edit` or `write` to detect concurrent modifications.",
+	],
 } as const;
 
 export type ReadToolInput = Static<typeof readSchema>;
 
 export interface ReadToolDetails {
 	truncation?: TruncationResult;
+	/**
+	 * Content identity of the text actually delivered to the model (post-truncation).
+	 * Pass this back as `expectedVersion` on a matching `edit` or `write` so the tool can
+	 * detect concurrent modifications and reject stale operations.
+	 */
+	contentIdentity?: string;
+	/** Structured outcome synthesized by the agent loop. */
+	outcome?: ToolOutcome;
 }
 
 /**
@@ -39,12 +57,23 @@ export interface ReadOperations {
 	access: (absolutePath: string) => Promise<void>;
 	/** Detect image MIME type, return null or undefined for non-images */
 	detectImageMimeType?: (absolutePath: string) => Promise<string | null | undefined>;
+	/**
+	 * Stat the file for freshness verification of cached bytes (mtime/size).
+	 * Defaults to `fs/promises.stat`. When omitted, cached entries cannot
+	 * be fingerprint-verified and the read tool keeps the historical
+	 * trust-the-cache contract (appropriate for remote read operations).
+	 */
+	stat?: (absolutePath: string) => Promise<{ mtimeMs: number; size: number }>;
 }
 
 const defaultReadOperations: ReadOperations = {
 	readFile: (path) => fsReadFile(path),
 	access: (path) => fsAccess(path, constants.R_OK),
 	detectImageMimeType: detectSupportedImageMimeTypeFromFile,
+	stat: async (path) => {
+		const s = await fsStat(path);
+		return { mtimeMs: s.mtimeMs, size: s.size };
+	},
 };
 
 export interface ReadToolOptions {
@@ -70,7 +99,7 @@ export function createReadToolDefinition(
 	return {
 		name: "read",
 		label: "read",
-		description: `Read the contents of a file. Supports text files and images (jpg, png, gif, webp, bmp). Images are sent as attachments. For text files, output is truncated to ${DEFAULT_MAX_LINES} lines or ${DEFAULT_MAX_BYTES / 1024}KB (whichever is hit first). Use offset/limit for large files. When you need the full file, continue with offset until complete.`,
+		description: `Read the contents of a file. Supports text files and images (jpg, png, gif, webp, bmp). Images are sent as attachments. For text files, output is truncated to ${DEFAULT_MAX_LINES} lines or ${DEFAULT_MAX_BYTES / 1024}KB (whichever is hit first). Use offset/limit for large files. When you need the full file, continue with offset until complete. The result includes details.contentIdentity; pass this back as \`expectedVersion\` on a matching \`edit\` or \`write\` to detect concurrent modifications.`,
 		promptSnippet: readToolSystemPromptContribution.snippet,
 		promptGuidelines: [...readToolSystemPromptContribution.guidelines],
 		parameters: readSchema,
@@ -102,13 +131,52 @@ export function createReadToolDefinition(
 							// Check if file exists and is readable.
 							await ops.access(absolutePath);
 							if (aborted) return;
+							// Fast path: consult the LRU content cache before touching the disk.
+							// The cached entry is only served when its recorded mtime/size
+							// fingerprint still matches the disk state â€” the audit's
+							// "verify at query boundaries" rule. Mutations via bash or an
+							// external editor bypass the invalidation hooks, so the
+							// fingerprint check is what prevents serving stale bytes (and a
+							// stale `contentIdentity`, which would make subsequent
+							// `expectedVersion` edits fail in a loop).
+							let cached = getFileContentCacheEntry(absolutePath);
+							if (cached !== undefined && ops.stat !== undefined) {
+								// Fingerprint verification: mutations via bash or an
+								// external editor bypass the invalidation hooks, so
+								// the stat check is what prevents serving stale
+								// bytes (and a stale `contentIdentity`, which would
+								// make subsequent `expectedVersion` edits fail in a
+								// loop). Custom operations without a `stat` keep the
+								// historical trust-the-cache contract.
+								try {
+									const disk = await ops.stat(absolutePath);
+									const fingerprinted = cached as FileContentCacheEntry;
+									if (
+										fingerprinted.mtimeMs === undefined ||
+										fingerprinted.size === undefined ||
+										fingerprinted.mtimeMs !== disk.mtimeMs ||
+										fingerprinted.size !== disk.size
+									) {
+										invalidateFileContentCache(absolutePath);
+										cached = undefined;
+									}
+								} catch {
+									// Stat failed (file replaced/removed race): drop the
+									// cached entry so the plain readFile below either
+									// succeeds with fresh bytes or throws a real error.
+									invalidateFileContentCache(absolutePath);
+									cached = undefined;
+								}
+							}
 							const mimeType = ops.detectImageMimeType ? await ops.detectImageMimeType(absolutePath) : undefined;
 							let content: (TextContent | ImageContent)[];
 							let details: ReadToolDetails | undefined;
 							const nonVisionImageNote = getNonVisionImageNote(ctx?.model);
 							if (mimeType) {
-								// Read image as binary.
-								const buffer = await ops.readFile(absolutePath);
+								// Read image as binary. The buffer is large and image
+								// processing is the dominant cost, so the cache is only
+								// used to skip the disk read â€” processImage still runs.
+								const buffer = cached ? cached.bytes : await ops.readFile(absolutePath);
 								const processed = await processImage(buffer, mimeType, { autoResizeImages });
 								if (!processed.ok) {
 									let textNote = `Read image file [${mimeType}]\n${processed.message}`;
@@ -124,9 +192,32 @@ export function createReadToolDefinition(
 									];
 								}
 							} else {
-								// Read text content.
-								const buffer = await ops.readFile(absolutePath);
+								// Read text content. Skip the disk read on a cache hit;
+								// reuse the cached identity too.
+								const buffer = cached ? cached.bytes : await ops.readFile(absolutePath);
 								const textContent = buffer.toString("utf-8");
+								// Content identity is computed from the raw on-disk bytes (post-truncation of
+								// the model's window) so the model can pass it back as `expectedVersion` on
+								// a subsequent edit/write. Pass this back as `expectedVersion` on a matching
+								// `edit` or `write` to detect concurrent modifications.
+								const identity = cached?.hash ?? (await contentIdentity(textContent));
+								if (!cached) {
+									// Record the disk fingerprint alongside the bytes so the next
+									// read can verify freshness (see the cache-consult block above).
+									let mtimeMs: number | undefined;
+									let size: number | undefined;
+									if (ops.stat !== undefined) {
+										try {
+											const disk = await ops.stat(absolutePath);
+											mtimeMs = disk.mtimeMs;
+											size = disk.size;
+										} catch {
+											// Stat raced with a mutation; the entry stays
+											// fingerprint-less and the next read re-reads.
+										}
+									}
+									putFileContentCacheEntry(absolutePath, { bytes: buffer, hash: identity, mtimeMs, size });
+								}
 								const allLines = textContent.split("\n");
 								const totalFileLines = allLines.length;
 								// Apply offset if specified. Convert from 1-indexed input to 0-indexed array access.
@@ -153,7 +244,7 @@ export function createReadToolDefinition(
 									// First line alone exceeds the byte limit. Point the model at a bash fallback.
 									const firstLineSize = formatSize(Buffer.byteLength(allLines[startLine], "utf-8"));
 									outputText = `[Line ${startLineDisplay} is ${firstLineSize}, exceeds ${formatSize(DEFAULT_MAX_BYTES)} limit. Use bash: sed -n '${startLineDisplay}p' ${path} | head -c ${DEFAULT_MAX_BYTES}]`;
-									details = { truncation };
+									details = { truncation, contentIdentity: identity };
 								} else if (truncation.truncated) {
 									// Truncation occurred. Build an actionable continuation notice.
 									const endLineDisplay = startLineDisplay + truncation.outputLines - 1;
@@ -164,15 +255,17 @@ export function createReadToolDefinition(
 									} else {
 										outputText += `\n\n[Showing lines ${startLineDisplay}-${endLineDisplay} of ${totalFileLines} (${formatSize(DEFAULT_MAX_BYTES)} limit). Use offset=${nextOffset} to continue.]`;
 									}
-									details = { truncation };
+									details = { truncation, contentIdentity: identity };
 								} else if (userLimitedLines !== undefined && startLine + userLimitedLines < allLines.length) {
 									// User-specified limit stopped early, but the file still has more content.
 									const remaining = allLines.length - (startLine + userLimitedLines);
 									const nextOffset = startLine + userLimitedLines + 1;
 									outputText = `${truncation.content}\n\n[${remaining} more lines in file. Use offset=${nextOffset} to continue.]`;
+									details = { contentIdentity: identity };
 								} else {
 									// No truncation and no remaining user-limited content.
 									outputText = truncation.content;
+									details = { contentIdentity: identity };
 								}
 								content = [{ type: "text", text: outputText }];
 							}
@@ -195,3 +288,4 @@ export function createReadToolDefinition(
 export function createReadTool(cwd: string, options?: ReadToolOptions): AgentTool<typeof readSchema> {
 	return wrapToolDefinition(createReadToolDefinition(cwd, options));
 }
+

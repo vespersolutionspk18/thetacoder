@@ -63,3 +63,4 @@ commit([setValue(laneState, "a"), appendList(pendingOut, "x")]);
 commit([appendList(pendingOut, "x"), retireScope("op_1")]);
 // @ts-expect-error entries are session-only
 commit<EphemeralScope>([insertEntry({})]);
+

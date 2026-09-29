@@ -245,3 +245,4 @@ describe("tool execution primitives", () => {
 		expect(createToolResultMessage(finalized).content).toEqual([]);
 	});
 });
+

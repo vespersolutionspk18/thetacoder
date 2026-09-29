@@ -1,12 +1,26 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { isBuiltin } from "node:module";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import ts from "typescript";
-import { getPublicWorkspacePackages } from "./release-packages.mjs";
 
 const failures = [];
+
+function listWorkspacePackages() {
+	const packages = [];
+	for (const group of ["packages", "packages/session-backends"]) {
+		if (!existsSync(group)) continue;
+		for (const entry of readdirSync(group, { withFileTypes: true })) {
+			if (!entry.isDirectory()) continue;
+			const directory = join(group, entry.name);
+			if (existsSync(join(directory, "package.json"))) {
+				packages.push({ directory });
+			}
+		}
+	}
+	return packages;
+}
 
 function checkSource(source, manifest) {
 	const file = source.fileName;
@@ -57,7 +71,7 @@ function checkSource(source, manifest) {
 	visit(source);
 }
 
-for (const { directory } of getPublicWorkspacePackages()) {
+for (const { directory } of listWorkspacePackages()) {
 	const sourceDirectory = resolve(directory, "src");
 	if (!existsSync(sourceDirectory)) continue;
 	const manifest = JSON.parse(readFileSync(join(directory, "package.json"), "utf8"));
@@ -86,8 +100,9 @@ for (const { directory } of getPublicWorkspacePackages()) {
 }
 
 if (failures.length > 0) {
-	console.error("Undeclared runtime imports in public packages:");
+	console.error("Undeclared runtime imports in workspace packages:");
 	for (const failure of failures) console.error(`  ${failure}`);
 	process.exit(1);
 }
-console.log("Public package runtime imports have declared dependencies.");
+console.log("Workspace package runtime imports have declared dependencies.");
+

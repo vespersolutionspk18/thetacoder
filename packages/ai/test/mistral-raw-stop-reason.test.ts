@@ -59,3 +59,4 @@ describe("Mistral raw stop reasons", () => {
 		expect(message.errorMessage).toBe("Provider stopped with: unmapped_error");
 	});
 });
+

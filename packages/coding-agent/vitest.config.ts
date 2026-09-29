@@ -21,13 +21,14 @@ export default mergeConfig(
 		},
 		resolve: {
 			alias: [
-				{ find: /^@earendil-works\/pi-ai$/, replacement: workspaceSourcePaths.aiIndex },
-				{ find: /^@earendil-works\/pi-agent-core$/, replacement: workspaceSourcePaths.agentIndex },
-				{ find: /^@mariozechner\/pi-ai$/, replacement: workspaceSourcePaths.aiIndex },
-				{ find: /^@mariozechner\/pi-ai\/oauth$/, replacement: workspaceSourcePaths.aiOAuth },
-				{ find: /^@mariozechner\/pi-agent-core$/, replacement: workspaceSourcePaths.agentIndex },
-				{ find: /^@mariozechner\/pi-tui$/, replacement: workspaceSourcePaths.tuiIndex },
+				{ find: /^@theta\/ai$/, replacement: workspaceSourcePaths.aiIndex },
+				{ find: /^@theta\/agent-core$/, replacement: workspaceSourcePaths.agentIndex },
+				{ find: /^@mariozechner\/theta-ai$/, replacement: workspaceSourcePaths.aiIndex },
+				{ find: /^@mariozechner\/theta-ai\/oauth$/, replacement: workspaceSourcePaths.aiOAuth },
+				{ find: /^@mariozechner\/theta-agent-core$/, replacement: workspaceSourcePaths.agentIndex },
+				{ find: /^@mariozechner\/theta-tui$/, replacement: workspaceSourcePaths.tuiIndex },
 			],
 		},
 	}),
 );
+

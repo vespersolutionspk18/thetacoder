@@ -389,3 +389,4 @@ rg 'operationState\(|laneState\(|branchTip\(|laneConfig\(' packages/agent/src/ha
 ```
 
 The second audit may match write constructors, but no reader call may use those control addresses.
+

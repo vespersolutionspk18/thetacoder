@@ -1,4 +1,4 @@
-import type { AssistantMessageFrame } from "@earendil-works/pi-ai";
+import type { AssistantMessageFrame } from "@theta/ai";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { BACKGROUND_CONTEXT } from "../../src/harness/context.ts";
 import { MemoryStorage } from "../../src/harness/session/memory.ts";
@@ -57,7 +57,7 @@ describe("bound value addresses", () => {
 		expect(() => value<unknown>("")).toThrow("must not be empty");
 		expect(() => value<unknown>("app\0state")).toThrow("must not contain");
 		expect(() => list<unknown>("app.events", "bad\0key")).toThrow("must not contain");
-		expect(value<unknown>("pi.application")).toEqual({ kind: "value", namespace: "pi.application", key: "" });
+		expect(value<unknown>("theta.application")).toEqual({ kind: "value", namespace: "theta.application", key: "" });
 	});
 
 	it("preserves invariant address and helper types", () => {
@@ -144,20 +144,20 @@ describe("built-in durable addresses", () => {
 			sessionName,
 			entryLabel("entry"),
 		]).toEqual([
-			{ kind: "value", namespace: "pi.branch.tip", key: "review" },
-			{ kind: "value", namespace: "pi.lane.config", key: "review" },
-			{ kind: "value", namespace: "pi.lane.state", key: "review" },
-			{ kind: "value", namespace: "pi.result", key: "operation" },
-			{ kind: "value", namespace: "pi.op.meta", key: "operation" },
-			{ kind: "value", namespace: "pi.op.state", key: "operation" },
-			{ kind: "value", namespace: "pi.op.tool_args", key: "operation:step:2" },
-			{ kind: "value", namespace: "pi.op.tool_memo", key: "operation:invocation:name" },
-			{ kind: "value", namespace: "pi.op.preparation", key: "operation:task" },
-			{ kind: "value", namespace: "pi.pending.entry", key: "entry" },
-			{ kind: "value", namespace: "pi.pending.tool_output", key: "operation:invocation" },
-			{ kind: "list", namespace: "pi.pending.assistant_frame", key: "operation:response" },
-			{ kind: "value", namespace: "pi.session.name", key: "" },
-			{ kind: "value", namespace: "pi.entry.label", key: "entry" },
+			{ kind: "value", namespace: "theta.branch.tip", key: "review" },
+			{ kind: "value", namespace: "theta.lane.config", key: "review" },
+			{ kind: "value", namespace: "theta.lane.state", key: "review" },
+			{ kind: "value", namespace: "theta.result", key: "operation" },
+			{ kind: "value", namespace: "theta.op.meta", key: "operation" },
+			{ kind: "value", namespace: "theta.op.state", key: "operation" },
+			{ kind: "value", namespace: "theta.op.tool_args", key: "operation:step:2" },
+			{ kind: "value", namespace: "theta.op.tool_memo", key: "operation:invocation:name" },
+			{ kind: "value", namespace: "theta.op.preparation", key: "operation:task" },
+			{ kind: "value", namespace: "theta.pending.entry", key: "entry" },
+			{ kind: "value", namespace: "theta.pending.tool_output", key: "operation:invocation" },
+			{ kind: "list", namespace: "theta.pending.assistant_frame", key: "operation:response" },
+			{ kind: "value", namespace: "theta.session.name", key: "" },
+			{ kind: "value", namespace: "theta.entry.label", key: "entry" },
 		]);
 	});
 
@@ -171,13 +171,14 @@ describe("built-in durable addresses", () => {
 		];
 		expect(prefixes).toHaveLength(5);
 		expect(prefixes).toEqual([
-			{ kind: "value", namespace: "pi.branch.tip", key: "" },
-			{ kind: "value", namespace: "pi.op.tool_args", key: "operation:" },
-			{ kind: "value", namespace: "pi.op.tool_memo", key: "operation:invocation:" },
-			{ kind: "value", namespace: "pi.op.preparation", key: "operation:" },
-			{ kind: "value", namespace: "pi.pending.tool_output", key: "operation:" },
+			{ kind: "value", namespace: "theta.branch.tip", key: "" },
+			{ kind: "value", namespace: "theta.op.tool_args", key: "operation:" },
+			{ kind: "value", namespace: "theta.op.tool_memo", key: "operation:invocation:" },
+			{ kind: "value", namespace: "theta.op.preparation", key: "operation:" },
+			{ kind: "value", namespace: "theta.pending.tool_output", key: "operation:" },
 		]);
 		expect(operationToolArgsPrefix("operation", "step").key).toBe("operation:step:");
 		expect(operationToolMemoPrefix("operation").key).toBe("operation:");
 	});
 });
+

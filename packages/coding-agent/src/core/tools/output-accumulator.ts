@@ -58,7 +58,7 @@ export class OutputAccumulator {
 		this.maxLines = options.maxLines ?? DEFAULT_MAX_LINES;
 		this.maxBytes = options.maxBytes ?? DEFAULT_MAX_BYTES;
 		this.maxRollingBytes = Math.max(this.maxBytes * 2, 1);
-		this.tempFilePrefix = options.tempFilePrefix ?? "pi-output";
+		this.tempFilePrefix = options.tempFilePrefix ?? "theta-output";
 	}
 
 	append(data: Buffer): void {
@@ -220,3 +220,4 @@ export class OutputAccumulator {
 		this.rawChunks = [];
 	}
 }
+

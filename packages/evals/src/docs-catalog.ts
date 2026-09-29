@@ -59,3 +59,4 @@ export function loadDocumentationCatalog(catalogPath: string): Array<{ relativeP
 	}
 	return pages;
 }
+

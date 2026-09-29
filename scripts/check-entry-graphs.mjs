@@ -19,11 +19,11 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Workspace package name -> its source root, so cross-package imports are followed. */
 const WORKSPACE = {
-	"@earendil-works/chord": "packages/chord/src",
-	"@earendil-works/pi-ai": "packages/ai/src",
-	"@earendil-works/pi-agent-core": "packages/agent/src",
-	"@earendil-works/pi-telemetry": "packages/telemetry/src",
-	"@earendil-works/pi-tui": "packages/tui/src",
+	"@theta/chord": "packages/chord/src",
+	"@theta/ai": "packages/ai/src",
+	"@theta/agent-core": "packages/agent/src",
+	"@theta/telemetry": "packages/telemetry/src",
+	"@theta/tui": "packages/tui/src",
 };
 
 /**
@@ -138,3 +138,4 @@ if (failures > 0) {
 	process.exit(1);
 }
 console.log("Entry point graphs are within budget.");
+

@@ -22,10 +22,13 @@ import type {
 	AgentMessage,
 	AgentState,
 	AgentTool,
+	AgentToolCall,
+	AgentToolResult,
 	PrepareNextTurnContext,
 	ThinkingLevel,
-} from "@earendil-works/pi-agent-core";
-import { contentText } from "@earendil-works/pi-ai";
+} from "@theta/agent-core";
+import { createExecutionPlanRunner } from "@theta/agent-core";
+import { contentText, uuidv7 } from "@theta/ai";
 import type {
 	AssistantMessage,
 	AuthResult,
@@ -34,7 +37,7 @@ import type {
 	ProviderHeaders,
 	TextContent,
 	Usage,
-} from "@earendil-works/pi-ai/compat";
+} from "@theta/ai/compat";
 import {
 	clampThinkingLevel,
 	cleanupSessionResources,
@@ -46,7 +49,7 @@ import {
 	type RetryCallbacks,
 	resetApiProviders,
 	streamSimple,
-} from "@earendil-works/pi-ai/compat";
+} from "@theta/ai/compat";
 import { getThemeByName, theme } from "../modes/interactive/theme/theme.ts";
 import { stripFrontmatter } from "../utils/frontmatter.ts";
 import { sleep } from "../utils/sleep.ts";
@@ -60,12 +63,14 @@ import {
 	collectEntriesForBranchSummary,
 	compact,
 	estimateContextTokens,
+	estimateRequestPrefixTokens,
 	estimateTokens,
 	generateBranchSummary,
 	prepareCompaction,
 	shouldCompact,
 } from "./compaction/index.ts";
 import { DEFAULT_THINKING_LEVEL, THINKING_LEVEL_OPTIONS } from "./defaults.ts";
+import { type ExecutionPlan, type ExecutionResult, executePlan as f6ExecutePlan } from "./execution-plan/index.ts";
 import { exportSessionToHtml, type ToolHtmlRenderer } from "./export-html/index.ts";
 import { createToolHtmlRenderer } from "./export-html/tool-renderer.ts";
 import {
@@ -100,18 +105,56 @@ import type { BashExecutionMessage, CustomMessage } from "./messages.ts";
 import { ModelRegistry } from "./model-registry.ts";
 import type { ModelRuntime } from "./model-runtime.ts";
 import { expandPromptTemplate, type PromptTemplate } from "./prompt-templates.ts";
+import type { LiveQueryToolData } from "./repository/query-data.ts";
+import type { SharedEvidenceStore } from "./repository/shared-evidence.ts";
 import type { ResourceExtensionPaths, ResourceLoader } from "./resource-loader.ts";
 import { exportSessionToJsonl } from "./session-export.ts";
 import type { BranchSummaryEntry, CompactionEntry, SessionEntry, SessionManager } from "./session-manager.ts";
 import { getLatestCompactionEntry } from "./session-manager.ts";
 import type { SettingsManager } from "./settings-manager.ts";
+import { createSharedEvidenceBridge, type SharedEvidenceBridge } from "./shared-evidence-bridge.ts";
 import type { SlashCommandInfo } from "./slash-commands.ts";
 import { createSyntheticSourceInfo, type SourceInfo } from "./source-info.ts";
 import { type BuildSystemPromptOptions, buildSystemPrompt } from "./system-prompt.ts";
+import {
+	addConstraint,
+	addGateResult,
+	createInitialTaskState,
+	type GateResult,
+	getLatestTaskState,
+	markHypothesisResolved,
+	recordChange,
+	recordDecision,
+	recordVerification,
+	setObjective as setObjectiveOnState,
+	type TaskState,
+	type TaskStateChangedFile,
+	type TaskStateConstraint,
+	type TaskStateDecision,
+	type TaskStateVerification,
+} from "./task-state.ts";
 import { type BashOperations, createLocalBashOperations } from "./tools/bash.ts";
-import { createAllToolDefinitions } from "./tools/index.ts";
+import {
+	createAllToolDefinitions,
+	createCodingToolDefinitions,
+	createF1ReadOnlyToolDefinitions,
+	createFindToolDefinition,
+	createGrepToolDefinition,
+	createLsToolDefinition,
+	type ToolDef,
+} from "./tools/index.ts";
 import { createToolDefinitionFromAgentTool } from "./tools/tool-definition-wrapper.ts";
 import { addUsageToTotals, createUsageTotals } from "./usage-totals.ts";
+import {
+	type CheckOutcome,
+	computeSnapshotHash,
+	evaluateGate,
+	extractAndAddRequirements,
+	loadVerificationPolicy,
+	runOne,
+	type VerificationCheck,
+	type VerificationPolicy,
+} from "./verification/index.ts";
 
 // ============================================================================
 // Skill Block Parsing
@@ -182,7 +225,22 @@ export type AgentSessionEvent =
 			reason: "manual" | "threshold" | "overflow";
 	  }
 	| { type: "summarization_retry_finished" }
-	| { type: "bash_execution_update"; id?: string; delta: string };
+	| { type: "bash_execution_update"; id?: string; delta: string }
+	| {
+			type: "task_state_update";
+			/** What was mutated. Drives listener-side filtering without diffing. */
+			mutation:
+				| "objective"
+				| "constraint"
+				| "decision"
+				| "hypothesis"
+				| "verification"
+				| "change"
+				| "gate"
+				| "requirement";
+			/** Full current TaskState after the mutation. */
+			taskState: TaskState;
+	  };
 
 /** Listener function for agent session events */
 export type AgentSessionEventListener = (event: AgentSessionEvent) => void;
@@ -195,6 +253,35 @@ function withoutDeletedHeaders(headers: ProviderHeaders | undefined): Record<str
 	return headers
 		? Object.fromEntries(Object.entries(headers).filter((entry): entry is [string, string] => entry[1] !== null))
 		: undefined;
+}
+
+/**
+ * Classify a `bash` tool command into an F2 verification kind.
+ *
+ * The classification is intentionally narrow and prioritises the
+ * commands the agent loop is most likely to actually run as part of
+ * a "did the change work?" check. A test command (anything matching
+ * `test` as a script name) wins over a lint or typecheck command
+ * when several patterns match in the same line, because the
+ * canonical CI pipeline runs tests last and the failure mode the
+ * audit cares about is "the agent thinks its edit passed when the
+ * tests would have failed." Returns `null` for commands that do
+ * not look like a verification run, so the session does not flood
+ * the F2 state with non-verifications.
+ */
+function classifyBashVerification(command: string | undefined): "test" | "lint" | "typecheck" | null {
+	if (typeof command !== "string" || command.length === 0) return null;
+	const lower = command.toLowerCase();
+	const testPattern =
+		/(?:\b|\/)(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?test\b|\b(?:vitest|jest|mocha|pytest|playwright\s+test|go\s+test|cargo\s+test)\b/;
+	const typecheckPattern =
+		/(?:\b|\/)(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?typecheck\b|\btsc\b(?!\w)|\bmypy\b|\bpyright\b/;
+	const lintPattern =
+		/(?:\b|\/)(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?lint\b|\b(?:eslint|biome\s+lint|prettier\s+--check|ruff\s+check|golangci-lint|clippy)\b/;
+	if (testPattern.test(lower)) return "test";
+	if (typecheckPattern.test(lower)) return "typecheck";
+	if (lintPattern.test(lower)) return "lint";
+	return null;
 }
 
 export interface AgentSessionConfig {
@@ -223,10 +310,62 @@ export interface AgentSessionConfig {
 	 * a definition-first registry even when callers provide plain AgentTool instances.
 	 */
 	baseToolsOverride?: Record<string, AgentTool>;
+	/**
+	 * F1 `query` tool live data layer. When provided, the F1 `query` tool is
+	 * appended to the base tool list during runtime construction, with the
+	 * manifest / syntax index / semantic adapter resolved at build time.
+	 */
+	liveQueryToolData?: LiveQueryToolData;
 	/** Mutable ref used by Agent to access the current ExtensionRunner */
 	extensionRunnerRef?: { current?: ExtensionRunner };
 	/** Session start event metadata emitted when extensions bind to this runtime. */
 	sessionStartEvent?: SessionStartEvent;
+	/**
+	 * F10 shared evidence. When set, the session builds a
+	 * `SharedEvidenceBridge` over this store and publishes every
+	 * successful `read` tool result as `file-content` evidence so
+	 * cooperating sessions can avoid re-reading the same file.
+	 */
+	sharedEvidenceStore?: SharedEvidenceStore;
+	/**
+	 * Identity recorded as `Evidence.source` on every record the
+	 * bridge publishes. Defaults to `"agent-session"` when omitted.
+	 */
+	sharedEvidenceSource?: string;
+	/**
+	 * F2 evidence freshness. Invoked from the agent-core
+	 * `afterToolCall` hook for every successful `read` tool result
+	 * that carries a non-empty `details.contentIdentity` and a
+	 * non-empty `args.path`. The SDK wires this to its
+	 * `_latestEvidenceHashes` map so the next context-compiler pass
+	 * can compare recorded hashes against fresh evidence. The
+	 * callback is NOT invoked for other tools, error results, or
+	 * results without `contentIdentity`.
+	 */
+	onReadResult?: (capture: { path: string; contentIdentity: string }) => void;
+	/**
+	 * F2 lifecycle observer. Invoked from the agent-core
+	 * `afterToolCall` hook for every tool call (including reads,
+	 * edits, writes, bash, and so on). Receives the executed
+	 * `toolCall`, the original `result` (not any post-hook override),
+	 * and the `isError` flag. Used by callers that want to bridge
+	 * tool results into the F2 TaskState lifecycle (for example
+	 * `recordChange` on `edit`/`write` and `recordVerification` on
+	 * `bash`). The agent loop itself does not interpret the return
+	 * value; the callback is purely observational.
+	 */
+	onToolResult?: (capture: { toolCall: AgentToolCall; result: AgentToolResult<unknown>; isError: boolean }) => void;
+	/**
+	 * F2 lifecycle observer. Invoked exactly once per session, the
+	 * first time `prompt()` accepts a non-extension-command user
+	 * prompt that survives input-handler processing. Receives the
+	 * post-skill-expansion prompt text. Used by callers that want to
+	 * auto-set the F2 objective from the user's first request; the
+	 * session itself only sets the objective when this is wired up,
+	 * and only if no objective is already recorded. Subsequent
+	 * prompts do not invoke this callback.
+	 */
+	onFirstUserPrompt?: (capture: { text: string }) => void;
 }
 
 export interface ExtensionBindings {
@@ -311,6 +450,14 @@ export class AgentSession {
 	readonly agent: Agent;
 	readonly sessionManager: SessionManager;
 	readonly settingsManager: SettingsManager;
+	/**
+	 * F10 shared evidence bridge. `undefined` when the session was
+	 * constructed without a `sharedEvidenceStore` — in that case the
+	 * read tool result is not published to any shared store. The
+	 * bridge is created during construction and never recreated for
+	 * the lifetime of the session.
+	 */
+	readonly sharedEvidenceBridge: SharedEvidenceBridge | undefined;
 
 	private _scopedModels: Array<{ model: Model<any>; thinkingLevel?: ThinkingLevel }>;
 
@@ -359,6 +506,13 @@ export class AgentSession {
 	private _allowedToolNames?: Set<string>;
 	private _excludedToolNames?: Set<string>;
 	private _baseToolsOverride?: Record<string, AgentTool>;
+	/**
+	 * F1 `query` tool live data layer. When set, the session appends the
+	 * `query` tool to the base tool list during `_buildRuntime`. Also
+	 * exposed as the public `liveQueryToolData` field so callers can
+	 * trigger `refresh()` and observe the new data on the next access.
+	 */
+	readonly liveQueryToolData?: LiveQueryToolData;
 	private _sessionStartEvent: SessionStartEvent;
 	private _extensionUIContext?: ExtensionUIContext;
 	private _extensionMode: ExtensionMode = "print";
@@ -369,12 +523,50 @@ export class AgentSession {
 	private _extensionErrorUnsubscriber?: () => void;
 
 	private _modelRuntime: ModelRuntime;
+	/**
+	 * F2 evidence freshness. Invoked from the agent-core
+	 * `afterToolCall` hook for every successful `read` tool result.
+	 * `undefined` when the host did not supply an `onReadResult`
+	 * callback in the `AgentSessionConfig` (in which case the
+	 * `_installAgentToolHooks` hook short-circuits the freshness
+	 * capture).
+	 */
+	private _onReadResult?: (capture: { path: string; contentIdentity: string }) => void;
+	/**
+	 * F2 lifecycle observer. Invoked from the agent-core
+	 * `afterToolCall` hook for every tool call. `undefined` when the
+	 * host did not supply an `onToolResult` callback in the
+	 * `AgentSessionConfig`. Purely observational; the session never
+	 * reads the return value.
+	 */
+	private _onToolResult?: (capture: {
+		toolCall: AgentToolCall;
+		result: AgentToolResult<unknown>;
+		isError: boolean;
+	}) => void;
+	/**
+	 * F2 lifecycle observer. Invoked once per session, the first
+	 * time `prompt()` accepts a real user prompt. `undefined` when
+	 * the host did not supply an `onFirstUserPrompt` callback in
+	 * the `AgentSessionConfig`. The session flips the `_hasObservedFirstUserPrompt`
+	 * flag the first time it fires so subsequent prompts do not
+	 * re-invoke it.
+	 */
+	private _onFirstUserPrompt?: (capture: { text: string }) => void;
+	private _hasObservedFirstUserPrompt = false;
 
 	// Tool registry for extension getTools/setTools
 	private _toolRegistry: Map<string, AgentTool> = new Map();
 	private _toolDefinitions: Map<string, ToolDefinitionEntry> = new Map();
 	private _toolPromptSnippets: Map<string, string> = new Map();
 	private _toolPromptGuidelines: Map<string, string[]> = new Map();
+	/**
+	 * Promise that resolves when the initial `_buildRuntime` call
+	 * completes. Stored so callers can `await session.whenReady()`
+	 * before observing `getAllTools()` / `getActiveToolNames()` when
+	 * the build is async (e.g. when a `liveQueryToolData` is attached).
+	 */
+	private _initialBuildPromise: Promise<void> = Promise.resolve();
 
 	// Base system prompt (without extension appends) - used to apply fresh appends each turn
 	private _baseSystemPrompt = "";
@@ -385,6 +577,12 @@ export class AgentSession {
 		this.agent = config.agent;
 		this.sessionManager = config.sessionManager;
 		this.settingsManager = config.settingsManager;
+		this.sharedEvidenceBridge = config.sharedEvidenceStore
+			? createSharedEvidenceBridge({
+					store: config.sharedEvidenceStore,
+					source: config.sharedEvidenceSource ?? "agent-session",
+				})
+			: undefined;
 		this._scopedModels = config.scopedModels ?? [];
 		this._resourceLoader = config.resourceLoader;
 		this._customTools = config.customTools ?? [];
@@ -395,18 +593,43 @@ export class AgentSession {
 		this._allowedToolNames = config.allowedToolNames ? new Set(config.allowedToolNames) : undefined;
 		this._excludedToolNames = config.excludedToolNames ? new Set(config.excludedToolNames) : undefined;
 		this._baseToolsOverride = config.baseToolsOverride;
+		this.liveQueryToolData = config.liveQueryToolData;
 		this._sessionStartEvent = config.sessionStartEvent ?? { type: "session_start", reason: "startup" };
+		this._onReadResult = config.onReadResult;
+		this._onToolResult = config.onToolResult;
+		this._onFirstUserPrompt = config.onFirstUserPrompt;
 
 		// Always subscribe to agent events for internal handling
 		// (session persistence, extensions, auto-compaction, retry logic)
 		this._unsubscribeAgent = this.agent.subscribe(this._handleAgentEvent);
 		this._installAgentToolHooks();
 		this._installAgentNextTurnRefresh();
+		this._installExecutionPlanRouter();
 
-		this._buildRuntime({
+		// F1: when a live query data layer is attached, `_buildRuntime`
+		// becomes async (it has to `await liveQueryToolData.getToolData()`
+		// to assemble the `query` tool's data). The constructor fires
+		// the build and stashes the resulting promise on the instance so
+		// callers (including the SDK and tests) can `await
+		// session.whenReady()` before calling `getAllTools()` /
+		// `getActiveToolNames()`.
+		this._initialBuildPromise = this._buildRuntime({
 			activeToolNames: this._initialActiveToolNames,
 			includeAllExtensionTools: true,
 		});
+	}
+
+	/**
+	 * Resolves once the initial tool registry build has finished. When
+	 * a `liveQueryToolData` is attached, the build is async (it must
+	 * `await liveQueryToolData.getToolData()` to wire the `query` tool),
+	 * so callers that want to observe the populated registry immediately
+	 * after construction should `await session.whenReady()` before
+	 * calling `getAllTools()` or `getActiveToolNames()`. Resolves
+	 * immediately when no live data layer is attached.
+	 */
+	whenReady(): Promise<void> {
+		return this._initialBuildPromise;
 	}
 
 	get modelRuntime(): ModelRuntime {
@@ -506,6 +729,84 @@ export class AgentSession {
 		};
 
 		this.agent.afterToolCall = async ({ toolCall, args, result, isError }) => {
+			// F10: publish the read tool's disk bytes to the shared
+			// evidence store so cooperating sessions (parent/child)
+			// can avoid re-reading the same file. The publish uses
+			// the original `result` (not the post-hook override) so
+			// the recorded `contentHash` matches the file the tool
+			// actually opened; the hook may redact the model-visible
+			// copy without affecting the shared cache.
+			if (this.sharedEvidenceBridge && !isError && toolCall.name === "read") {
+				const textBlock = result.content?.find((c) => c.type === "text");
+				const contentIdentity = (result.details as { contentIdentity?: string } | undefined)?.contentIdentity;
+				const readArgs = (args ?? {}) as { path?: string; offset?: number; limit?: number };
+				if (textBlock && contentIdentity && readArgs.path) {
+					await this.sharedEvidenceBridge.publishRead(readArgs.path, textBlock.text, contentIdentity, {
+						...(readArgs.offset !== undefined ? { offset: readArgs.offset } : {}),
+						...(readArgs.limit !== undefined ? { limit: readArgs.limit } : {}),
+					});
+				}
+			}
+
+			// F2 evidence freshness: forward the read tool's
+			// `path → contentIdentity` pair to the host (typically
+			// the SDK's `_latestEvidenceHashes` map) so the next
+			// context-compiler pass can compare recorded hashes
+			// against fresh evidence. Uses the original `result`
+			// (not the post-hook override) for the same reason as
+			// the F10 path above: the recorded hash must match the
+			// file the tool actually opened, not whatever an
+			// extension may redact for the model. Mirrors the F10
+			// guards: only on `read` + non-error +
+			// non-empty `contentIdentity` + non-empty `path`.
+			if (this._onReadResult && !isError && toolCall.name === "read") {
+				const contentIdentity = (result.details as { contentIdentity?: string } | undefined)?.contentIdentity;
+				const readArgs = (args ?? {}) as { path?: string };
+				if (
+					typeof contentIdentity === "string" &&
+					contentIdentity.length > 0 &&
+					typeof readArgs.path === "string" &&
+					readArgs.path.length > 0
+				) {
+					this._onReadResult({ path: readArgs.path, contentIdentity });
+				}
+			}
+
+			// F2 lifecycle observer: forward every tool call to the
+			// host-supplied `onToolResult` callback. This is the
+			// integration point for the F2 TaskState lifecycle
+			// methods (`recordChange` for `edit`/`write`,
+			// `recordVerification` for `bash` test/lint/typecheck,
+			// etc.). The callback runs even when no extension
+			// handlers are attached so the lifecycle stays in sync
+			// with every tool the agent executes.
+			if (this._onToolResult) {
+				this._onToolResult({ toolCall, result, isError });
+			}
+
+			// F2 lifecycle: classify the executed tool and update
+			// the TaskState. The agent-core hook runs once per
+			// tool call, so this is the natural place to bridge
+			// the F2 state into the agent loop. The classification
+			// is intentionally narrow — only `edit`/`write` and
+			// `bash` — because the audit's F2 finding said
+			// "this state should serve execution and correctness"
+			// and those three tools cover the bulk of
+			// execution-time observation. Other tools (read, find,
+			// grep, ls, query, etc.) are read-only and the F2
+			// freshness path already covers reads.
+			this._updateTaskStateFromToolCall(toolCall, args, result, isError);
+
+			// F1 freshness: after a successful `edit` / `write` /
+			// `bash` mutation, refresh the live query data layer so
+			// the next `query` tool call (which resolves its data at
+			// call time) sees the new worktree state — no session
+			// reload required. Swallow refresh errors: a failed
+			// re-index must never break the turn (the query tool
+			// keeps serving the last known snapshot until the next
+			// successful refresh or TTL expiry).
+			await this._refreshQueryToolDataAfterMutation(toolCall, isError);
+
 			const runner = this._extensionRunner;
 			const hookResult = runner.hasHandlers("tool_result")
 				? await runner.emitToolResult({
@@ -539,15 +840,101 @@ export class AgentSession {
 		};
 	}
 
+	/**
+	 * F2 lifecycle bridge. Called from the agent-core
+	 * `afterToolCall` hook for every tool call. Classifies the
+	 * tool and updates the F2 TaskState accordingly:
+	 *
+	 *  - `edit` / `write` (when the result carries a non-empty
+	 *    `details.contentIdentity` and the args carry a non-empty
+	 *    `path`) → `recordChange({ path, contentHash, toolCallId })`.
+	 *  - `bash` (when the command matches a test / lint /
+	 *    typecheck pattern) →
+	 *    `recordVerification({ kind, command, passed: !isError })`.
+	 *
+	 * Tools that do not match either branch are no-ops; this is
+	 * deliberate so the F2 state is driven by the same "what
+	 * actually changed and what was verified" signal the audit
+	 * called for, not by every read or search.
+	 */
+	private _updateTaskStateFromToolCall(
+		toolCall: AgentToolCall,
+		args: unknown,
+		result: AgentToolResult<unknown>,
+		isError: boolean,
+	): void {
+		if (toolCall.name === "edit" || toolCall.name === "write") {
+			const contentIdentity = (result.details as { contentIdentity?: string } | undefined)?.contentIdentity;
+			const path = (args as { path?: unknown } | null | undefined)?.path;
+			if (
+				typeof contentIdentity === "string" &&
+				contentIdentity.length > 0 &&
+				typeof path === "string" &&
+				path.length > 0
+			) {
+				this.recordChange({ path, contentHash: contentIdentity, toolCallId: toolCall.id });
+			}
+			return;
+		}
+
+		if (toolCall.name === "bash") {
+			const command = (args as { command?: unknown } | null | undefined)?.command;
+			const kind = classifyBashVerification(typeof command === "string" ? command : undefined);
+			if (kind) {
+				this.recordVerification({
+					kind,
+					command: typeof command === "string" ? command : undefined,
+					passed: !isError,
+				});
+			}
+		}
+	}
+
+	/**
+	 * F1 freshness bridge. Called from the agent-core `afterToolCall`
+	 * hook after every tool call. When the call was a successful
+	 * worktree mutation (`edit` / `write` / `bash`) and a live query
+	 * data layer is attached, refreshes the layer so the next `query`
+	 * tool invocation — which resolves its manifest / symbol index /
+	 * semantic adapter at call time — sees the new state.
+	 *
+	 * `edit` / `write` are the primary mutation tools; `bash` is
+	 * best-effort (any bash command may touch files). Failed tool
+	 * results are skipped: the file is (probably) unchanged, and a
+	 * failed re-index must never break the turn. Refresh errors are
+	 * swallowed for the same reason — the query tool keeps serving
+	 * the last known snapshot until a later refresh succeeds.
+	 */
+	private async _refreshQueryToolDataAfterMutation(toolCall: AgentToolCall, isError: boolean): Promise<void> {
+		if (isError) return;
+		if (toolCall.name !== "edit" && toolCall.name !== "write" && toolCall.name !== "bash") return;
+		const live = this.liveQueryToolData;
+		if (!live) return;
+		try {
+			await live.refresh();
+		} catch {
+			// Swallow: a failed re-index must not break the turn. The
+			// next query still answers from the last known snapshot.
+		}
+	}
+
 	private async _compactBeforeNextAssistantResponse(context: AgentContext): Promise<AgentContext> {
 		const model = this.model;
 		const settings = this.settingsManager.getCompactionSettings();
 
-		if (
-			!model ||
-			model.contextWindow <= 0 ||
-			!shouldCompact(estimateContextTokens(context.messages).tokens, model.contextWindow, settings)
-		) {
+		// F3 full-request budgeting: the pure-message estimate (no
+		// provider usage yet) misses the system prompt and tool schemas
+		// that ride along on every request. When the estimate is
+		// usage-backed the provider already counted them, so the
+		// prefix is only added on the estimate-only path.
+		const messageEstimate = estimateContextTokens(context.messages);
+		const effectiveTokens =
+			messageEstimate.lastUsageIndex === null
+				? messageEstimate.tokens +
+					estimateRequestPrefixTokens({ systemPrompt: context.systemPrompt, tools: context.tools })
+				: messageEstimate.tokens;
+
+		if (!model || model.contextWindow <= 0 || !shouldCompact(effectiveTokens, model.contextWindow, settings)) {
 			return context;
 		}
 
@@ -580,6 +967,45 @@ export class AgentSession {
 				thinkingLevel: this.agent.state.thinkingLevel,
 			};
 		};
+	}
+
+	/**
+	 * Install the F6 execution-plan router on the underlying agent.
+	 *
+	 * When the `executionPlan.enabled` setting is `true`, the agent loop
+	 * routes tool calls from an assistant message that carries an
+	 * `executionPlan` envelope through the F6 `executePlan` runtime
+	 * instead of the natural `executeToolCalls` path. The F6
+	 * `executePlan` is owned by the coding-agent package, so the
+	 * `executor` callback that wires it onto the agent lives here rather
+	 * than in the agent-core package. The agent-core package only knows
+	 * the routing shape; the actual executor implementation is supplied
+	 * by the higher-level package through this hook.
+	 *
+	 * When the setting is `false` (the default), no `executionPlan` is
+	 * installed on the agent and the natural `executeToolCalls` path
+	 * runs byte-for-byte.
+	 */
+	private _installExecutionPlanRouter(): void {
+		const sync = () => {
+			if (this.settingsManager.getExecutionPlanEnabled()) {
+				const { concurrency } = this.settingsManager.getExecutionPlanSettings();
+				this.agent.executionPlan = {
+					enabled: true,
+					concurrency,
+					executor: (plan, runner, options) =>
+						f6ExecutePlan({
+							plan: plan as never,
+							runner: runner as never,
+							concurrency: options?.concurrency,
+							signal: options?.signal,
+						}),
+				};
+			} else {
+				this.agent.executionPlan = { enabled: false };
+			}
+		};
+		sync();
 	}
 
 	// =========================================================================
@@ -719,6 +1145,14 @@ export class AgentSession {
 		// handlers queued.
 		if (event.type === "turn_end") {
 			this._flushPendingCustomMessages();
+			// F16 completion gate: evaluate the gate at the end of every
+			// turn, persist the verdict to `gateHistory`, and queue a
+			// `customType: "f16-gate-block"` custom message when the
+			// gate is `blocked` or `unknown`. The model sees the
+			// verdict in its next turn without any extra tool calls
+			// because the message rides the existing custom-message
+			// flush path.
+			void this._evaluateCompletionGate();
 		}
 	};
 
@@ -890,11 +1324,19 @@ export class AgentSession {
 		}
 
 		this._extensionRunner.invalidate(
-			"This extension ctx is stale after session replacement or reload. Do not use a captured pi or command ctx after ctx.newSession(), ctx.fork(), ctx.switchSession(), or ctx.reload(). For newSession, fork, and switchSession, move post-replacement work into withSession and use the ctx passed to withSession. For reload, do not use the old ctx after await ctx.reload().",
+			"This extension ctx is stale after session replacement or reload. Do not use a captured theta or command ctx after ctx.newSession(), ctx.fork(), ctx.switchSession(), or ctx.reload(). For newSession, fork, and switchSession, move post-replacement work into withSession and use the ctx passed to withSession. For reload, do not use the old ctx after await ctx.reload().",
 		);
 		this._disconnectFromAgent();
 		this._eventListeners = [];
 		cleanupSessionResources(this.sessionId);
+		// F1: release the live query data layer (detaches the live
+		// syntax index and stops the file watcher, if any). Fire-and-
+		// forget — dispose() is synchronous and must not hang.
+		if (this.liveQueryToolData) {
+			void this.liveQueryToolData.dispose().catch(() => {
+				// Swallow: watcher stop errors must not surface here.
+			});
+		}
 	}
 
 	// =========================================================================
@@ -1094,6 +1536,8 @@ export class AgentSession {
 			selectedTools: validToolNames,
 			toolSnippets,
 			promptGuidelines,
+			// F9 selective skills catalog: undefined keeps the full catalog.
+			skillsBudgetTokens: this.settingsManager.getSkillsCatalogBudgetTokens(),
 		};
 		return buildSystemPrompt(this._baseSystemPromptOptions);
 	}
@@ -1169,7 +1613,7 @@ export class AgentSession {
 
 	/**
 	 * Send a prompt to the agent.
-	 * - Handles extension commands (registered via pi.registerCommand) immediately, even during streaming
+	 * - Handles extension commands (registered via theta.registerCommand) immediately, even during streaming
 	 * - Expands file-based prompt templates by default
 	 * - During streaming, queues via steer() or followUp() based on streamingBehavior option
 	 * - Validates model and API key before sending (when not streaming)
@@ -1183,7 +1627,7 @@ export class AgentSession {
 
 		try {
 			// Handle extension commands first (execute immediately, even during streaming)
-			// Extension commands manage their own LLM interaction via pi.sendMessage()
+			// Extension commands manage their own LLM interaction via theta.sendMessage()
 			if (expandPromptTemplates && text.startsWith("/")) {
 				const handled = await this._tryExecuteExtensionCommand(text);
 				if (handled) {
@@ -1316,6 +1760,24 @@ export class AgentSession {
 				this._systemPromptOverride = undefined;
 				this.agent.state.systemPrompt = this._baseSystemPrompt;
 			}
+
+			// F2 lifecycle: the first user prompt of a session seeds
+			// the task objective. We fire here — after all preflight
+			// gates have passed and the prompt is about to be sent
+			// to the agent — so a blocked, queued, or rejected
+			// prompt never poisons the F2 state. The
+			// `onFirstUserPrompt` observer always fires (so hosts
+			// can build their own first-prompt logic); `setObjective`
+			// is only invoked when no objective is recorded yet, so
+			// callers that pre-set the objective through the public
+			// API keep their state.
+			if (!this._hasObservedFirstUserPrompt) {
+				this._hasObservedFirstUserPrompt = true;
+				this._onFirstUserPrompt?.({ text: expandedText });
+				if (!this.getCurrentTaskState()?.objective) {
+					this.setObjective(expandedText);
+				}
+			}
 		} catch (error) {
 			preflightResult?.(false);
 			throw error;
@@ -1326,6 +1788,7 @@ export class AgentSession {
 		}
 
 		preflightResult?.(true);
+
 		await this._runAgentPrompt(messages);
 	}
 
@@ -1649,6 +2112,155 @@ export class AgentSession {
 		await this.waitForIdle();
 	}
 
+	/**
+	 * Run an F6 {@link ExecutionPlan} through the agent's tool execution
+	 * pipeline and surface the result to the caller.
+	 *
+	 * The plan's steps are dispatched through the F6
+	 * `executePlan` runtime. Each step is mapped to a concrete tool call
+	 * (kind: "read" → read, kind: "bash" → bash, etc.) and routed through
+	 * the same `prepareToolCall` / `executePreparedToolCall` /
+	 * `finalizeExecutedToolCall` flow that natural tool calls use, so
+	 * `beforeToolCall` and `afterToolCall` hooks apply to plan steps too.
+	 *
+	 * On success, the synthetic assistant message and the per-step
+	 * `toolResult` messages are appended to the conversation history and
+	 * emitted through the session's event stream so the model sees the
+	 * outcomes on its next turn.
+	 *
+	 * The optional `options.concurrency` argument overrides the
+	 * `executionPlan.concurrency` setting for this call. Values < 1
+	 * collapse to 1 (strict sequential execution).
+	 *
+	 * Requires `executionPlan.enabled = true` in the settings manager; the
+	 * method throws otherwise. The flag is the safety gate for the entire
+	 * F6 plan-execution path.
+	 */
+	async executePlan(plan: ExecutionPlan, options?: { concurrency?: number }): Promise<ExecutionResult> {
+		if (!this.settingsManager.getExecutionPlanEnabled()) {
+			throw new Error("AgentSession.executePlan requires the executionPlan.enabled setting to be true");
+		}
+		if (this._isAgentRunActive) {
+			throw new Error("Agent is already processing. Wait for completion before running an ExecutionPlan.");
+		}
+
+		const baseConcurrency = this.settingsManager.getExecutionPlanSettings().concurrency;
+		const requestedConcurrency = options?.concurrency ?? baseConcurrency;
+		const concurrency =
+			Number.isFinite(requestedConcurrency) && requestedConcurrency >= 1 ? Math.floor(requestedConcurrency) : 1;
+
+		const model = this.model;
+		if (!model) {
+			throw new Error("No model available to attach synthetic ExecutionPlan messages");
+		}
+
+		const assistantMessage: AssistantMessage = {
+			role: "assistant",
+			content: [{ type: "text", text: `ExecutionPlan: ${plan.intent}` }],
+			api: model.api,
+			provider: model.provider,
+			model: model.id,
+			usage: {
+				input: 0,
+				output: 0,
+				cacheRead: 0,
+				cacheWrite: 0,
+				totalTokens: 0,
+				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+			},
+			stopReason: "stop",
+			// F6: the envelope the agent-loop's settings-driven dispatch path
+			// also reads. When the same plan is later replayed through the
+			// agent loop, this envelope lets the loop route through the
+			// configured executor instead of re-running `executeToolCalls`.
+			executionPlan: { plan, steps: plan.steps },
+			timestamp: Date.now(),
+		};
+
+		this._isAgentRunActive = true;
+		try {
+			await this._emitAgentEvent({ type: "agent_start" });
+			await this._emitAgentEvent({ type: "turn_start" });
+
+			// Push the synthetic assistant message into the conversation
+			// and notify listeners. We do this directly via the session's
+			// event handler so the same flow the agent-loop would have
+			// used is preserved (event emission + persistence in the
+			// `message_end` branch).
+			this.agent.state.messages.push(assistantMessage);
+			await this._emitAgentEvent({ type: "message_start", message: assistantMessage });
+			await this._emitAgentEvent({ type: "message_end", message: assistantMessage });
+
+			const abortController = new AbortController();
+			const emit = (event: AgentEvent) => this._emitAgentEvent(event);
+
+			const agentContext: AgentContext = {
+				systemPrompt: this.agent.state.systemPrompt,
+				messages: this.agent.state.messages,
+				tools: this.agent.state.tools,
+			};
+
+			const stepRunner = createExecutionPlanRunner(
+				agentContext,
+				assistantMessage,
+				// The agent-loop config owns the per-step hooks; the runner
+				// only needs the model-aware fields for tool resolution.
+				{
+					model,
+					convertToLlm: (messages: AgentMessage[]) => messages as never,
+					beforeToolCall: this.agent.beforeToolCall,
+					afterToolCall: this.agent.afterToolCall,
+				} as never,
+				abortController.signal,
+				emit,
+			);
+
+			const result = await f6ExecutePlan({
+				plan,
+				runner: stepRunner as never,
+				concurrency,
+				signal: abortController.signal,
+			});
+
+			// Collect the per-step tool-result messages the F6 step runner
+			// has already emitted through the same emit bridge. The
+			// runner pushes each `toolResult` message into
+			// `agent.state.messages` on `message_end`, so the agent's
+			// transcript is already consistent. We snapshot them here for
+			// the final `turn_end` and for session persistence.
+			const toolResults: AgentMessage[] = [];
+			for (const message of this.agent.state.messages) {
+				if (message.role === "toolResult" && message.timestamp >= assistantMessage.timestamp) {
+					toolResults.push(message);
+				}
+			}
+
+			await this._emitAgentEvent({
+				type: "turn_end",
+				message: assistantMessage,
+				toolResults: toolResults as never,
+			});
+			await this._emitAgentEvent({
+				type: "agent_end",
+				messages: [assistantMessage, ...toolResults],
+			});
+
+			return result;
+		} finally {
+			this._isAgentRunActive = false;
+		}
+	}
+
+	private async _emitAgentEvent(event: AgentEvent): Promise<void> {
+		// Emit through the same internal handler the agent-loop uses so
+		// session persistence, extension dispatch, and listener fan-out
+		// stay in sync with natural agent runs. The handler is private
+		// because the agent-loop is its only intended caller; the F6
+		// plan path is a controlled exception that uses the same
+		// pipeline.
+		await this._handleAgentEvent(event);
+	}
+
 	async waitForIdle(): Promise<void> {
 		if (this.isIdle) {
 			return;
@@ -1921,7 +2533,7 @@ export class AgentSession {
 	// Compaction
 	// =========================================================================
 
-	/** Generate Pi's built-in compaction summary for manual and automatic compaction. */
+	/** Generate Theta's built-in compaction summary for manual and automatic compaction. */
 	private async _runDefaultCompaction(
 		preparation: CompactionPreparation,
 		requestModel: Model<any>,
@@ -2250,7 +2862,17 @@ export class AgentSession {
 					return false;
 				}
 			}
-			contextTokens = estimate.tokens;
+			// F3 full-request budgeting: the estimate-only path adds the
+			// system prompt + tool schema prefix the provider would have
+			// counted in real usage.
+			contextTokens =
+				estimate.lastUsageIndex === null
+					? estimate.tokens +
+						estimateRequestPrefixTokens({
+							systemPrompt: this.agent.state.systemPrompt,
+							tools: this.agent.state.tools,
+						})
+					: estimate.tokens;
 		} else {
 			contextTokens = directContextTokens;
 		}
@@ -2786,25 +3408,40 @@ export class AgentSession {
 		this.setActiveToolsByName([...new Set(nextActiveToolNames)]);
 	}
 
-	private _buildRuntime(options: {
+	private async _buildRuntime(options: {
 		activeToolNames?: string[];
 		flagValues?: Map<string, boolean | string>;
 		includeAllExtensionTools?: boolean;
-	}): void {
+	}): Promise<void> {
 		const autoResizeImages = this.settingsManager.getImageAutoResize();
 		const shellCommandPrefix = this.settingsManager.getShellCommandPrefix();
 		const shellPath = this.settingsManager.getShellPath();
-		const baseToolDefinitions = this._baseToolsOverride
+		// F1: when a live query data layer is attached, the `query` tool
+		// has to be built with a fresh `QueryToolData` snapshot. We
+		// resolve it once here, then feed it into
+		// `createCodingToolDefinitions` so the resulting tool list
+		// (read, bash, edit, write, query) is registered as the base
+		// tool definitions for this runtime. The `liveQueryToolData`
+		// handle stays attached to the session so callers can
+		// `await liveQueryToolData.refresh()` and rebuild the tool
+		// list on the next `_buildRuntime` (e.g. via `reload()`).
+		const baseToolDefinitions: Record<string, ToolDef> = this._baseToolsOverride
 			? Object.fromEntries(
 					Object.entries(this._baseToolsOverride).map(([name, tool]) => [
 						name,
 						createToolDefinitionFromAgentTool(tool),
 					]),
 				)
-			: createAllToolDefinitions(this._cwd, {
-					read: { autoResizeImages },
-					bash: { commandPrefix: shellCommandPrefix, shellPath },
-				});
+			: this.liveQueryToolData
+				? await this._buildBaseToolDefinitionsWithQuery({
+						autoResizeImages,
+						shellCommandPrefix,
+						shellPath,
+					})
+				: createAllToolDefinitions(this._cwd, {
+						read: { autoResizeImages },
+						bash: { commandPrefix: shellCommandPrefix, shellPath },
+					});
 
 		this._baseToolDefinitions = new Map(
 			Object.entries(baseToolDefinitions).map(([name, tool]) => [name, tool as ToolDefinition]),
@@ -2840,6 +3477,93 @@ export class AgentSession {
 		});
 	}
 
+	/**
+	 * Resolve a fresh `QueryToolData` snapshot from the attached live
+	 * data layer and feed it into `createCodingToolDefinitions` so the
+	 * returned list includes the F1 `query` tool alongside the
+	 * built-in coding tools (read, bash, edit, write). The list is
+	 * converted to a `Record<string, ToolDef>` keyed by tool name so
+	 * the caller can merge it into `_baseToolDefinitions` without
+	 * caring about the array shape of `createCodingToolDefinitions`.
+	 *
+	 * When `query.f1ReadOnlyByDefault` is true (the default), the three
+	 * F1 read-only tools (`grep-f1`, `find-f1`, `ls-f1`) are also
+	 * appended to the map, sharing the live manifest + symbol index
+	 * resolved above. Setting `query.f1ReadOnlyByDefault: false` keeps
+	 * them out of the registry entirely.
+	 *
+	 * F1 callers (e.g. the SDK) can invoke `liveQueryToolData.refresh()`
+	 * between turns; the next `_buildRuntime` call will pick up the
+	 * fresh snapshot here.
+	 */
+	private async _buildBaseToolDefinitionsWithQuery(opts: {
+		autoResizeImages: boolean;
+		shellCommandPrefix: string | undefined;
+		shellPath: string | undefined;
+	}): Promise<Record<string, ToolDef>> {
+		const live = this.liveQueryToolData;
+		if (!live) {
+			// Defensive fallback: should not happen because the only
+			// caller checks `this.liveQueryToolData` first, but
+			// keep the no-live path consistent with the default
+			// `createAllToolDefinitions` call so the registry is
+			// never empty.
+			return createAllToolDefinitions(this._cwd, {
+				read: { autoResizeImages: opts.autoResizeImages },
+				bash: { commandPrefix: opts.shellCommandPrefix, shellPath: opts.shellPath },
+			});
+		}
+		// Warm the live layer once at build time (first manifest walk +
+		// syntax extraction) so the initial build is the only one that
+		// does cold I/O during session setup. The tools themselves
+		// resolve a FRESH snapshot via `getData()` at the start of each
+		// call, so a worktree mutation (followed by
+		// `liveQueryToolData.refresh()` in the afterToolCall path) is
+		// reflected in the next query without a session reload or tool
+		// rebuild.
+		await live.getToolData();
+		const tools = createCodingToolDefinitions(this._cwd, {
+			read: { autoResizeImages: opts.autoResizeImages },
+			bash: { commandPrefix: opts.shellCommandPrefix, shellPath: opts.shellPath },
+			query: { getData: () => live.getToolData() },
+		});
+		const record: Record<string, ToolDef> = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
+		// The F1 build path normally drops the filesystem-backed
+		// `grep` / `find` / `ls` tools because the F1 trio covers
+		// the same surface from the manifest. If the user explicitly
+		// opted in to one of the original tools via the `defaultTools`
+		// setting, re-register the matching tool here so it stays
+		// reachable. The F1 versions are registered unconditionally
+		// below; both variants coexist for the same name, so callers
+		// that want the F1 path continue to use `grep-f1` / `find-f1`
+		// / `ls-f1` explicitly.
+		const defaultTools = this.settingsManager.getDefaultTools();
+		if (defaultTools) {
+			const defaultSet = new Set(defaultTools);
+			if (defaultSet.has("grep")) record.grep = createGrepToolDefinition(this._cwd);
+			if (defaultSet.has("find")) record.find = createFindToolDefinition(this._cwd);
+			if (defaultSet.has("ls")) record.ls = createLsToolDefinition(this._cwd);
+		}
+		// F1 read-only tools: same data layer, in-process dispatch
+		// (no filesystem round-trip). Gated on `query.f1ReadOnlyByDefault`
+		// so users can opt out without removing the live data layer.
+		// The trio resolves a fresh manifest / symbol index via
+		// `getData()` at the start of every call (same live source as
+		// the `query` tool above).
+		if (this.settingsManager.getF1ReadOnlyEnabledByDefault()) {
+			for (const tool of createF1ReadOnlyToolDefinitions({
+				getData: async () => {
+					const data = await live.getToolData();
+					return { manifest: data.manifest, symbolIndex: data.symbolIndex };
+				},
+				cwd: this._cwd,
+			})) {
+				record[tool.name] = tool;
+			}
+		}
+		return record;
+	}
+
 	async reload(options?: { beforeSessionStart?: () => void | Promise<void> }): Promise<void> {
 		const oldRunner = this._extensionRunner;
 		const previousFlagValues = oldRunner.getFlagValues();
@@ -2849,7 +3573,12 @@ export class AgentSession {
 		this.syncQueueModesFromSettings();
 		resetApiProviders();
 		await this._resourceLoader.reload();
-		this._buildRuntime({
+		// `_buildRuntime` is async when a `liveQueryToolData` is
+		// attached (it has to `await liveQueryToolData.getToolData()`
+		// to wire the `query` tool). Awaiting here so callers that
+		// `await session.reload()` observe the rebuilt registry
+		// before they read `getAllTools()`.
+		await this._buildRuntime({
 			activeToolNames: this.getActiveToolNames(),
 			flagValues: previousFlagValues,
 			includeAllExtensionTools: true,
@@ -3118,6 +3847,395 @@ export class AgentSession {
 		const event = { type: "session_info_changed", name: this.sessionManager.getSessionName() } as const;
 		this._emit(event);
 		void this._extensionRunner.emit(event);
+	}
+
+	// =========================================================================
+	// TaskState lifecycle (F2)
+	// =========================================================================
+	//
+	// Durable task state — objective, constraints, decisions, hypotheses,
+	// changed files, verifications. The lifecycle is additive: every mutator
+	// produces a new TaskState snapshot, persists it via SessionManager, and
+	// fires a `task_state_update` event so extensions can observe. The latest
+	// snapshot always wins on reload; see `getLatestTaskState` in
+	// `./task-state.ts` for the read path.
+
+	/**
+	 * Get the latest TaskState from the underlying session branch, creating a
+	 * fresh one (seeded with this session's id) if none exists yet.
+	 *
+	 * Internal: lifecycle methods funnel through this so a single AgentSession
+	 * instance always sees its own writes. `getCurrentTaskState` exposes the
+	 * read-only view to callers.
+	 */
+	private _getOrCreateTaskState(): TaskState {
+		const branch = this.sessionManager.getBranch();
+		const existing = getLatestTaskState(branch);
+		if (existing) return existing;
+		return createInitialTaskState(this.agent.sessionId ?? uuidv7());
+	}
+
+	/** Read-only accessor for the current TaskState. `undefined` until a
+	 *  mutator (or a persisted prior snapshot) has produced one. */
+	getCurrentTaskState(): TaskState | undefined {
+		const branch = this.sessionManager.getBranch();
+		return getLatestTaskState(branch);
+	}
+
+	/**
+	 * Set the task objective. Replaces any prior objective. The mutation
+	 * persists as a new TaskState snapshot, then emits a `task_state_update`.
+	 */
+	setObjective(text: string, sourceRequestId?: string): void {
+		const state = this._getOrCreateTaskState();
+		const next = setObjectiveOnState(state, {
+			text,
+			sourceRequestId,
+			createdAt: Date.now(),
+		});
+		this._persistAndEmitTaskState(next, "objective");
+	}
+
+	/**
+	 * Add a constraint. Returns the new constraint's id so callers can
+	 * reference it (e.g. as evidence for a later decision or verification).
+	 */
+	addConstraint(constraint: {
+		text: string;
+		source?: "user" | "model" | "extension";
+		evidenceRefs?: string[];
+	}): string {
+		const state = this._getOrCreateTaskState();
+		const source: TaskStateConstraint["source"] = constraint.source ?? "model";
+		const next = addConstraint(state, {
+			text: constraint.text,
+			source,
+			evidenceRefs: constraint.evidenceRefs,
+		});
+		const created = next.constraints[next.constraints.length - 1];
+		this._persistAndEmitTaskState(next, "constraint");
+		return created.id;
+	}
+
+	/** Record a decision the model has made. Returns its id. */
+	recordDecision(decision: { text: string; rationale?: string; evidenceRefs?: string[] }): string {
+		const state = this._getOrCreateTaskState();
+		const next = recordDecision(state, {
+			text: decision.text,
+			rationale: decision.rationale,
+			evidenceRefs: decision.evidenceRefs,
+		});
+		const created: TaskStateDecision = next.decisions[next.decisions.length - 1];
+		this._persistAndEmitTaskState(next, "decision");
+		return created.id;
+	}
+
+	/** Mark an existing hypothesis as confirmed or refuted. No-op if the id is
+	 *  unknown or the hypothesis is already resolved. */
+	markHypothesisResolved(id: string, status: "confirmed" | "refuted"): void {
+		const state = this._getOrCreateTaskState();
+		// The pure helper always returns a new state object (even on no-op), so
+		// reference equality is the wrong short-circuit. Scan first — if no open
+		// hypothesis matches, there is nothing to persist or emit.
+		const target = state.hypotheses.find((h) => h.id === id && h.status === "open");
+		if (!target) return;
+		const next = markHypothesisResolved(state, id, status);
+		this._persistAndEmitTaskState(next, "hypothesis");
+	}
+
+	/** Record the outcome of a verification run. Returns its id. */
+	recordVerification(verification: {
+		kind: "test" | "lint" | "typecheck" | "snapshot" | "manual" | "user-accepted";
+		command?: string;
+		passed: boolean;
+		falseSuccess?: boolean;
+		snapshotHash?: string;
+	}): string {
+		const state = this._getOrCreateTaskState();
+		const next = recordVerification(state, {
+			kind: verification.kind,
+			command: verification.command,
+			passed: verification.passed,
+			falseSuccess: verification.falseSuccess,
+			snapshotHash: verification.snapshotHash,
+		});
+		const created: TaskStateVerification = next.verifications[next.verifications.length - 1];
+		this._persistAndEmitTaskState(next, "verification");
+		return created.id;
+	}
+
+	/** Record a file change. Same path is appended again — the audit trail is
+	 *  intentionally append-only so we can see every observation, not just
+	 *  the most recent content hash. */
+	recordChange(change: { path: string; contentHash: string; toolCallId?: string }): void {
+		const state = this._getOrCreateTaskState();
+		const next = recordChange(state, {
+			path: change.path,
+			contentHash: change.contentHash,
+			toolCallId: change.toolCallId,
+		} satisfies Omit<TaskStateChangedFile, "changedAt">);
+		this._persistAndEmitTaskState(next, "change");
+	}
+
+	/** Persist a new TaskState snapshot via the SessionManager and fire the
+	 *  matching event. Centralised so every mutator goes through the same
+	 *  write+emit path. */
+	private _persistAndEmitTaskState(
+		state: TaskState,
+		mutation:
+			| "objective"
+			| "constraint"
+			| "decision"
+			| "hypothesis"
+			| "verification"
+			| "change"
+			| "gate"
+			| "requirement",
+	): void {
+		this.sessionManager.appendTaskState(state);
+		this._emit({ type: "task_state_update", mutation, taskState: state });
+	}
+
+	// =========================================================================
+	// F16 Completion Gate
+	// =========================================================================
+	//
+	// The gate is a deterministic function over `TaskState` and
+	// `VerificationPolicy`. It runs at the end of every turn (after
+	// `flushPendingCustomMessages` so the verdict rides the same
+	// custom-message path the rest of the F2 layer uses) and:
+	//
+	//   1. Loads the policy via `loadVerificationPolicy` (file →
+	//      package.json → default). The worktree root is `this._cwd`.
+	//   2. Re-extracts requirements from the current state. Existing
+	//      requirements are kept; the extractor is additive.
+	//   3. Computes the snapshot hash from the current changed files.
+	//   4. Evaluates the gate.
+	//   5. Persists the new state (with appended requirements and the
+	//      new `gateHistory` entry) and queues a
+	//      `customType: "f16-gate-block"` custom message when the
+	//      verdict is `blocked` or `unknown`.
+	//
+	// The wire-in is a side-channel: existing turn flow is
+	// untouched. The custom message costs zero tool calls (it rides
+	// `compileContext` like every other custom message) and the
+	// model decides what to do about it.
+
+	/**
+	 * Evaluate the F16 completion gate at the end of a turn.
+	 * Always returns; never throws. The verdict is appended to
+	 * `state.gateHistory` and a `customType: "f16-gate-block"`
+	 * message is queued when the verdict is `blocked` or
+	 * `unknown`.
+	 */
+	private async _evaluateCompletionGate(): Promise<void> {
+		try {
+			const verificationSettings = this.settingsManager.getVerificationSettings();
+			if (!verificationSettings.enabled) {
+				return; // Master switch off; the gate is a no-op.
+			}
+
+			const state = this._getOrCreateTaskState();
+			const policy: VerificationPolicy = loadVerificationPolicy({
+				worktreeRoot: this._cwd,
+				explicitPath: verificationSettings.policyPath,
+				enabled: true,
+				runOnEveryTurn: verificationSettings.runOnEveryTurn,
+			});
+
+			// Add requirements only when none exist yet, to keep the
+			// `gateHistory` from being polluted with duplicates on
+			// every turn.
+			const withRequirements =
+				(state.requirements ?? []).length > 0 ? state : extractAndAddRequirements(state, { policy });
+
+			// No requirements extracted? Nothing to gate.
+			if ((withRequirements.requirements ?? []).length === 0) {
+				return;
+			}
+
+			// The gate is deterministic; we recompute the snapshot
+			// hash from the live changed files.
+			const snapshotHash = computeSnapshotHash(withRequirements);
+
+			let evaluatedState = withRequirements;
+			let verdict: GateResult = evaluateGate(withRequirements, {
+				policy,
+				snapshotHash,
+			});
+
+			// Harness-driven evidence refresh (audit F16/F6): when the
+			// verdict is blocked only because required checks lack
+			// current evidence, and the user has explicitly authorized
+			// `verification.autoRunChecks`, the session spawns the
+			// missing checks through the F16 runner (structured
+			// parsers, bounded output, snapshot-bound results) and
+			// re-evaluates. The audit's "automatic checks" safeguard
+			// requires this to stay opt-in: never run repository
+			// commands the user did not authorize.
+			if (verificationSettings.autoRunChecks && policy.enabled && verdict.status !== "satisfied") {
+				const staleChecks = this._collectGateChecksNeedingEvidence(withRequirements, policy, snapshotHash);
+				if (staleChecks.length > 0) {
+					let next = withRequirements;
+					for (const check of staleChecks) {
+						const outcome = await this._runVerificationCheck(check, policy, snapshotHash, withRequirements);
+						if (outcome) {
+							next = recordVerification(next, {
+								kind: check.kind,
+								command: check.command,
+								passed: outcome.passed,
+								falseSuccess:
+									outcome.passed && outcome.note !== undefined && /unknown format/i.test(outcome.note),
+								snapshotHash,
+							});
+						}
+					}
+					if (next !== withRequirements) {
+						evaluatedState = next;
+						verdict = evaluateGate(next, { policy, snapshotHash });
+					}
+				}
+			}
+
+			// `open` is the "nothing to do" verdict. The audit
+			// expects the gate to be silent when there are no
+			// requirements, so we neither append to `gateHistory`
+			// nor surface a message.
+			if (verdict.status === "open") {
+				return;
+			}
+
+			const withHistory = addGateResult(evaluatedState, verdict);
+
+			// Persist ONLY when something actually changed (no-op
+			// short-circuit keeps the SessionManager append-free for
+			// repeated `satisfied` verdicts with the same hash).
+			const changed =
+				withHistory.gateHistory?.length !== withRequirements.gateHistory?.length ||
+				withHistory.requirements?.length !== withRequirements.requirements?.length ||
+				withHistory.verifications.length !== withRequirements.verifications.length;
+			if (changed) {
+				// Two distinct mutations so listeners can filter on
+				// `gate` vs `requirement` without re-diffing.
+				this._persistAndEmitTaskState(withHistory, "gate");
+			}
+
+			// Surface the verdict. `satisfied` is silent;
+			// `blocked` and `unknown` inject a `customType: "f16-gate-block"`
+			// message that names the unmet requirements.
+			if (verdict.status === "blocked" || verdict.status === "unknown") {
+				const body = this._renderGateBlockMessage(verdict);
+				this._pendingCustomMessages.push({
+					role: "custom",
+					customType: "f16-gate-block",
+					content: body,
+					display: false,
+					details: { gate: verdict, snapshotHash },
+					timestamp: Date.now(),
+				});
+			}
+		} catch (error) {
+			// The gate must never break the turn flow. Log and move on.
+			// No dedicated error event exists in AgentSessionEvent; the
+			// audit lets the host decide how to surface this. We
+			// intentionally swallow here so a misconfigured policy file
+			// or transient extract error does not break the turn.
+			void error;
+		}
+	}
+
+	private _renderGateBlockMessage(verdict: GateResult): string {
+		const lines: string[] = [];
+		lines.push(`[F16 GATE ${verdict.status.toUpperCase()}] coverage: ${verdict.coverage}`);
+		if (verdict.note) lines.push(`note: ${verdict.note}`);
+		if (verdict.failedChecks.length > 0) {
+			lines.push("failed checks:");
+			for (const v of verdict.failedChecks) {
+				lines.push(`  - ${v.kind}${v.command ? ` (${v.command})` : ""}: passed=${v.passed}`);
+			}
+		}
+		if (verdict.unmetRequirements.length > 0) {
+			lines.push("unmet requirements:");
+			for (const r of verdict.unmetRequirements) {
+				lines.push(`  - ${r.requirement}`);
+				lines.push(`      reason: ${r.reason}`);
+			}
+		}
+		lines.push("Re-run the failing check (or attach evidence) before marking the turn done.");
+		return lines.join("\n");
+	}
+
+	/**
+	 * Collect the policy checks that block the current gate verdict but
+	 * have no verification bound to the current `snapshotHash` (either no
+	 * evidence at all, or only stale evidence). These are the checks an
+	 * authorized auto-run should refresh before the verdict is finalized.
+	 * Unbound requirements (no matching check in the policy) are skipped —
+	 * the runner cannot manufacture a check that does not exist.
+	 */
+	private _collectGateChecksNeedingEvidence(
+		state: TaskState,
+		policy: VerificationPolicy,
+		snapshotHash: string,
+	): VerificationCheck[] {
+		const checks: VerificationCheck[] = [];
+		for (const requirement of state.requirements ?? []) {
+			if (!requirement.blocking || !requirement.boundCheckId) continue;
+			const check = policy.checks.find((c) => c.id === requirement.boundCheckId);
+			if (!check) continue;
+			const current = state.verifications.filter(
+				(v) => v.snapshotHash === snapshotHash && (v.command === check.command || v.kind === check.kind),
+			);
+			if (current.length === 0) {
+				checks.push(check);
+			}
+		}
+		return checks;
+	}
+
+	/**
+	 * Spawn one policy check through the F16 verification runner and
+	 * return its structured outcome, or `undefined` when the run failed
+	 * before producing an outcome (spawn error the runner already
+	 * surfaced as a failed outcome is still returned). The runner binds
+	 * the result to `snapshotHash` so the gate can distinguish current
+	 * evidence from stale evidence.
+	 */
+	private async _runVerificationCheck(
+		check: VerificationCheck,
+		policy: VerificationPolicy,
+		snapshotHash: string,
+		state: TaskState,
+	): Promise<CheckOutcome | undefined> {
+		try {
+			const outcome = await runOne(
+				check,
+				policy,
+				{
+					snapshotHash,
+					changedFilePaths: state.changedFiles.map((f) => f.path),
+					worktreeRoot: this._cwd,
+					now: Date.now(),
+				},
+				{
+					bashOperations: createLocalBashOperations(),
+					worktreeRoot: this._cwd,
+					now: Date.now(),
+				},
+			);
+			return outcome;
+		} catch (error) {
+			// A spawn failure must not break the turn; surface it as a
+			// failed outcome so the gate sees "ran but failed" instead
+			// of silently treating the check as never-run. The note
+			// carries the reason into `gateHistory` for inspection.
+			const message = error instanceof Error ? error.message : String(error);
+			return {
+				passed: false,
+				parser: check.parser,
+				note: `runner error: ${message}`,
+			};
+		}
 	}
 
 	// =========================================================================
@@ -3552,3 +4670,4 @@ export class AgentSession {
 		return this._extensionRunner;
 	}
 }
+

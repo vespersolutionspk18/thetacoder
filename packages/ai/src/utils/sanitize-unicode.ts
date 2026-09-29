@@ -23,3 +23,4 @@ export function sanitizeSurrogates(text: string): string {
 	// Replace unpaired low surrogates (0xDC00-0xDFFF not preceded by high surrogate)
 	return text.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "");
 }
+

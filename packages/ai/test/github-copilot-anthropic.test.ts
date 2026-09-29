@@ -123,3 +123,4 @@ describe("Copilot Claude via Anthropic Messages", () => {
 		expect(mockState.createParams?.betas ?? []).not.toContain("interleaved-thinking-2025-05-14");
 	});
 });
+

@@ -41,10 +41,10 @@ import { AssistantMessageEventStream } from "../utils/event-stream.ts";
 import { shortHash } from "../utils/hash.ts";
 import { headersToRecord } from "../utils/headers.ts";
 import { parseStreamingJson } from "../utils/json-parse.ts";
-import { getPiUserAgent } from "../utils/pi-user-agent.ts";
 import { getProviderEnvValue } from "../utils/provider-env.ts";
 import { retryProviderRequest } from "../utils/provider-retry.ts";
 import { sanitizeSurrogates } from "../utils/sanitize-unicode.ts";
+import { getThetaUserAgent } from "../utils/theta-user-agent.ts";
 import {
 	appendGrammarToolInputJsonDelta,
 	createGrammarToolInputProperties,
@@ -174,6 +174,41 @@ export interface ConvertCompletionsMessagesOptions {
 interface OpenAICompatCacheControl {
 	type: "ephemeral";
 	ttl?: string;
+}
+
+// -----------------------------------------------------------------------------
+// F2 cache-plan consumption
+// -----------------------------------------------------------------------------
+// The F2 stable-rendering layer (`packages/coding-agent/src/core/cache-rendering.ts`)
+// computes a `CachePlan` describing where cache markers should go in the
+// stable/volatile split. The wire-in layer in `sdk.ts` is expected to attach
+// that plan to the LAST user/assistant message's `details` before the
+// provider adapter sees it. When a plan is present, the adapter honours it
+// (preserving the F2 layer's choice of breakpoints) instead of falling back
+// to the positional walker. The shape is mirrored here as a structural type
+// so the `packages/ai` package does not need to depend on the coding-agent
+// package.
+
+type F2CacheMarkerPosition = "system" | "last-tool" | "last-message";
+
+interface F2CacheMarker {
+	position: F2CacheMarkerPosition;
+	type: "ephemeral";
+	ttl?: "1h";
+}
+
+interface F2CachePlan {
+	breakpoints: number[];
+	estimatedStablePrefixTokens: number;
+	estimatedVolatileSuffixTokens: number;
+	markers: Array<{ messageIndex: number; marker: F2CacheMarker }>;
+	format: "anthropic" | "openai";
+	retention: "short" | "long";
+}
+
+interface MessageWithDetails {
+	role: string;
+	details?: { cachePlan?: F2CachePlan } & Record<string, unknown>;
 }
 
 type ResolvedOpenAICompletionsCompat = Omit<
@@ -753,7 +788,7 @@ function createClient(
 	sessionId?: string,
 	compat: ResolvedOpenAICompletionsCompat = getCompat(model),
 ) {
-	const headers: ProviderHeaders = { "User-Agent": getPiUserAgent(), ...model.headers };
+	const headers: ProviderHeaders = { "User-Agent": getThetaUserAgent(), ...model.headers };
 	if (model.provider === "github-copilot") {
 		const hasImages = hasCopilotVisionInput(context.messages);
 		const copilotHeaders = buildCopilotDynamicHeaders({
@@ -849,7 +884,22 @@ function buildParams(
 	}
 
 	if (cacheControl) {
-		applyAnthropicCacheControl(messages, params.tools, cacheControl);
+		// F2 layer may have attached a `cachePlan` to the last user/assistant
+		// message's `details`. When present, honour that plan instead of the
+		// positional walker — the F2 layer has already decided which stable
+		// breakpoints to mark.
+		const cachePlan = findCachePlanInMessages(context.messages);
+		if (cachePlan) {
+			applyCachePlanMarkers(
+				messages,
+				params.tools,
+				cachePlan,
+				cachePlan.retention,
+				compat.supportsLongCacheRetention,
+			);
+		} else {
+			applyAnthropicCacheControl(messages, params.tools, cacheControl);
+		}
 	}
 
 	if (options?.toolChoice) {
@@ -1079,6 +1129,61 @@ function applyAnthropicCacheControl(
 	addCacheControlToSystemPrompt(messages, cacheControl);
 	addCacheControlToLastTool(tools, cacheControl);
 	addCacheControlToLastConversationMessage(messages, cacheControl);
+}
+
+/**
+ * Scan `context.messages` backwards for the last user/assistant message and
+ * return its `details.cachePlan` if present. Returns `undefined` when no
+ * user/assistant message is found, or the most recent one does not carry a
+ * plan (in which case the caller should fall back to the positional walker).
+ */
+function findCachePlanInMessages(messages: Message[]): F2CachePlan | undefined {
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const msg = messages[i] as MessageWithDetails;
+		if (msg.role !== "user" && msg.role !== "assistant") continue;
+		const plan = msg.details?.cachePlan;
+		if (plan && typeof plan === "object" && Array.isArray(plan.markers)) {
+			return plan;
+		}
+		return undefined;
+	}
+	return undefined;
+}
+
+/**
+ * Apply `cache_control` markers to the wire-format request based on the F2
+ * `CachePlan`. Each unique `position` recorded in the plan is honoured; the
+ * existing positional helpers do the actual wire-format placement.
+ *
+ * `retention` is the F2 plan's retention tier. `supportsLongCacheRetention`
+ * is the model's compat flag — when both are positive, `ttl: "1h"` is added.
+ */
+export function applyCachePlanMarkers(
+	messages: ChatCompletionMessageParam[],
+	tools: OpenAI.Chat.Completions.ChatCompletionTool[] | undefined,
+	plan: F2CachePlan,
+	retention: "short" | "long",
+	supportsLongCacheRetention: boolean,
+): void {
+	const ttl = retention === "long" && supportsLongCacheRetention ? "1h" : undefined;
+	const cacheControl: OpenAICompatCacheControl = { type: "ephemeral", ...(ttl ? { ttl } : {}) };
+
+	const positions = new Set<F2CacheMarkerPosition>();
+	for (const entry of plan.markers) {
+		if (entry?.marker && typeof entry.marker.position === "string") {
+			positions.add(entry.marker.position);
+		}
+	}
+
+	if (positions.has("system")) {
+		addCacheControlToSystemPrompt(messages, cacheControl);
+	}
+	if (positions.has("last-tool")) {
+		addCacheControlToLastTool(tools, cacheControl);
+	}
+	if (positions.has("last-message")) {
+		addCacheControlToLastConversationMessage(messages, cacheControl);
+	}
 }
 
 function addCacheControlToSystemPrompt(
@@ -1715,3 +1820,4 @@ function getCompat(model: Model<"openai-completions">): ResolvedOpenAICompletion
 		vllmPriority: model.compat.vllmPriority,
 	};
 }
+

@@ -111,3 +111,4 @@ describe("lazy provider module loading", () => {
 		expect(result.loadedSpecifiers).toEqual(["@anthropic-ai/sdk"]);
 	});
 });
+

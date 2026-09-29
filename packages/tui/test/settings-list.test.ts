@@ -56,3 +56,4 @@ describe("SettingsList", () => {
 		assert.deepStrictEqual(changes, [{ id: "tui-mode", value: "fullscreen" }]);
 	});
 });
+

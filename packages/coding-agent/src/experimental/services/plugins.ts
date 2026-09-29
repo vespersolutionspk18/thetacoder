@@ -1,4 +1,4 @@
-import { type Context, defineService, type JsonValue } from "@earendil-works/chord";
+import { type Context, defineService, type JsonValue } from "@theta/chord";
 
 /** Server-built plugin generations available to presentations. */
 export interface PresentationPlugins {
@@ -9,11 +9,12 @@ export interface PresentationPlugins {
 	reload(context: Context): Promise<JsonValue>;
 }
 
-export const PresentationPlugins = defineService<PresentationPlugins>("pi.presentation-plugins");
+export const PresentationPlugins = defineService<PresentationPlugins>("theta.presentation-plugins");
 
 /** Plugin facets hosted in the currently attached Session worker. */
 export interface SessionPlugins {
 	reload(context: Context): Promise<void>;
 }
 
-export const SessionPlugins = defineService<SessionPlugins>("pi.session-plugins");
+export const SessionPlugins = defineService<SessionPlugins>("theta.session-plugins");
+

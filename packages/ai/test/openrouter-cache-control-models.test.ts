@@ -16,3 +16,4 @@ describe("OpenRouter Anthropic latest alias metadata", () => {
 		expect(model.compat?.cacheControlFormat).toBe("anthropic");
 	});
 });
+

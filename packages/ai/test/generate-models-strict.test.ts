@@ -14,7 +14,7 @@ afterEach(() => {
 
 describe("strict model generation", () => {
 	it("fails before mutating generated data when an Individual model loses tool support", () => {
-		const fixtureRoot = mkdtempSync(join(tmpdir(), "pi-generate-models-"));
+		const fixtureRoot = mkdtempSync(join(tmpdir(), "theta-generate-models-"));
 		temporaryRoots.push(fixtureRoot);
 		const isolatedPackageRoot = join(fixtureRoot, "package");
 		mkdirSync(isolatedPackageRoot);
@@ -85,3 +85,4 @@ describe("strict model generation", () => {
 		expect(generatedPaths.map((path) => readFileSync(join(packageRoot, path), "utf8"))).toEqual(sourceBefore);
 	});
 });
+

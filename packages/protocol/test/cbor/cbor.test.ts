@@ -173,3 +173,4 @@ describe("CBOR codec", () => {
 		expect(() => encodeCbor("ab", { maxByteLength: 2 })).toThrow(/limit/i);
 	});
 });
+

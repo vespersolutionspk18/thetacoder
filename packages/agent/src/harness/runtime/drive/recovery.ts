@@ -1,4 +1,4 @@
-import { type AssistantMessage, reduceAssistantMessageFrames } from "@earendil-works/pi-ai";
+import { type AssistantMessage, reduceAssistantMessageFrames } from "@theta/ai";
 import type {
 	AssistantEffectPendingOperation,
 	DeferredEffectPendingOperation,
@@ -124,3 +124,4 @@ export async function recoverCancelledAssistantEffect<TContext extends object | 
 	);
 	return publishResponse(lane, drive, effect, message, { recovery: true });
 }
+

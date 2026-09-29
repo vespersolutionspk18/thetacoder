@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect } from "vitest";
 import { createJudge, describeEval } from "vitest-evals";
-import { createPiCodingAgentHarness, type PiCodingAgentInput } from "./pi-harness.ts";
+import { createPiCodingAgentHarness, type PiCodingAgentInput } from "./theta-harness.ts";
 import { recordEvalSourceArtifact } from "./vitest-evals/artifacts.ts";
 import { evalHarnessTable } from "./vitest-evals/harness-table.ts";
 
@@ -21,7 +21,7 @@ function createExtensionAuthoringHarness(name: string, transformSystemPrompt?: (
 		...(transformSystemPrompt ? { transformSystemPrompt } : {}),
 		output: ({ response, session }) => {
 			const extensions = session.resourceLoader.getExtensions();
-			const extensionPath = join(session.sessionManager.getCwd(), ".pi", "extensions", "hello.ts");
+			const extensionPath = join(session.sessionManager.getCwd(), ".theta", "extensions", "hello.ts");
 			const extensionSource = existsSync(extensionPath) ? readFileSync(extensionPath, "utf8") : null;
 			return {
 				response,
@@ -40,13 +40,13 @@ function createExtensionAuthoringHarness(name: string, transformSystemPrompt?: (
 
 function excludeGuidelinesAndDocumentation(defaultPrompt: string): string {
 	const guidelinesStart = defaultPrompt.indexOf("\nGuidelines:\n");
-	if (guidelinesStart === -1) throw new Error("Default Pi system prompt has no Guidelines section.");
+	if (guidelinesStart === -1) throw new Error("Default Theta system prompt has no Guidelines section.");
 	return defaultPrompt.slice(0, guidelinesStart);
 }
 
 function prepareDefaultPromptOverride(defaultPrompt: string): string {
 	const cwdStart = defaultPrompt.lastIndexOf("\nCurrent working directory: ");
-	if (cwdStart === -1) throw new Error("Default Pi system prompt has no working-directory section.");
+	if (cwdStart === -1) throw new Error("Default Theta system prompt has no working-directory section.");
 	return defaultPrompt.slice(0, cwdStart);
 }
 
@@ -61,8 +61,8 @@ const ExtensionAuthoringJudge = createJudge<PiCodingAgentInput, ExtensionAuthori
 				output.extensionSource.matchAll(/\b(?:from|import)\s+["']([^"']+)["']/g),
 				(match) => match[1],
 			);
-			if (!imports.includes("@earendil-works/pi-coding-agent")) {
-				failures.push("extension does not import the canonical @earendil-works/pi-coding-agent package");
+			if (!imports.includes("@theta/coding-agent")) {
+				failures.push("extension does not import the canonical @theta/coding-agent package");
 			}
 			if (imports.some((specifier) => specifier.startsWith("@mariozechner/"))) {
 				failures.push("extension imports a legacy @mariozechner package");
@@ -97,14 +97,14 @@ const ExtensionAuthoringJudge = createJudge<PiCodingAgentInput, ExtensionAuthori
 	},
 );
 
-const extensionHarnessTable = evalHarnessTable("Pi extension authoring system prompt", {
+const extensionHarnessTable = evalHarnessTable("Theta extension authoring system prompt", {
 	baseline: createExtensionAuthoringHarness("system-prompt-without-docs", excludeGuidelinesAndDocumentation),
 	candidate: createExtensionAuthoringHarness("default-system-prompt", prepareDefaultPromptOverride),
 });
 
 describe.for(extensionHarnessTable)("$name", ({ harness }) => {
 	describeEval(
-		"Pi extension authoring system prompt",
+		"Theta extension authoring system prompt",
 		{ harness, judges: [ExtensionAuthoringJudge], judgeThreshold: null },
 		(it) => {
 			it("creates, reloads, and uses a hello extension", async ({ run, task }) => {
@@ -112,7 +112,7 @@ describe.for(extensionHarnessTable)("$name", ({ harness }) => {
 					{
 						type: "prompt",
 						content:
-							"Create a Pi extension with a hello tool that takes a name and returns a greeting. For example, passing Bob should return `Hello, Bob!`.",
+							"Create a Theta extension with a hello tool that takes a name and returns a greeting. For example, passing Bob should return `Hello, Bob!`.",
 					},
 					{ type: "reload" },
 					{
@@ -123,7 +123,7 @@ describe.for(extensionHarnessTable)("$name", ({ harness }) => {
 				]);
 				if (result.output.extensionSource !== null) {
 					const runId = result.artifacts?.runId;
-					if (typeof runId !== "string") throw new Error("Pi eval run did not record a run ID.");
+					if (typeof runId !== "string") throw new Error("Theta eval run did not record a run ID.");
 					await recordEvalSourceArtifact(task, runId, {
 						name: "hello.ts",
 						contentType: "text/typescript",
@@ -138,3 +138,4 @@ describe.for(extensionHarnessTable)("$name", ({ harness }) => {
 		},
 	);
 });
+

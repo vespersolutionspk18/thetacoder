@@ -10,3 +10,4 @@ if (await runExperimentalCommand(args)) {
 } else {
 	await main(args);
 }
+

@@ -1,4 +1,4 @@
-import { InMemoryModelsStore } from "@earendil-works/pi-ai";
+import { InMemoryModelsStore } from "@theta/ai";
 import { describe, expect, test, vi } from "vitest";
 import { parseArgs } from "../src/cli/args.ts";
 import { AuthCommandError, isAuthCommandHelp, parseAuthCommand } from "../src/cli/auth-command.ts";
@@ -75,7 +75,7 @@ describe("credential print commands", () => {
 			const stderr = errorSpy.mock.calls.map(([message]) => String(message)).join("\n");
 			expect(stderr).toContain('Unknown option --credentails for "auth check".');
 			expect(stderr).toContain(
-				'Use "pi --help" or "pi auth check --provider <provider> [--json] [--credentials] [--no-refresh]".',
+				'Use "theta --help" or "theta auth check --provider <provider> [--json] [--credentials] [--no-refresh]".',
 			);
 			expect(process.exitCode).toBe(1);
 		} finally {
@@ -128,3 +128,4 @@ describe("credential print commands", () => {
 		).rejects.toThrow("configured with OAuth");
 	});
 });
+

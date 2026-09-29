@@ -1,4 +1,4 @@
-import { uuidv7 } from "@earendil-works/pi-ai/utils/uuid";
+import { uuidv7 } from "@theta/ai/utils/uuid";
 import type { Context } from "../context.ts";
 import { InMemoryStorageState } from "./in-memory-storage-state.ts";
 import { StorageBackedSession } from "./session.ts";
@@ -451,3 +451,4 @@ export class MemorySessionRepo implements SessionRepo {
 		if (this.closed) throw new Error("MemorySessionRepo is closed");
 	}
 }
+

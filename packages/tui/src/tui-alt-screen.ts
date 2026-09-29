@@ -1719,3 +1719,4 @@ export class TuiAltScreen extends TuiBase implements ViewportTUI {
 		this.currentLayout = nextLayout;
 	}
 }
+

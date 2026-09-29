@@ -66,3 +66,4 @@ export const loadRadiusOAuth = async (options: { name: string; gateway: string }
 		}
 	).createRadiusOAuth(options);
 };
+

@@ -85,16 +85,16 @@ different ephemeral scopes*: the tag is in the type, the id is not.
 ```ts
 // Durable lists carry encoded batches; one encoder/decoder pair belongs to each value stream.
 export const pendingToolOutput = (operationId: string, invocationId: string) =>
-  list<WireOp[]>("pi.pending.tool_output", `${operationId}:${invocationId}`, operationId);
+  list<WireOp[]>("theta.pending.tool_output", `${operationId}:${invocationId}`, operationId);
 
 export const pendingAssistantOutput = (operationId: string, entryId: string) =>
-  list<WireOp[]>("pi.pending.assistant_output", `${operationId}:${entryId}`, operationId);
+  list<WireOp[]>("theta.pending.assistant_output", `${operationId}:${entryId}`, operationId);
 
 export const operationToolMemo = (operationId: string, invocationId: string, name: string) =>
-  value<JsonValue>("pi.op.tool_memo", `${operationId}:${invocationId}:${name}`, operationId);
+  value<JsonValue>("theta.op.tool_memo", `${operationId}:${invocationId}:${name}`, operationId);
 
 // unchanged — no scopeId, so Session by inference
-export const laneStateValue = (lane: string) => value<DurableLaneState>("pi.lane.state", lane);
+export const laneStateValue = (lane: string) => value<DurableLaneState>("theta.lane.state", lane);
 ```
 
 **Scope is the file.** A session-scoped write goes to the main log; an
@@ -109,7 +109,7 @@ constraints in §4 and §5 come from.
 
 The boundary is drawn by **write isolation**, not by lifetime.
 
-Scoping everything under `pi.op.*` on the grounds that it dies with the operation
+Scoping everything under `theta.op.*` on the grounds that it dies with the operation
 looks right and is wrong. `lane.ts` shows why: **every** operation commit bundles
 `operationState` with `laneState`.
 
@@ -132,8 +132,8 @@ appear in multi-write transactions only as *deletes*.
 
 | | addresses |
 | --- | --- |
-| **ephemeral (sidecar)** | `pi.pending.tool_output`, `pi.pending.assistant_output`, `pi.op.tool_memo` |
-| **session (main log)** | `pi.lane.state`, `pi.op.state`, `pi.op.meta`, `pi.result`, `pi.pending.entry`, `pi.branch.tip`, `pi.op.tool_args`, `pi.op.preparation` |
+| **ephemeral (sidecar)** | `theta.pending.tool_output`, `theta.pending.assistant_output`, `theta.op.tool_memo` |
+| **session (main log)** | `theta.lane.state`, `theta.op.state`, `theta.op.meta`, `theta.result`, `theta.pending.entry`, `theta.branch.tip`, `theta.op.tool_args`, `theta.op.preparation` |
 
 `operationToolMemo` is ephemeral so that the memo-plus-checkpoint bundling in
 `harness-tools.md` §7.5 is a single-file transaction. `terminal.ts:34` already
@@ -508,17 +508,17 @@ Four writes across two addresses, before and after.
 
 ```jsonc
 // today — 1250 bytes
-{"kind":"value","op":"set","seq":7,"namespace":"pi.op.state","key":"01a04cf6-…","value":{"at":"starting","control":{…},"settings":{…},"latestAssistantEntryId":null}}
-{"kind":"value","op":"set","seq":8,"namespace":"pi.lane.state","key":"main","value":{"currentOperationId":"01a04cf6-…",…}}
-{"kind":"value","op":"set","seq":9,"namespace":"pi.op.state","key":"01a04cf6-…","value":{"at":"checkpoint",…}}
-{"kind":"value","op":"set","seq":12,"namespace":"pi.op.state","key":"01a04cf6-…","value":{"at":"assistant.ready",…}}
+{"kind":"value","op":"set","seq":7,"namespace":"theta.op.state","key":"01a04cf6-…","value":{"at":"starting","control":{…},"settings":{…},"latestAssistantEntryId":null}}
+{"kind":"value","op":"set","seq":8,"namespace":"theta.lane.state","key":"main","value":{"currentOperationId":"01a04cf6-…",…}}
+{"kind":"value","op":"set","seq":9,"namespace":"theta.op.state","key":"01a04cf6-…","value":{"at":"checkpoint",…}}
+{"kind":"value","op":"set","seq":12,"namespace":"theta.op.state","key":"01a04cf6-…","value":{"at":"assistant.ready",…}}
 ```
 
 ```jsonc
 // with both dictionaries — 547 bytes
-["@",0,"pi.op.state","01a04cf6-…"]
+["@",0,"theta.op.state","01a04cf6-…"]
 ["v",0,7,[["r",{"at":"starting","control":{…},"settings":{…},"latestAssistantEntryId":null}]]]
-["@",1,"pi.lane.state","main"]
+["@",1,"theta.lane.state","main"]
 ["v",1,8,[["r",{"currentOperationId":"01a04cf6-…",…}]]]
 ["v",0,9,[["#",0,["at"]],["s",0,"checkpoint"]]]
 ["v",0,12,[["s","assistant.ready"]]]
@@ -572,3 +572,4 @@ definitions are inside the same record as their first use.
 - Whether an in-place compaction pass for the main log is worth building anyway.
   `createFromSnapshot` plus atomic replace is the mechanism; scopes reduce the need
   but do not remove it, since superseded session-scoped values still accumulate.
+

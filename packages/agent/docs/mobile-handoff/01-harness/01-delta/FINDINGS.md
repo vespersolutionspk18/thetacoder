@@ -212,3 +212,4 @@ are still there.
 - **Reasoning about complexity while the constant dominated** — twice.
 - **Measuring heap instead of retained size** — a fixture generating 800 x 1 MB
   strings reported 40 MB of "growth" that was its own garbage.
+

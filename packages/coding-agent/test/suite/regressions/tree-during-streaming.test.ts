@@ -1,4 +1,4 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage } from "@theta/ai";
 import { describe, expect, it } from "vitest";
 import { userMsg } from "../../utilities.ts";
 import { createHarness } from "../harness.ts";
@@ -33,3 +33,4 @@ describe("tree navigation during an active response", () => {
 		}
 	});
 });
+

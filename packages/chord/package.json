@@ -1,8 +1,9 @@
 {
-	"name": "@earendil-works/chord",
+	"name": "@theta/chord",
 	"version": "0.85.1",
 	"description": "Application composition runtime for services, replicated state, RPC, and plugins",
 	"type": "module",
+	"private": true,
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
@@ -42,9 +43,8 @@
 	"scripts": {
 		"clean": "shx rm -rf dist",
 		"build": "tsgo -p tsconfig.build.json",
-		"test": "vitest --run",
-		"prepublishOnly": "npm run clean && npm run build"
-	},
+		"test": "vitest --run"
+},
 	"keywords": [
 		"application",
 		"plugins",
@@ -52,14 +52,8 @@
 		"services",
 		"state"
 	],
-	"author": "Earendil Works",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
-		"directory": "packages/chord"
-	},
-	"engines": {
+		"license": "UNLICENSED",
+		"engines": {
 		"node": ">=22.19.0"
 	},
 	"dependencies": {

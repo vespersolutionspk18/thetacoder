@@ -22,3 +22,4 @@ runTui(parseArgs(process.argv.slice(2))).then(
 		process.exit(1);
 	},
 );
+

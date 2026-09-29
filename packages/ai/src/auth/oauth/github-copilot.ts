@@ -505,3 +505,4 @@ export const githubCopilotOAuth: OAuthAuth = {
 		};
 	},
 };
+

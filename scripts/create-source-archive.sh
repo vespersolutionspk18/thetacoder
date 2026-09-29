@@ -108,7 +108,7 @@ GIT_INDEX_FILE="$temporary_index" git add -f -- "${model_data_files[@]}"
 archive_tree="$(GIT_INDEX_FILE="$temporary_index" git write-tree)"
 archive_mtime="$(git show -s --format=%ct "$commit")"
 
-archive_root="pi-${version}"
+archive_root="theta-${version}"
 git archive --format=tar --prefix="${archive_root}/" --mtime="@${archive_mtime}" "$archive_tree" \
     | gzip -n -9 > "$temporary_archive"
 tar -tzf "$temporary_archive" > "$manifest"
@@ -160,3 +160,4 @@ node "${validation_root}/${archive_root}/packages/ai/scripts/check-model-data.ts
 mv "$temporary_archive" "$output"
 trap 'rm -f "$temporary_index" "$manifest"; rm -rf "$validation_root"' EXIT
 printf '%s\n' "$output"
+

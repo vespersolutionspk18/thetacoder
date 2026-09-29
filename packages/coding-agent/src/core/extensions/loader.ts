@@ -7,13 +7,13 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import * as _bundledPiAgentCore from "@earendil-works/pi-agent-core";
-import type { Provider } from "@earendil-works/pi-ai";
-import * as _bundledPiAiCompat from "@earendil-works/pi-ai/compat";
-import * as _bundledPiAiOauth from "@earendil-works/pi-ai/oauth";
-import * as _bundledPiAiProviders from "@earendil-works/pi-ai/providers/all";
-import type { KeyId } from "@earendil-works/pi-tui";
-import * as _bundledPiTui from "@earendil-works/pi-tui";
+import * as _bundledPiAgentCore from "@theta/agent-core";
+import type { Provider } from "@theta/ai";
+import * as _bundledPiAiCompat from "@theta/ai/compat";
+import * as _bundledPiAiOauth from "@theta/ai/oauth";
+import * as _bundledPiAiProviders from "@theta/ai/providers/all";
+import type { KeyId } from "@theta/tui";
+import * as _bundledPiTui from "@theta/tui";
 import { createJiti } from "jiti/static";
 // Static imports of packages that extensions may use.
 // These MUST be static so Bun bundles them into the compiled binary.
@@ -23,14 +23,14 @@ import * as _bundledTypeboxCompile from "typebox/compile";
 import * as _bundledTypeboxValue from "typebox/value";
 import { CONFIG_DIR_NAME, getAgentDir, isBunBinary, isBundledNode } from "../../config.ts";
 // NOTE: This import works because loader.ts exports are NOT re-exported from index.ts,
-// avoiding a circular dependency. Extensions can import from @earendil-works/pi-coding-agent.
+// avoiding a circular dependency. Extensions can import from @theta/coding-agent.
 import * as _bundledPiCodingAgent from "../../index.ts";
 import { resolvePath } from "../../utils/paths.ts";
 import { createEventBus, type EventBus } from "../event-bus.ts";
 import type { ExecOptions } from "../exec.ts";
 import { execCommand } from "../exec.ts";
-import { readPiManifest } from "../pi-manifest.ts";
 import { createSyntheticSourceInfo } from "../source-info.ts";
+import { readThetaManifest } from "../theta-manifest.ts";
 import { time } from "../timings.ts";
 import type {
 	EntryRenderer,
@@ -54,23 +54,23 @@ const VIRTUAL_MODULES: Record<string, unknown> = {
 	"@sinclair/typebox": _bundledTypebox,
 	"@sinclair/typebox/compile": _bundledTypeboxCompile,
 	"@sinclair/typebox/value": _bundledTypeboxValue,
-	"@earendil-works/pi-agent-core": _bundledPiAgentCore,
-	"@earendil-works/pi-tui": _bundledPiTui,
-	// Extensions resolve the pi-ai root to the compat entrypoint (a strict
+	"@theta/agent-core": _bundledPiAgentCore,
+	"@theta/tui": _bundledPiTui,
+	// Extensions resolve the theta-ai root to the compat entrypoint (a strict
 	// superset of the core entrypoint): existing extensions using the old
 	// global API keep working at runtime until compat is removed.
-	"@earendil-works/pi-ai": _bundledPiAiCompat,
-	"@earendil-works/pi-ai/compat": _bundledPiAiCompat,
-	"@earendil-works/pi-ai/oauth": _bundledPiAiOauth,
-	"@earendil-works/pi-ai/providers/all": _bundledPiAiProviders,
-	"@earendil-works/pi-coding-agent": _bundledPiCodingAgent,
+	"@theta/ai": _bundledPiAiCompat,
+	"@theta/ai/compat": _bundledPiAiCompat,
+	"@theta/ai/oauth": _bundledPiAiOauth,
+	"@theta/ai/providers/all": _bundledPiAiProviders,
+	"@theta/coding-agent": _bundledPiCodingAgent,
 	"@mariozechner/pi-agent-core": _bundledPiAgentCore,
-	"@mariozechner/pi-tui": _bundledPiTui,
-	"@mariozechner/pi-ai": _bundledPiAiCompat,
-	"@mariozechner/pi-ai/compat": _bundledPiAiCompat,
-	"@mariozechner/pi-ai/oauth": _bundledPiAiOauth,
-	"@mariozechner/pi-ai/providers/all": _bundledPiAiProviders,
-	"@mariozechner/pi-coding-agent": _bundledPiCodingAgent,
+	"@mariozechner/theta-tui": _bundledPiTui,
+	"@mariozechner/theta-ai": _bundledPiAiCompat,
+	"@mariozechner/theta-ai/compat": _bundledPiAiCompat,
+	"@mariozechner/theta-ai/oauth": _bundledPiAiOauth,
+	"@mariozechner/theta-ai/providers/all": _bundledPiAiProviders,
+	"@mariozechner/theta-coding-agent": _bundledPiCodingAgent,
 };
 
 const require = createRequire(import.meta.url);
@@ -106,33 +106,30 @@ function getAliases(): Record<string, string> {
 	};
 
 	const piCodingAgentEntry = packageIndex;
-	const piAgentCoreEntry = resolveWorkspaceOrImport("agent/dist/index.js", "@earendil-works/pi-agent-core");
-	const piTuiEntry = resolveWorkspaceOrImport("tui/dist/index.js", "@earendil-works/pi-tui");
-	// Extensions resolve the pi-ai root to the compat entrypoint (a strict
+	const piAgentCoreEntry = resolveWorkspaceOrImport("agent/dist/index.js", "@theta/agent-core");
+	const piTuiEntry = resolveWorkspaceOrImport("tui/dist/index.js", "@theta/tui");
+	// Extensions resolve the theta-ai root to the compat entrypoint (a strict
 	// superset of the core entrypoint): existing extensions using the old
 	// global API keep working at runtime until compat is removed.
-	const piAiCompatEntry = resolveWorkspaceOrImport("ai/dist/compat.js", "@earendil-works/pi-ai/compat");
-	const piAiOauthEntry = resolveWorkspaceOrImport("ai/dist/oauth.js", "@earendil-works/pi-ai/oauth");
-	const piAiProvidersEntry = resolveWorkspaceOrImport(
-		"ai/dist/providers/all.js",
-		"@earendil-works/pi-ai/providers/all",
-	);
+	const piAiCompatEntry = resolveWorkspaceOrImport("ai/dist/compat.js", "@theta/ai/compat");
+	const piAiOauthEntry = resolveWorkspaceOrImport("ai/dist/oauth.js", "@theta/ai/oauth");
+	const piAiProvidersEntry = resolveWorkspaceOrImport("ai/dist/providers/all.js", "@theta/ai/providers/all");
 
 	_aliases = {
-		"@earendil-works/pi-coding-agent": piCodingAgentEntry,
-		"@earendil-works/pi-agent-core": piAgentCoreEntry,
-		"@earendil-works/pi-tui": piTuiEntry,
-		"@earendil-works/pi-ai/providers/all": piAiProvidersEntry,
-		"@earendil-works/pi-ai/compat": piAiCompatEntry,
-		"@earendil-works/pi-ai/oauth": piAiOauthEntry,
-		"@earendil-works/pi-ai": piAiCompatEntry,
-		"@mariozechner/pi-coding-agent": piCodingAgentEntry,
+		"@theta/coding-agent": piCodingAgentEntry,
+		"@theta/agent-core": piAgentCoreEntry,
+		"@theta/tui": piTuiEntry,
+		"@theta/ai/providers/all": piAiProvidersEntry,
+		"@theta/ai/compat": piAiCompatEntry,
+		"@theta/ai/oauth": piAiOauthEntry,
+		"@theta/ai": piAiCompatEntry,
+		"@mariozechner/theta-coding-agent": piCodingAgentEntry,
 		"@mariozechner/pi-agent-core": piAgentCoreEntry,
-		"@mariozechner/pi-tui": piTuiEntry,
-		"@mariozechner/pi-ai/providers/all": piAiProvidersEntry,
-		"@mariozechner/pi-ai/compat": piAiCompatEntry,
-		"@mariozechner/pi-ai/oauth": piAiOauthEntry,
-		"@mariozechner/pi-ai": piAiCompatEntry,
+		"@mariozechner/theta-tui": piTuiEntry,
+		"@mariozechner/theta-ai/providers/all": piAiProvidersEntry,
+		"@mariozechner/theta-ai/compat": piAiCompatEntry,
+		"@mariozechner/theta-ai/oauth": piAiOauthEntry,
+		"@mariozechner/theta-ai": piAiCompatEntry,
 		typebox: typeboxEntry,
 		"typebox/compile": typeboxCompileEntry,
 		"typebox/value": typeboxValueEntry,
@@ -210,7 +207,7 @@ export function createExtensionRuntime(): ExtensionRuntime {
 			if (state.staleMessage) return;
 			state.staleMessage =
 				message ??
-				"This extension ctx is stale after session replacement or reload. Do not use a captured pi or command ctx after ctx.newSession(), ctx.fork(), ctx.switchSession(), or ctx.reload(). For newSession, fork, and switchSession, move post-replacement work into withSession and use the ctx passed to withSession. For reload, do not use the old ctx after await ctx.reload().";
+				"This extension ctx is stale after session replacement or reload. Do not use a captured theta or command ctx after ctx.newSession(), ctx.fork(), ctx.switchSession(), or ctx.reload(). For newSession, fork, and switchSession, move post-replacement work into withSession and use the ctx passed to withSession. For reload, do not use the old ctx after await ctx.reload().";
 			for (const unsubscribe of eventBusUnsubscribers) unsubscribe();
 			eventBusUnsubscribers.clear();
 		},
@@ -669,16 +666,16 @@ function isExtensionFile(name: string): boolean {
  * Resolve extension entry points from a directory.
  *
  * Checks for:
- * 1. package.json with "pi.extensions" field -> returns declared paths
+ * 1. package.json with "theta.extensions" field -> returns declared paths
  * 2. index.ts or index.js -> returns the index file
  *
  * Returns resolved paths or null if no entry points found.
  */
 function resolveExtensionEntries(dir: string): string[] | null {
-	// Check for package.json with "pi" field first
+	// Check for package.json with "theta" field first
 	const packageJsonPath = path.join(dir, "package.json");
 	if (fs.existsSync(packageJsonPath)) {
-		const manifest = readPiManifest(packageJsonPath);
+		const manifest = readThetaManifest(packageJsonPath);
 		if (manifest?.extensions?.length) {
 			const entries: string[] = [];
 			for (const extPath of manifest.extensions) {
@@ -712,7 +709,7 @@ function resolveExtensionEntries(dir: string): string[] | null {
  * Discovery rules:
  * 1. Direct files: `extensions/*.ts` or `*.js` → load
  * 2. Subdirectory with index: `extensions/* /index.ts` or `index.js` → load
- * 3. Subdirectory with package.json: `extensions/* /package.json` with "pi" field → load what it declares
+ * 3. Subdirectory with package.json: `extensions/* /package.json` with "theta" field → load what it declares
  *
  * No recursion beyond one level. Complex packages must use package.json manifest.
  */
@@ -786,7 +783,7 @@ export async function discoverAndLoadExtensions(
 	for (const p of configuredPaths) {
 		const resolved = resolvePath(p, resolvedCwd, { normalizeUnicodeSpaces: true });
 		if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-			// Check for package.json with pi manifest or index.ts
+			// Check for package.json with theta manifest or index.ts
 			const entries = resolveExtensionEntries(resolved);
 			if (entries) {
 				addPaths(entries);
@@ -802,3 +799,4 @@ export async function discoverAndLoadExtensions(
 
 	return loadExtensions(allPaths, resolvedCwd, eventBus);
 }
+

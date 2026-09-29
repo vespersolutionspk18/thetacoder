@@ -189,3 +189,4 @@ describe("atomic segments", () => {
 		assert.strictEqual(findWordForward(text, 6, opts), 6 + marker.length);
 	});
 });
+

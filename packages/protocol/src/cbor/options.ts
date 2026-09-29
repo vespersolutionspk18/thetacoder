@@ -50,3 +50,4 @@ export function resolveOptions(options: CborOptions | undefined): ResolvedCborOp
 		maxDepth: resolveLimit("maxDepth", options?.maxDepth ?? DEFAULT_MAX_CBOR_DEPTH, MAX_CONFIGURED_DEPTH),
 	};
 }
+

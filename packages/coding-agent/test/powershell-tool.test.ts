@@ -28,3 +28,4 @@ describe("powershell tool", () => {
 		expect(output).toContain("Bypass");
 	});
 });
+

@@ -1,4 +1,4 @@
-import type { Api, Model, Tool } from "@earendil-works/pi-ai";
+import type { Api, Model, Tool } from "@theta/ai";
 import type { AgentMessage } from "../../../types.ts";
 import { type Context, getTelemetryContext, withAbortSignal } from "../../context.ts";
 import { type HarnessAssistantStreamConfig, streamHarnessAssistant } from "../../execution/assistant.ts";
@@ -300,3 +300,4 @@ export async function runGeneration<TContext extends object | undefined>(
 	const response = await performGeneration(lane, drive, intent.value, prepared);
 	return publishResponse(lane, drive, intent.value, response);
 }
+

@@ -394,7 +394,7 @@ A Branch exists exactly when its required tip value exists. `createBranch(name, 
 
 Use Branch terminology in source. This package renames the typed constructor and public concepts to `branchTip`/`tipId`. The persisted namespace and durable field spelling decision must be consistent across all backends and docs:
 
-- use `pi.branch.tip` and rename format-4 fields from leaf to tip rather than retain misleading new-code aliases;
+- use `theta.branch.tip` and rename format-4 fields from leaf to tip rather than retain misleading new-code aliases;
 - format 4 and the new harness are WIP, so replace their schema and field names in place: no storage-version bump, migration, compatibility decoder, or old-format rejection path;
 - legacy coding-agent v3 import remains supported: it maps its selected main leaf to a main Branch tip and walks that selected physical ancestry to reconstruct the nearest `model_change`, `thinking_level_change`, and `active_tools_change` independently; unsupported nearest values do not fall back to older history;
 - when the importer can reconstruct a total configuration, it writes ordinary `laneConfig("main")` plus fresh idle `laneState("main")` before returning the Session; missing active-tools history normalizes to `[]` because v3 did not persist the initial tool inventory;
@@ -594,7 +594,7 @@ Update every current supporting document whose public names or ordering statemen
 - `docs/values.md` — Session-global value/list surface, Branch tip addresses, and no `SessionTree`;
 - `docs/telemetry.md` — receiver inventory and Session mutation spans;
 - `docs/plugins.md` — remove `sessionTree`; the plugin's AgentLane directly supplies Branch methods, while a scoped Session-data facet supplies global value/list/name/label/query methods and excludes raw `mutate`, `idGenerator`, close, and backend authority;
-- `docs/extensions/pi-extensions-v2.md` and `docs/extensions/pi-server-artifact/index.md` where examples/types use the changed surfaces;
+- `docs/extensions/theta-extensions-v2.md` and `docs/extensions/theta-server-artifact/index.md` where examples/types use the changed surfaces;
 - completed WP00–WP04 only where a forward-looking/current-state statement would otherwise claim the removed API still exists.
 
 Retain the current remote Session mutation contract and update it from a named lane line to the sole Session line: worker `RemoteSession.mutate()` performs keyless begin RPC → local callback with remote reads/one remote commit → local post-commit publication → end RPC. The server holds the Session line through commit and publication until end acknowledgment. Disconnect/timeout terminates the scope under the existing hosting policy. Update the current remote protocol/vertical-slice documentation and every implementation/test present on dev; do not delete or defer this behavior.
@@ -732,3 +732,4 @@ WP06 is complete when:
 - `harness.md` and WP05 describe the new model consistently;
 - final Fable review reports no findings;
 - WP05 M4 may resume.
+

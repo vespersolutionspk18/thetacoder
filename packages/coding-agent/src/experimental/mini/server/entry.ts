@@ -10,3 +10,4 @@ void runServer({ transport: socketTransport(socketPath), sessionsRoot }).catch((
 	console.error(error);
 	process.exit(1);
 });
+

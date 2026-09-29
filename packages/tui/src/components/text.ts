@@ -105,3 +105,4 @@ export class Text implements Component {
 		return result.length > 0 ? result : [""];
 	}
 }
+

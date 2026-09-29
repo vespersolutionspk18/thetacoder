@@ -16,3 +16,4 @@ export const storageBenchmarkTargets = [
 		},
 	},
 ] satisfies readonly BenchmarkTarget<StorageFixture>[];
+

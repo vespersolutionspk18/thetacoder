@@ -1,6 +1,6 @@
-import type { ThinkingLevel } from "@earendil-works/pi-agent-core";
-import type { Transport } from "@earendil-works/pi-ai";
-import type { TuiMode as RendererTuiMode, ScrollViewScrollbar, TerminalCapabilities } from "@earendil-works/pi-tui";
+import type { ThinkingLevel } from "@theta/agent-core";
+import type { Transport } from "@theta/ai";
+import type { TuiMode as RendererTuiMode, ScrollViewScrollbar, TerminalCapabilities } from "@theta/tui";
 import { randomUUID } from "crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
@@ -27,11 +27,180 @@ export interface ProviderRetrySettings {
 	maxRetryDelayMs?: number; // default: 60000 (max server-requested delay before failing)
 }
 
+/**
+ * F16 verification engine settings.
+ *
+ * - `enabled`         — master switch for the F16 completion gate. When
+ *                       `false`, the gate short-circuits to `satisfied`
+ *                       and the agent loop behaves as it did pre-F16.
+ *                       Default: `true` (the audit calls for the gate
+ *                       to be on by default; opt-out is the explicit
+ *                       user choice).
+ * - `runOnEveryTurn`  — when `true`, the verification runner spawns
+ *                       the configured checks at the end of every
+ *                       `turn_end` event. When `false` (the default),
+ *                       the runner only fires when the gate itself is
+ *                       evaluated, keeping per-turn latency low. The
+ *                       gate is still evaluated on every turn; the
+ *                       question is whether the runner proactively
+ *                       re-runs the underlying commands.
+ * - `policyPath`      — path to a `.theta/verification.json` file
+ *                       (resolved relative to the worktree). When
+ *                       `undefined`, the policy loader falls back to
+ *                       the project-shape default and any per-package
+ *                       `package.json` `theta.verification` override.
+ */
+export interface VerificationSettings {
+	enabled?: boolean; // default: true
+	runOnEveryTurn?: boolean; // default: false
+	policyPath?: string; // default: undefined → .theta/verification.json
+	/**
+	 * Authorize the harness (not the model) to spawn policy checks through
+	 * the verification runner when the gate needs fresh evidence. The
+	 * audit's "automatic checks" safeguard requires an explicit opt-in
+	 * because checks execute repository-defined commands. Default:
+	 * `false` (the gate records verdicts from observed tool activity only).
+	 */
+	autoRunChecks?: boolean; // default: false
+}
+
 export interface RetrySettings {
 	enabled?: boolean; // default: true
 	maxRetries?: number; // default: 3
 	baseDelayMs?: number; // default: 2000 (exponential backoff: 2s, 4s, 8s)
 	provider?: ProviderRetrySettings;
+}
+
+/**
+ * F1 repository-layer tree-sitter settings.
+ *
+ * `enabled` controls whether the F1 syntax index and
+ * `LiveSyntaxIndex` prefer the tree-sitter-backed extractors over
+ * the regex fallback. When the per-language tree-sitter grammar is
+ * not registered (the default — the language packages are not part
+ * of the workspace's runtime dependencies), the index silently
+ * falls back to regex extraction regardless of this flag.
+ *
+ * Default: `enabled = true` (opt-out, since the fallback is silent
+ * and the tree-sitter path is preferred wherever it is available).
+ */
+export interface QueryTreeSitterSettings {
+	enabled?: boolean; // default: true
+}
+
+/**
+ * F1 repository-intelligence settings.
+ *
+ * The `lsp` knob is the master switch for the LSP-backed semantic
+ * query layer. The `treeSitter` knob is owned by the tree-sitter
+ * subagent — the LSP layer does not consume it directly, but the
+ * two share the same `repository.*` namespace so the live data
+ * layer can read both at construction time.
+ */
+export interface RepositorySettings {
+	lsp?: RepositoryLspSettings;
+	treeSitter?: RepositoryTreeSitterSettings;
+}
+
+export interface RepositoryTreeSitterSettings {
+	enabled?: boolean;
+}
+
+/**
+ * F1 repository-intelligence LSP settings.
+ *
+ * `enabled` is the master switch for the LSP-backed semantic query
+ * layer. When `true` (the default), the live data layer's
+ * `resolveAdapter` auto-detects a usable language server
+ * (e.g. `typescript-language-server` on `PATH` or in
+ * `node_modules/.bin`) and binds the worktree to a real
+ * `LspAdapter`. When `false`, the auto-detect path skips the LSP
+ * probe entirely and falls straight through to the in-process
+ * `typescript-ls` or the mock.
+ *
+ * Default: `enabled = true` — the audit (Section 11.3) calls for
+ * "the right tool" to be the language server when one is on
+ * `PATH`; the F1 layer only falls back to the in-process or mock
+ * backend when no server is available, and the user can opt out
+ * of the probe (e.g. in sandboxed environments where spawning
+ * a child is undesirable).
+ */
+export interface RepositoryLspSettings {
+	enabled?: boolean; // default: true
+}
+
+/**
+ * F1 `query` tool settings.
+ *
+ * `enabled` (alias: `enabledByDefault`) controls whether the F1
+ * `query` tool is registered by default in the base tool list.
+ * `f1ReadOnlyByDefault` controls whether the three F1-backed
+ * read-only tools (`f1-grep`, `f1-find`, `f1-ls`) are used in
+ * place of the standard `grep` / `find` / `ls` when the F1
+ * manifest is warm. Both default to `true`.
+ */
+export interface QuerySettings {
+	enabled?: boolean; // default: true
+	enabledByDefault?: boolean; // alias for `enabled`
+	f1ReadOnlyByDefault?: boolean; // default: true
+}
+
+/**
+ * F2 context-compiler settings.
+ *
+ * `enabled` controls whether the agent loop routes the
+ * `transformContext` output through the F2 module (vs the byte-
+ * identical passthrough). Default `false`. `cacheRendering` enables
+ * the stable/volatile split that lets the provider adapter place
+ * `cache_control` markers at the boundary.
+ */
+export interface ContextCompilerSettings {
+	enabled?: boolean; // default: false
+	cacheRendering?: ContextCompilerCacheRenderingSettings;
+}
+
+export interface ContextCompilerCacheRenderingSettings {
+	enabled?: boolean; // default: false
+	format?: string; // default: "anthropic"
+	retention?: "short" | "long"; // default: "long"
+	systemPrompt?: boolean; // default: true
+	lastTool?: boolean; // default: true
+	lastMessage?: boolean; // default: true
+}
+
+/**
+ * F6 ExecutionPlan settings.
+ *
+ * `enabled` controls whether tool calls from an assistant message
+ * that carries an `executionPlan` field are dispatched through the
+ * F6 `executePlan` runner (vs the natural `executeToolCalls` path).
+ * Default `false`. `concurrency` caps in-flight plan steps.
+ */
+export interface ExecutionPlanSettings {
+	enabled?: boolean; // default: false
+	concurrency?: number; // default: 4
+}
+
+/**
+ * F2 / F11 incremental serialization settings.
+ *
+ * `incrementalSerialization` enables the F11 incremental message
+ * serializer (one per F2-enabled agent). When `false`, the agent
+ * loop uses the byte-identical pre-F11 serialization path. Default
+ * `false`.
+ */
+export interface F2IncrementalSerializationSettings {
+	enabled?: boolean; // default: false
+}
+
+/**
+ * `incrementalSerialization` may be either a boolean shorthand
+ * (`true` to enable with defaults) or a `F2IncrementalSerializationSettings`
+ * object. The shorthand is accepted at the storage layer; accessor
+ * methods always return the resolved object form.
+ */
+export interface F2Settings {
+	incrementalSerialization?: boolean | F2IncrementalSerializationSettings;
 }
 
 export type TuiMode = RendererTuiMode;
@@ -103,7 +272,13 @@ export interface Settings {
 	theme?: string;
 	compaction?: CompactionSettings;
 	branchSummary?: BranchSummarySettings;
+	verification?: VerificationSettings; // F16: opt-in F16 verification engine + completion gate
 	retry?: RetrySettings;
+	queryTreeSitter?: QueryTreeSitterSettings; // F1: opt-out for tree-sitter syntax extraction
+	query?: QuerySettings; // F1: query tool registration and F1 read-only defaults
+	contextCompiler?: ContextCompilerSettings; // F2: opt-in routing of transformContext through the F2 module
+	executionPlan?: ExecutionPlanSettings; // F6: opt-in routing of tool calls through the F6 ExecutionPlan executor
+	f2?: F2Settings; // F2/F11: F11 incremental serialization (closed union today; F11+)
 	hideThinkingBlock?: boolean;
 	showCacheMissNotices?: boolean; // default: false - show cache cost and provider recovery notices
 	externalEditor?: string; // Command for Ctrl+G external editor; takes precedence over VISUAL/EDITOR
@@ -122,6 +297,14 @@ export interface Settings {
 	prompts?: string[]; // Array of local prompt template paths or directories
 	themes?: string[]; // Array of local theme file paths or directories
 	enableSkillCommands?: boolean; // default: true - register skills as /skill:name commands
+	/**
+	 * F9 selective skills catalog: maximum estimated tokens the visible
+	 * skill catalog may occupy in the system prompt. `undefined` (the
+	 * default) injects every visible skill; a number filters the catalog
+	 * through `selectSkillsForPrompt` so large installed catalogs stop
+	 * growing the stable prompt prefix.
+	 */
+	skillsCatalogBudgetTokens?: number;
 	terminal?: TerminalSettings;
 	images?: ImageSettings;
 	enabledModels?: string[]; // Model patterns for cycling (same format as --models CLI flag)
@@ -136,13 +319,14 @@ export interface Settings {
 	markdown?: MarkdownSettings;
 	warnings?: WarningSettings;
 	sessionDir?: string; // Custom session storage directory (same format as --session-dir CLI flag)
-	httpProxy?: string; // Proxy URL applied as HTTP_PROXY and HTTPS_PROXY for Pi-managed HTTP clients
+	httpProxy?: string; // Proxy URL applied as HTTP_PROXY and HTTPS_PROXY for Theta-managed HTTP clients
 	httpIdleTimeoutMs?: number; // HTTP header/body idle timeout in milliseconds; 0 disables it
 	websocketConnectTimeoutMs?: number; // WebSocket connect/open handshake timeout in milliseconds; 0 disables it
 	tuiMode?: TuiMode; // default: "regular"
 	fullscreenExitOutput?: FullscreenExitOutput; // default: "transcript"; no effect in regular TUI mode
 	fullscreenScrollbar?: ScrollViewScrollbar; // default: "auto"; no effect in regular TUI mode
 	fullscreenCopyOnSelect?: boolean; // default: true; no effect in regular TUI mode
+	repository?: RepositorySettings; // F1: knobs for the F1 repository-intelligence layer (e.g. LSP enablement)
 }
 
 function isMergeableObject(value: unknown): value is Record<string, unknown> {
@@ -866,6 +1050,235 @@ export class SettingsManager {
 		return this.settings.branchSummary?.skipPrompt ?? false;
 	}
 
+	/**
+	 * F16 master switch. When `false`, the completion gate
+	 * short-circuits to `satisfied` and the runner is never invoked.
+	 * Default: `true` (the audit calls for the gate to be on by default).
+	 */
+	getVerificationEnabled(): boolean {
+		return this.settings.verification?.enabled ?? true;
+	}
+
+	setVerificationEnabled(enabled: boolean): void {
+		if (!this.globalSettings.verification) {
+			this.globalSettings.verification = {};
+		}
+		this.globalSettings.verification.enabled = enabled;
+		this.markModified("verification", "enabled");
+		this.save();
+	}
+
+	/**
+	 * Whether the verification runner proactively re-spawns the
+	 * configured checks at every `turn_end`. When `false` (the
+	 * default), the runner only fires lazily — the gate still
+	 * evaluates on every turn, but the underlying commands only
+	 * re-run when the gate needs fresh evidence.
+	 */
+	getVerificationRunOnEveryTurn(): boolean {
+		return this.settings.verification?.runOnEveryTurn ?? false;
+	}
+
+	setVerificationRunOnEveryTurn(runOnEveryTurn: boolean): void {
+		if (!this.globalSettings.verification) {
+			this.globalSettings.verification = {};
+		}
+		this.globalSettings.verification.runOnEveryTurn = runOnEveryTurn;
+		this.markModified("verification", "runOnEveryTurn");
+		this.save();
+	}
+
+	/**
+	 * Path to a `.theta/verification.json` file. When `undefined`
+	 * (the default), the policy loader resolves the path from the
+	 * worktree's `.theta/` directory.
+	 */
+	getVerificationPolicyPath(): string | undefined {
+		return this.settings.verification?.policyPath;
+	}
+
+	setVerificationPolicyPath(policyPath: string | undefined): void {
+		if (!this.globalSettings.verification) {
+			this.globalSettings.verification = {};
+		}
+		this.globalSettings.verification.policyPath = policyPath;
+		this.markModified("verification", "policyPath");
+		this.save();
+	}
+
+	/**
+	 * Whether the harness is authorized to spawn policy checks through the
+	 * verification runner when the gate needs fresh evidence. Default:
+	 * `false`. The audit requires explicit authorization before running
+	 * repository-defined commands automatically.
+	 */
+	getVerificationAutoRunChecks(): boolean {
+		return this.settings.verification?.autoRunChecks ?? false;
+	}
+
+	setVerificationAutoRunChecks(autoRunChecks: boolean): void {
+		if (!this.globalSettings.verification) {
+			this.globalSettings.verification = {};
+		}
+		this.globalSettings.verification.autoRunChecks = autoRunChecks;
+		this.markModified("verification", "autoRunChecks");
+		this.save();
+	}
+
+	/**
+	 * Bundle accessor. Returns the resolved F16 verification settings
+	 * with defaults filled in: `enabled = true`, `runOnEveryTurn = false`,
+	 * `policyPath = undefined`, `autoRunChecks = false`.
+	 */
+	getVerificationSettings(): {
+		enabled: boolean;
+		runOnEveryTurn: boolean;
+		policyPath: string | undefined;
+		autoRunChecks: boolean;
+	} {
+		return {
+			enabled: this.getVerificationEnabled(),
+			runOnEveryTurn: this.getVerificationRunOnEveryTurn(),
+			policyPath: this.getVerificationPolicyPath(),
+			autoRunChecks: this.getVerificationAutoRunChecks(),
+		};
+	}
+
+	// F1 query tool
+
+	getQueryEnabled(): boolean {
+		const q = this.settings.query;
+		return q?.enabled ?? q?.enabledByDefault ?? true;
+	}
+
+	setQueryEnabled(enabled: boolean): void {
+		if (!this.globalSettings.query) {
+			this.globalSettings.query = {};
+		}
+		this.globalSettings.query.enabled = enabled;
+		this.markModified("query", "enabled");
+		this.save();
+	}
+
+	getQueryEnabledByDefault(): boolean {
+		return this.getQueryEnabled();
+	}
+
+	setQueryEnabledByDefault(enabled: boolean): void {
+		this.setQueryEnabled(enabled);
+	}
+
+	getF1ReadOnlyEnabledByDefault(): boolean {
+		return this.settings.query?.f1ReadOnlyByDefault ?? true;
+	}
+
+	setF1ReadOnlyEnabledByDefault(enabled: boolean): void {
+		if (!this.globalSettings.query) {
+			this.globalSettings.query = {};
+		}
+		this.globalSettings.query.f1ReadOnlyByDefault = enabled;
+		this.markModified("query", "f1ReadOnlyByDefault");
+		this.save();
+	}
+
+	// F2 context compiler
+
+	getContextCompilerEnabled(): boolean {
+		return this.settings.contextCompiler?.enabled ?? false;
+	}
+
+	setContextCompilerEnabled(enabled: boolean): void {
+		if (!this.globalSettings.contextCompiler) {
+			this.globalSettings.contextCompiler = {};
+		}
+		this.globalSettings.contextCompiler.enabled = enabled;
+		this.markModified("contextCompiler", "enabled");
+		this.save();
+	}
+
+	getContextCompilerCacheRenderingEnabled(): boolean {
+		return this.settings.contextCompiler?.cacheRendering?.enabled ?? false;
+	}
+
+	setContextCompilerCacheRenderingEnabled(enabled: boolean): void {
+		if (!this.globalSettings.contextCompiler) {
+			this.globalSettings.contextCompiler = {};
+		}
+		if (!this.globalSettings.contextCompiler.cacheRendering) {
+			this.globalSettings.contextCompiler.cacheRendering = {};
+		}
+		this.globalSettings.contextCompiler.cacheRendering.enabled = enabled;
+		this.markModified("contextCompiler", "cacheRendering");
+		this.save();
+	}
+
+	getContextCompilerCacheRendering(): {
+		format: "anthropic" | "openai";
+		retention: "short" | "long";
+		systemPrompt: boolean;
+		lastTool: boolean;
+		lastMessage: boolean;
+	} {
+		const cr = this.settings.contextCompiler?.cacheRendering;
+		const format = cr?.format ?? "anthropic";
+		return {
+			format: format === "openai" ? "openai" : "anthropic",
+			retention: cr?.retention ?? "long",
+			systemPrompt: cr?.systemPrompt ?? true,
+			lastTool: cr?.lastTool ?? true,
+			lastMessage: cr?.lastMessage ?? true,
+		};
+	}
+
+	// F6 ExecutionPlan
+
+	getExecutionPlanEnabled(): boolean {
+		return this.settings.executionPlan?.enabled ?? false;
+	}
+
+	setExecutionPlanEnabled(enabled: boolean): void {
+		if (!this.globalSettings.executionPlan) {
+			this.globalSettings.executionPlan = {};
+		}
+		this.globalSettings.executionPlan.enabled = enabled;
+		this.markModified("executionPlan", "enabled");
+		this.save();
+	}
+
+	getExecutionPlanSettings(): { enabled: boolean; concurrency: number } {
+		return {
+			enabled: this.getExecutionPlanEnabled(),
+			concurrency: this.settings.executionPlan?.concurrency ?? 4,
+		};
+	}
+
+	setExecutionPlanConcurrency(concurrency: number): void {
+		if (!this.globalSettings.executionPlan) {
+			this.globalSettings.executionPlan = {};
+		}
+		this.globalSettings.executionPlan.concurrency = concurrency;
+		this.markModified("executionPlan", "concurrency");
+		this.save();
+	}
+
+	// F2 / F11 incremental serialization
+
+	getF2IncrementalSerializationEnabled(): boolean {
+		const v = this.settings.f2?.incrementalSerialization;
+		if (v === undefined) return false;
+		if (typeof v === "boolean") return v;
+		return v.enabled ?? false;
+	}
+
+	setF2IncrementalSerializationEnabled(enabled: boolean): void {
+		if (!this.globalSettings.f2) {
+			this.globalSettings.f2 = {};
+		}
+		this.globalSettings.f2.incrementalSerialization = { enabled };
+		this.markModified("f2", "incrementalSerialization");
+		this.save();
+	}
+
 	getRetryEnabled(): boolean {
 		return this.settings.retry?.enabled ?? true;
 	}
@@ -1125,6 +1538,27 @@ export class SettingsManager {
 		this.save();
 	}
 
+	/**
+	 * F9 selective skills catalog: token budget for the visible skill
+	 * catalog in the system prompt. `undefined` keeps the full catalog.
+	 */
+	getSkillsCatalogBudgetTokens(): number | undefined {
+		return this.settings.skillsCatalogBudgetTokens;
+	}
+
+	setSkillsCatalogBudgetTokens(budget: number | undefined): void {
+		if (budget === undefined) {
+			delete this.globalSettings.skillsCatalogBudgetTokens;
+		} else {
+			if (!Number.isFinite(budget) || budget < 0) {
+				throw new Error(`skillsCatalogBudgetTokens must be a non-negative finite number, got ${budget}`);
+			}
+			this.globalSettings.skillsCatalogBudgetTokens = budget;
+		}
+		this.markModified("skillsCatalogBudgetTokens");
+		this.save();
+	}
+
 	getThinkingBudgets(): ThinkingBudgetsSettings | undefined {
 		return this.settings.thinkingBudgets;
 	}
@@ -1368,4 +1802,69 @@ export class SettingsManager {
 		this.markModified("warnings");
 		this.save();
 	}
+
+	/**
+	 * Whether the F1 syntax index prefers tree-sitter-backed
+	 * extraction over the regex fallback. When false, every file is
+	 * processed by the regex extractors even if a tree-sitter
+	 * grammar is registered for the file's language. When true (the
+	 * default), the dispatcher uses tree-sitter for languages that
+	 * have a registered grammar and silently falls back to regex
+	 * elsewhere.
+	 */
+	getRepositoryTreeSitterEnabled(): boolean {
+		return this.settings.queryTreeSitter?.enabled ?? true;
+	}
+
+	setRepositoryTreeSitterEnabled(enabled: boolean): void {
+		if (!this.globalSettings.queryTreeSitter) {
+			this.globalSettings.queryTreeSitter = {};
+		}
+		this.globalSettings.queryTreeSitter.enabled = enabled;
+		this.markModified("queryTreeSitter", "enabled");
+		this.save();
+	}
+
+	/**
+	 * Whether the F1 LSP-backed semantic query layer is enabled. When
+	 * true (the default), the live data layer probes the worktree for
+	 * a usable language server and binds the `LspAdapter` when one is
+	 * found. When false, the probe is skipped and the layer falls
+	 * straight through to the in-process `typescript-ls` or the
+	 * mock. Default: `true` (the audit calls for the real language
+	 * server to be used when one is on `PATH`).
+	 */
+	getRepositoryLspEnabled(): boolean {
+		return this.settings.repository?.lsp?.enabled ?? true;
+	}
+
+	setRepositoryLspEnabled(enabled: boolean): void {
+		if (!this.globalSettings.repository) {
+			this.globalSettings.repository = {};
+		}
+		if (!this.globalSettings.repository.lsp) {
+			this.globalSettings.repository.lsp = {};
+		}
+		this.globalSettings.repository.lsp.enabled = enabled;
+		// The settings writer only tracks a single nested key per
+		// `markModified` call. Marking `repository.lsp` is enough
+		// for the in-session check; the write-out uses the deep
+		// merge of `this.globalSettings` so the new value lands
+		// on disk.
+		this.markModified("repository", "lsp");
+		this.save();
+	}
+
+	/**
+	 * Returns the full `repository.lsp` settings block. The tree-sitter
+	 * subagent may read the same shape for its own settings; today
+	 * only `lsp` is consumed by this layer.
+	 */
+	getRepositorySettings(): { lsp: { enabled: boolean }; treeSitter: { enabled: boolean } } {
+		return {
+			lsp: { enabled: this.getRepositoryLspEnabled() },
+			treeSitter: { enabled: this.getRepositoryTreeSitterEnabled() },
+		};
+	}
 }
+

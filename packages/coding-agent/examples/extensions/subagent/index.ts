@@ -1,7 +1,7 @@
 /**
  * Subagent Tool - Delegate tasks to specialized agents
  *
- * Spawns a separate `pi` process for each subagent invocation,
+ * Spawns a separate `theta` process for each subagent invocation,
  * giving it an isolated context window.
  *
  * Supports three modes:
@@ -10,25 +10,37 @@
  *   - Chain: { chain: [{ agent: "name", task: "... {previous} ..." }, ...] }
  *
  * Uses JSON mode to capture structured output from subagents.
+ *
+ * F10 shared evidence: each spawned subagent inherits a copy of the
+ * parent's shared evidence through the `THETA_SHARED_EVIDENCE_PATH`
+ * env var. The child opens the file on startup, can use the parent's
+ * pre-computed facts, and writes its own evidence back to the same
+ * file. The parent observes the child's writes after it exits.
+ * See `evidence-share.ts` for the F10 surface used here.
  */
 
 import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentToolResult, ThinkingLevel } from "@earendil-works/pi-agent-core";
-import type { Message } from "@earendil-works/pi-ai";
-import { StringEnum } from "@earendil-works/pi-ai";
+import type { AgentToolResult, ThinkingLevel } from "@theta/agent-core";
+import type { Message } from "@theta/ai";
+import { StringEnum } from "@theta/ai";
 import {
 	CONFIG_DIR_NAME,
 	type ExtensionAPI,
 	getAgentDir,
 	getMarkdownTheme,
 	withFileMutationQueue,
-} from "@earendil-works/pi-coding-agent";
-import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
+} from "@theta/coding-agent";
+import { Container, Markdown, Spacer, Text } from "@theta/tui";
 import { Type } from "typebox";
+import type { SharedEvidenceStore } from "../../../src/core/repository/shared-evidence.ts";
+import { InMemorySharedEvidenceStore } from "../../../src/core/repository/shared-evidence.ts";
+import type { SharedEvidenceConsumer } from "../../../src/core/repository/shared-evidence-consumer.ts";
+import { createSharedEvidenceConsumer } from "../../../src/core/repository/shared-evidence-consumer.ts";
 import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.ts";
+import { SHARED_EVIDENCE_ENV_VAR, sharedEvidence } from "./evidence-share.ts";
 
 const MAX_PARALLEL_TASKS = 8;
 const MAX_CONCURRENCY = 4;
@@ -237,7 +249,7 @@ async function mapWithConcurrencyLimit<TIn, TOut>(
 }
 
 async function writePromptToTempFile(agentName: string, prompt: string): Promise<{ dir: string; filePath: string }> {
-	const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "pi-subagent-"));
+	const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "theta-subagent-"));
 	const safeName = agentName.replace(/[^\w.-]+/g, "_");
 	const filePath = path.join(tmpDir, `prompt-${safeName}.md`);
 	await withFileMutationQueue(filePath, async () => {
@@ -259,7 +271,7 @@ function getPiInvocation(args: string[]): { command: string; args: string[] } {
 		return { command: process.execPath, args };
 	}
 
-	return { command: "pi", args };
+	return { command: "theta", args };
 }
 
 type OnUpdateCallback = (partial: AgentToolResult<SubagentDetails>) => void;
@@ -267,6 +279,29 @@ type OnUpdateCallback = (partial: AgentToolResult<SubagentDetails>) => void;
 interface DispatchDefaults {
 	model?: string;
 	thinkingLevel?: ThinkingLevel;
+}
+
+/**
+ * F10 shared evidence wiring for a single spawned subagent.
+ *
+ * The parent owns a `SharedEvidenceStore` (the "parent store") that
+ * holds evidence the parent has already produced — manifest,
+ * syntax-index, and the like. Before spawn we copy a curated subset
+ * of it into a fresh child-side file and hand the path to the
+ * child through `THETA_SHARED_EVIDENCE_PATH`. After the child exits
+ * we read the new evidence the child wrote back to the same file.
+ *
+ * `taskPaths` narrows the parent's `file-content` records to the
+ * ones the child is expected to look at; manifests and syntax
+ * indices are always carried wholesale.
+ */
+interface SubagentEvidenceContext {
+	parentStore: SharedEvidenceStore;
+	parentConsumer: SharedEvidenceConsumer;
+	/** Absolute paths the subagent is expected to read. */
+	taskPaths?: string[];
+	/** Source label the child uses on its own evidence. */
+	childSource?: string;
 }
 
 async function runSingleAgent(
@@ -280,6 +315,7 @@ async function runSingleAgent(
 	signal: AbortSignal | undefined,
 	onUpdate: OnUpdateCallback | undefined,
 	makeDetails: (results: SingleResult[]) => SubagentDetails,
+	evidence: SubagentEvidenceContext,
 ): Promise<SingleResult> {
 	const agent = agents.find((a) => a.name === agentName);
 
@@ -308,6 +344,8 @@ async function runSingleAgent(
 
 	let tmpPromptDir: string | null = null;
 	let tmpPromptPath: string | null = null;
+	let childStorePath: string | null = null;
+	let childStoreCleanup: (() => Promise<void>) | null = null;
 
 	const currentResult: SingleResult = {
 		agent: agentName,
@@ -338,16 +376,34 @@ async function runSingleAgent(
 			args.push("--append-system-prompt", tmpPromptPath);
 		}
 
+		// F10: prepare the shared evidence file. We do this *after*
+		// the prompt file so any failure in the share does not leave
+		// a prompt-only temp dir hanging. The child reads the file
+		// through the `THETA_SHARED_EVIDENCE_PATH` env var.
+		const childStore = await sharedEvidence.makeStorePath("subagent");
+		childStorePath = childStore.path;
+		childStoreCleanup = childStore.cleanup;
+		await sharedEvidence.share(evidence.parentStore, childStorePath, {
+			taskPaths: evidence.taskPaths ?? [],
+		});
+
 		args.push(`Task: ${task}`);
 		let wasAborted = false;
+		let childPid: number | undefined;
 
 		const exitCode = await new Promise<number>((resolve) => {
 			const invocation = getPiInvocation(args);
+			const childEnv: NodeJS.ProcessEnv = {
+				...process.env,
+				[SHARED_EVIDENCE_ENV_VAR]: childStorePath as string,
+			};
 			const proc = spawn(invocation.command, invocation.args, {
 				cwd: cwd ?? defaultCwd,
 				shell: false,
 				stdio: ["ignore", "pipe", "pipe"],
+				env: childEnv,
 			});
+			childPid = proc.pid;
 			let buffer = "";
 
 			const processLine = (line: string) => {
@@ -420,10 +476,41 @@ async function runSingleAgent(
 			}
 		});
 
+		// F10: pull the child's evidence back. We only do this when
+		// we have both a pid and a child store path, and we never
+		// let a consume failure mask the child exit status. The
+		// childSource filter is what tells the consume to ignore
+		// the records we ourselves wrote during `share` and only
+		// surface what the child newly produced.
+		if (childPid !== undefined && childStorePath !== null) {
+			try {
+				const childResult = await sharedEvidence.consumeChild(evidence.parentConsumer, childStorePath, childPid, {
+					childSource: evidence.childSource ?? "child",
+					pollIntervalMs: 50,
+					timeoutMs: 30_000,
+				});
+				if (childResult.consumed.length > 0) {
+					currentResult.stderr += `\n[subagent evidence] consumed ${childResult.consumed.length} record(s) from child store${
+						childResult.timedOut ? " (timed out)" : ""
+					}`;
+				}
+			} catch {
+				// Swallow: a shared-evidence failure must not be
+				// reported as a subagent failure, because the child
+				// itself may have done the real work correctly.
+			}
+		}
+
 		currentResult.exitCode = exitCode;
 		if (wasAborted) throw new Error("Subagent was aborted");
 		return currentResult;
 	} finally {
+		if (childStoreCleanup)
+			try {
+				await childStoreCleanup();
+			} catch {
+				/* ignore */
+			}
 		if (tmpPromptPath)
 			try {
 				fs.unlinkSync(tmpPromptPath);
@@ -468,8 +555,8 @@ const SubagentParams = Type.Object({
 	cwd: Type.Optional(Type.String({ description: "Working directory for the agent process (single mode)" })),
 });
 
-export default function (pi: ExtensionAPI) {
-	pi.registerTool({
+export default function (theta: ExtensionAPI) {
+	theta.registerTool({
 		name: "subagent",
 		label: "Subagent",
 		description: [
@@ -489,6 +576,20 @@ export default function (pi: ExtensionAPI) {
 			const discovery = discoverAgents(ctx.cwd, agentScope);
 			const agents = discovery.agents;
 			const confirmProjectAgents = params.confirmProjectAgents ?? true;
+
+			// F10: each top-level `subagent` tool invocation owns one
+			// parent store. Subagents in chain/parallel share it so
+			// every spawned child inherits the same parent-side
+			// evidence. The store is empty by default; the example
+			// does not collect pre-computed facts of its own, but a
+			// real session-scoped store can be plugged in here.
+			const parentStore = new InMemorySharedEvidenceStore();
+			const parentConsumer = createSharedEvidenceConsumer({ store: parentStore, source: "parent" });
+			const evidence: SubagentEvidenceContext = {
+				parentStore,
+				parentConsumer,
+				childSource: "child",
+			};
 
 			const hasChain = (params.chain?.length ?? 0) > 0;
 			const hasTasks = (params.tasks?.length ?? 0) > 0;
@@ -581,6 +682,7 @@ export default function (pi: ExtensionAPI) {
 						signal,
 						chainUpdate,
 						makeDetails("chain"),
+						evidence,
 					);
 					results.push(result);
 
@@ -660,6 +762,7 @@ export default function (pi: ExtensionAPI) {
 							}
 						},
 						makeDetails("parallel"),
+						evidence,
 					);
 					allResults[index] = result;
 					emitParallelUpdate();
@@ -697,6 +800,7 @@ export default function (pi: ExtensionAPI) {
 					signal,
 					onUpdate,
 					makeDetails("single"),
+					evidence,
 				);
 				const isError = isFailedResult(result);
 				if (isError) {
@@ -1036,3 +1140,4 @@ export default function (pi: ExtensionAPI) {
 		},
 	});
 }
+

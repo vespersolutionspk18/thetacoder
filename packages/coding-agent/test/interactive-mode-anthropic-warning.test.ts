@@ -87,3 +87,4 @@ describe("InteractiveMode.maybeWarnAboutAnthropicSubscriptionAuth", () => {
 		expect(modelRuntime.getAuth).not.toHaveBeenCalled();
 	});
 });
+

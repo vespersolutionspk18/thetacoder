@@ -6,3 +6,4 @@ import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
 
 export const QWEN_TOKEN_PLAN_CN_MODELS: ModelCatalog<typeof values, "qwen-token-plan-cn"> =
 	flattenModelCatalog("qwen-token-plan-cn", values);
+

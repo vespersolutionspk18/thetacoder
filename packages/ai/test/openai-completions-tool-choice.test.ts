@@ -1881,3 +1881,4 @@ describe("openai-completions tool_choice", () => {
 		expect((payload ?? mockState.lastParams) as { reasoning?: unknown }).not.toHaveProperty("reasoning");
 	});
 });
+

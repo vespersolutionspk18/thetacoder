@@ -1,4 +1,4 @@
-import { isJsonValue } from "@earendil-works/chord";
+import { isJsonValue } from "@theta/chord";
 import { Check } from "typebox/value";
 import { decodeCbor, encodeCbor } from "./cbor/index.ts";
 import { DEFAULT_MAX_FRAME_LENGTH, encodeFrame, FrameDecoder, type FrameDecoderOptions } from "./framing.ts";
@@ -139,3 +139,4 @@ export class ServerMessageDecoder {
 export function isSupportedProtocolVersion(version: number): version is typeof PROTOCOL_VERSION {
 	return Number.isInteger(version) && version === PROTOCOL_VERSION;
 }
+

@@ -89,3 +89,4 @@ export const clientCommand = new Command<ClientCommand, ClientCommandContext>("c
 		};
 	})
 	.action((command, context) => context.runClient(command));
+

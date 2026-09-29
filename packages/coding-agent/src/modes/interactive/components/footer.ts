@@ -1,5 +1,5 @@
 import { isAbsolute, relative, resolve, sep } from "node:path";
-import { type Component, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { type Component, truncateToWidth, visibleWidth } from "@theta/tui";
 import type { AgentSession } from "../../../core/agent-session.ts";
 import { areExperimentalFeaturesEnabled } from "../../../core/experimental.ts";
 import type { ReadonlyFooterDataProvider } from "../../../core/footer-data-provider.ts";
@@ -243,3 +243,4 @@ export class FooterComponent implements Component {
 		return lines;
 	}
 }
+

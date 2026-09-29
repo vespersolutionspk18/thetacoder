@@ -109,3 +109,4 @@ export default class EvalHarnessReporter implements Reporter {
 		if (formatted) this.vitest?.logger.log(`\n${formatted}`);
 	}
 }
+

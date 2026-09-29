@@ -101,3 +101,4 @@ describe("Anthropic temperature compatibility", () => {
 		expect(payload.temperature).toBeUndefined();
 	});
 });
+

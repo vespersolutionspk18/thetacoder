@@ -5,7 +5,7 @@
  * Tool call and tool result interception is handled by AgentSession via agent-core hooks.
  */
 
-import type { AgentTool } from "@earendil-works/pi-agent-core";
+import type { AgentTool } from "@theta/agent-core";
 import { wrapToolDefinition } from "../tools/tool-definition-wrapper.ts";
 import type { ExtensionRunner } from "./runner.ts";
 import type { RegisteredTool } from "./types.ts";
@@ -43,3 +43,4 @@ export function wrapRegisteredTool(registeredTool: RegisteredTool, runner: Exten
 export function wrapRegisteredTools(registeredTools: RegisteredTool[], runner: ExtensionRunner): AgentTool[] {
 	return registeredTools.map((tool) => wrapRegisteredTool(tool, runner));
 }
+

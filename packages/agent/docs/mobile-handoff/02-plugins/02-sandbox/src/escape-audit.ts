@@ -61,3 +61,4 @@ console.log(`  ok  isolate usable afterwards      ${c.load(`1+1`) === 2}`);
 c.dispose();
 console.log(`\n${ok && interrupted ? "AUDIT PASSED" : "AUDIT FAILED"}`);
 process.exit(ok && interrupted ? 0 : 1);
+

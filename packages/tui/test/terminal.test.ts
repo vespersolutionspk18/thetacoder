@@ -298,3 +298,4 @@ describe("ProcessTerminal dimensions", () => {
 		}
 	});
 });
+

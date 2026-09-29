@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 function createDocumentationFixture(files: Record<string, string>): string {
-	const root = mkdtempSync(join(tmpdir(), "pi-docs-catalog-"));
+	const root = mkdtempSync(join(tmpdir(), "theta-docs-catalog-"));
 	temporaryDirectories.push(root);
 	for (const [path, content] of Object.entries(files)) {
 		const filePath = join(root, path);
@@ -107,3 +107,4 @@ describe("coding-agent documentation", () => {
 		expect(catalogedFiles).toEqual(listMarkdownFiles(codingAgentDocsRoot));
 	});
 });
+

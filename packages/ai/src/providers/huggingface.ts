@@ -13,3 +13,4 @@ export function huggingfaceProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

@@ -1,6 +1,6 @@
-import { Agent } from "@earendil-works/pi-agent-core";
-import { createModels } from "@earendil-works/pi-ai";
-import { anthropicProvider } from "@earendil-works/pi-ai/providers/anthropic";
+import { Agent } from "@theta/agent-core";
+import { createModels } from "@theta/ai";
+import { anthropicProvider } from "@theta/ai/providers/anthropic";
 
 const models = createModels();
 models.setProvider(anthropicProvider());
@@ -11,3 +11,4 @@ export const agent = new Agent({
 	initialState: { model },
 	streamFn: models.streamSimple.bind(models),
 });
+

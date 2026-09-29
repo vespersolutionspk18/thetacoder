@@ -7,8 +7,8 @@ import {
 	type FacetLoader,
 	type JsonValue,
 	type LoadedFacets,
-} from "@earendil-works/chord";
-import { BACKGROUND_CONTEXT } from "@earendil-works/chord/context";
+} from "@theta/chord";
+import { BACKGROUND_CONTEXT } from "@theta/chord/context";
 import {
 	CombinedAutocompleteProvider,
 	type Component,
@@ -18,7 +18,7 @@ import {
 	setKeybindings,
 	Text,
 	type TUI,
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 import type { ClientCommand } from "../cli/experimental/commands/client.ts";
 import { getAgentDir } from "../config.ts";
 import { KeybindingsManager } from "../core/keybindings.ts";
@@ -264,7 +264,7 @@ export class ExperimentalClientTui implements Component {
 			return operation;
 		};
 		const presentationBridgeFacet = defineFacet({
-			id: "@pi/presentation-bridge",
+			id: "@theta/presentation-bridge",
 			setup: (env) => {
 				env.provide(PresentationUI, {
 					select: (title, items, selectedValue) =>
@@ -802,3 +802,4 @@ function requireSingleServer<T>(features: readonly T[]): T {
 function message(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
+

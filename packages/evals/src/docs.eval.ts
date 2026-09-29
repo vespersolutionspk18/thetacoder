@@ -1,10 +1,10 @@
 import { resolve } from "node:path";
-import { Type } from "@earendil-works/pi-ai";
-import { defineTool } from "@earendil-works/pi-coding-agent";
+import { Type } from "@theta/ai";
+import { defineTool } from "@theta/coding-agent";
 import { expect } from "vitest";
 import { describeEval, toolCalls } from "vitest-evals";
 import { loadDocumentationCatalog } from "./docs-catalog.ts";
-import { createPiCodingAgentHarness } from "./pi-harness.ts";
+import { createPiCodingAgentHarness } from "./theta-harness.ts";
 
 const SUBMIT_AUDIT_TOOL_NAME = "submit_documentation_audit";
 const submitDocumentationAuditTool = defineTool({
@@ -46,12 +46,12 @@ describeEval("Coding agent documentation", { harness: documentationAuditHarness 
 		{ timeout: 300_000 },
 		async ({ relativePath }, { run }) => {
 			const documentationPath = resolve(docsRoot, relativePath);
-			const result = await run(`Audit one Pi documentation page against the repository implementation.
+			const result = await run(`Audit one Theta documentation page against the repository implementation.
 
 Documentation page: ${documentationPath}
 Repository root: ${repositoryRoot}
 
-Read the complete documentation page. Identify its concrete claims about Pi behavior, public APIs, configuration, commands, formats, defaults, and supported values.
+Read the complete documentation page. Identify its concrete claims about Theta behavior, public APIs, configuration, commands, formats, defaults, and supported values.
 
 Treat repository source links in the page as starting points, not search boundaries. Use grep before reading implementation files in full. Search for the page's named symbols and terms, then read only the focused ranges needed to validate each claim. Inspect tests only when implementation behavior remains ambiguous.
 
@@ -69,3 +69,4 @@ When the audit is complete, call ${SUBMIT_AUDIT_TOOL_NAME} exactly once as your 
 		},
 	);
 });
+

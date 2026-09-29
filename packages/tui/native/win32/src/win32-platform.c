@@ -239,3 +239,4 @@ PI_NAPI_EXPORT napi_value PI_NAPI_CALL napi_register_module_v1(napi_env env, nap
     set_function_export(env, exports, "getImage", get_clipboard_image);
     return exports;
 }
+

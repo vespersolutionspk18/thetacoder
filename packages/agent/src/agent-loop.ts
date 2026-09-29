@@ -9,7 +9,9 @@ import {
 	EventStream,
 	type ToolResultMessage,
 	validateToolArguments,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
+import { NOOP_TELEMETRY_CONTEXT, type TelemetryContext } from "@theta/telemetry";
+import { synthesizeOutcome } from "./outcome.ts";
 import { getDefaultStreamFn } from "./stream-fn.ts";
 import type {
 	AgentContext,
@@ -221,9 +223,39 @@ async function runLoop(
 			// Check for tool calls
 			const toolCalls = message.content.filter((c) => c.type === "toolCall");
 
+			// F6: when the routing flag is on and the assistant message carries an
+			// `executionPlan` field, the agent loop dispatches the plan through the
+			// configured executor instead of letting the model drive individual tool
+			// calls. The plan's tool calls are mapped through the same prepare /
+			// execute / finalize pipeline that `executeToolCalls` uses, so a step
+			// that maps to the read tool behaves identically to a `read` tool call
+			// the model would have produced. A plan envelope is honored whether or
+			// not the assistant message also contains natural tool calls; the plan
+			// is the source of truth for the steps to dispatch.
+			const executionPlan = readExecutionPlanFromMessage(message);
+			const usePlanExecutor =
+				executionPlan !== null &&
+				config.executionPlan?.enabled === true &&
+				typeof config.executionPlan.executor === "function";
+
 			const toolResults: ToolResultMessage[] = [];
 			hasMoreToolCalls = false;
-			if (toolCalls.length > 0) {
+			if (usePlanExecutor) {
+				const executedToolBatch = await executeToolCallsViaPlan(
+					currentContext,
+					message,
+					executionPlan,
+					config,
+					signal,
+					emit,
+				);
+				toolResults.push(...executedToolBatch.messages);
+				hasMoreToolCalls = !executedToolBatch.terminate;
+				for (const result of toolResults) {
+					currentContext.messages.push(result);
+					newMessages.push(result);
+				}
+			} else if (toolCalls.length > 0) {
 				// A "length" stop means the output was cut off by the token limit, so
 				// every tool call in the message may carry truncated arguments. Fail
 				// them all instead of executing potentially borked calls.
@@ -289,6 +321,37 @@ async function streamAssistantResponse(
 		messages = await config.transformContext(messages, signal);
 	}
 
+	// F2: optionally route through the context compiler. When the flag is
+	// off (or the field is omitted) this is a no-op and the messages from
+	// `transformContext` flow through unchanged — byte-identical to the
+	// pre-F2 behavior. The agent package does not know the F2 module; the
+	// higher-level package supplies the `compile` callback that wraps the
+	// real `compileContext`. See `ContextCompilerConfig` in types.ts.
+	const compiler = config.contextCompiler;
+	if (compiler?.enabled && compiler.compile) {
+		// Budget derivation: model.contextWindow is the total token budget the
+		// model can see in a single turn. We reserve tokens for two purposes
+		// that the F2 module does not itself account for:
+		//   - `keepRecentTokens` (default 20_000) — reserve for the recent
+		//     untrimmed tail and the TaskState messages the compiler will
+		//     prepend. This mirrors the `compaction.keepRecentTokens` default
+		//     so the projection budget is consistent with auto-compaction.
+		//   - `model.maxTokens` — reserve for the model's response.
+		// The remaining capacity is what the projected message stream must
+		// fit into. If `contextWindow` is unknown (0, e.g. synthetic tests
+		// with `DEFAULT_MODEL`), fall back to a generous default so the
+		// projection still works in test or early-init paths.
+		const keepRecentTokens = compiler.keepRecentTokens ?? 20_000;
+		const keepRecentTurns = compiler.keepRecentTurns ?? 20;
+		const model = config.model;
+		const contextWindow = model.contextWindow;
+		const maxTokensReserve = model.maxTokens ?? 0;
+		const tokenBudget =
+			contextWindow > 0 ? Math.max(0, contextWindow - keepRecentTokens - maxTokensReserve) : 100_000;
+		const taskState = compiler.getTaskState ? compiler.getTaskState() : undefined;
+		messages = await compiler.compile(messages, taskState, { tokenBudget, keepRecentTurns });
+	}
+
 	// Convert to LLM-compatible messages (AgentMessage[] → Message[])
 	const llmMessages = await config.convertToLlm(messages);
 
@@ -303,70 +366,118 @@ async function streamAssistantResponse(
 	const resolvedApiKey =
 		(config.getApiKey ? await config.getApiKey(config.model.provider) : undefined) || config.apiKey;
 
-	const response = await streamFunction(config.model, llmContext, {
-		...config,
-		apiKey: resolvedApiKey,
-		signal,
-	});
+	// F7 (audit "Telemetry and local models"): open a `theta.ai.request`
+	// span on the normal loop path when the caller configured a telemetry
+	// context, mirroring the harness's span shape so both inference paths
+	// report the same attribute vocabulary. When no telemetry context is
+	// set (the default), this is a zero-cost passthrough.
+	const telemetryContext: TelemetryContext = config.telemetryContext ?? NOOP_TELEMETRY_CONTEXT;
+	const runStream = async (): Promise<AssistantMessage> => {
+		const response = await streamFunction(config.model, llmContext, {
+			...config,
+			apiKey: resolvedApiKey,
+			signal,
+		});
 
-	let partialMessage: AssistantMessage | null = null;
-	let addedPartial = false;
+		let partialMessage: AssistantMessage | null = null;
+		let addedPartial = false;
 
-	for await (const event of response) {
-		switch (event.type) {
-			case "start":
-				partialMessage = event.partial;
-				context.messages.push(partialMessage);
-				addedPartial = true;
-				await emit({ type: "message_start", message: { ...partialMessage } });
-				break;
-
-			case "text_start":
-			case "text_delta":
-			case "text_end":
-			case "thinking_start":
-			case "thinking_delta":
-			case "thinking_end":
-			case "toolcall_start":
-			case "toolcall_delta":
-			case "toolcall_end":
-				if (partialMessage) {
+		for await (const event of response) {
+			switch (event.type) {
+				case "start":
 					partialMessage = event.partial;
-					context.messages[context.messages.length - 1] = partialMessage;
-					await emit({
-						type: "message_update",
-						assistantMessageEvent: event,
-						message: { ...partialMessage },
-					});
-				}
-				break;
+					context.messages.push(partialMessage);
+					addedPartial = true;
+					await emit({ type: "message_start", message: { ...partialMessage } });
+					break;
 
-			case "done":
-			case "error": {
-				const finalMessage = await response.result();
-				if (addedPartial) {
-					context.messages[context.messages.length - 1] = finalMessage;
-				} else {
-					context.messages.push(finalMessage);
+				case "text_start":
+				case "text_delta":
+				case "text_end":
+				case "thinking_start":
+				case "thinking_delta":
+				case "thinking_end":
+				case "toolcall_start":
+				case "toolcall_delta":
+				case "toolcall_end":
+					if (partialMessage) {
+						partialMessage = event.partial;
+						context.messages[context.messages.length - 1] = partialMessage;
+						await emit({
+							type: "message_update",
+							assistantMessageEvent: event,
+							message: { ...partialMessage },
+						});
+					}
+					break;
+
+				case "done":
+				case "error": {
+					const finalMessage = await response.result();
+					if (addedPartial) {
+						context.messages[context.messages.length - 1] = finalMessage;
+					} else {
+						context.messages.push(finalMessage);
+					}
+					if (!addedPartial) {
+						await emit({ type: "message_start", message: { ...finalMessage } });
+					}
+					await emit({ type: "message_end", message: finalMessage });
+					return finalMessage;
 				}
-				if (!addedPartial) {
-					await emit({ type: "message_start", message: { ...finalMessage } });
-				}
-				await emit({ type: "message_end", message: finalMessage });
-				return finalMessage;
 			}
 		}
+		// Stream ended without an explicit done/error event.
+		const final = await response.result();
+		return final;
+	};
+
+	if (config.telemetryContext === undefined) {
+		return runStream();
 	}
 
-	const finalMessage = await response.result();
-	if (addedPartial) {
-		context.messages[context.messages.length - 1] = finalMessage;
-	} else {
-		context.messages.push(finalMessage);
-		await emit({ type: "message_start", message: { ...finalMessage } });
-	}
-	await emit({ type: "message_end", message: finalMessage });
-	return finalMessage;
+	return telemetryContext.startSpan(
+		{
+			name: "theta.ai.request",
+			attributes: {
+				"theta.ai.operation": "stream",
+				"theta.ai.provider": config.model.provider,
+				"theta.ai.model": config.model.id,
+				"theta.ai.api": config.model.api,
+				"theta.ai.streaming": true,
+			},
+		},
+		async (span) => {
+			try {
+				const finalMessage = await runStream();
+				const usage = finalMessage.usage;
+				const stopReason = finalMessage.stopReason === "toolUse" ? "tool_use" : finalMessage.stopReason;
+				span.setAttributes({
+					"theta.ai.response.model": finalMessage.responseModel ?? finalMessage.model,
+					...(finalMessage.responseId === undefined ? {} : { "theta.ai.response.id": finalMessage.responseId }),
+					...(stopReason ? { "theta.ai.response.stop_reason": stopReason } : {}),
+					"theta.ai.usage.input_tokens": usage.input ?? 0,
+					"theta.ai.usage.output_tokens": usage.output ?? 0,
+					"theta.ai.usage.cache_read_tokens": usage.cacheRead ?? 0,
+					"theta.ai.usage.cache_write_tokens": usage.cacheWrite ?? 0,
+					...(usage.reasoning === undefined ? {} : { "theta.ai.usage.reasoning_tokens": usage.reasoning }),
+					...(usage.totalTokens === undefined ? {} : { "theta.ai.usage.total_tokens": usage.totalTokens }),
+					...(usage.cost.total === undefined ? {} : { "theta.ai.usage.cost": usage.cost.total }),
+				});
+				if (finalMessage.stopReason === "error") {
+					span.setStatus({
+						status: "error",
+						error: { name: "provider_error", message: finalMessage.errorMessage ?? "provider error" },
+					});
+				}
+				return finalMessage;
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				span.setStatus({ status: "error", error: { name: "request_error", message } });
+				throw error;
+			}
+		},
+	);
 }
 
 /**
@@ -728,6 +839,12 @@ async function finalizeExecutedToolCall(
 	let result = executed.result;
 	let isError = executed.isError;
 
+	// Layer-2 floor: synthesize a structured outcome for every tool result
+	// before extensions get a chance to override. Tools that return
+	// `details: undefined` (e.g. write) need the guard below before attaching.
+	result.details = result.details ?? {};
+	result.details.outcome = synthesizeOutcome(prepared.toolCall.name, result, isError);
+
 	if (config.afterToolCall) {
 		try {
 			const afterResult = await config.afterToolCall(
@@ -801,3 +918,347 @@ async function emitToolResultMessage(toolResultMessage: ToolResultMessage, emit:
 	await emit({ type: "message_start", message: toolResultMessage });
 	await emit({ type: "message_end", message: toolResultMessage });
 }
+
+// ============================================================================
+// F6 ExecutionPlan dispatch
+// ============================================================================
+
+/**
+ * The agent package treats the F6 `ExecutionPlan` as an opaque value
+ * stored on the assistant message. The shape is owned by the F6 module
+ * in the higher-level package; the agent loop only needs to forward the
+ * value to the configured `executor` and recover the resulting
+ * step-by-step tool calls so the conversation history stays consistent.
+ */
+interface ExecutionPlanEnvelope {
+	plan: unknown;
+	/**
+	 * Optional explicit step -> tool-call list, in declaration order. When
+	 * present, the agent loop uses this to map step results back to
+	 * tool-result messages; when absent, the agent loop derives a synthetic
+	 * tool call from each step's `kind` and `target`.
+	 */
+	steps?: unknown[];
+}
+
+/**
+ * Read the optional `executionPlan` envelope off an assistant message.
+ * The agent package does not own the F6 `ExecutionPlan` type, so this
+ * is a structural duck-type read. Returns `null` when the field is
+ * missing or does not look like a valid envelope.
+ */
+function readExecutionPlanFromMessage(message: AssistantMessage): ExecutionPlanEnvelope | null {
+	const candidate = (message as { executionPlan?: unknown }).executionPlan;
+	if (!candidate || typeof candidate !== "object") return null;
+	const record = candidate as { plan?: unknown; steps?: unknown };
+	if (record.plan === undefined || record.plan === null) return null;
+	const steps = Array.isArray(record.steps) ? record.steps : undefined;
+	return { plan: record.plan, steps };
+}
+
+/**
+ * Run a plan-bearing assistant message through the configured F6
+ * executor. The agent loop:
+ *
+ *  1. Builds a `StepRunner` that wraps the existing prepare / execute /
+ *     finalize pipeline so plan steps share the same `beforeToolCall` /
+ *     `afterToolCall` plumbing that natural tool calls do.
+ *  2. Calls the consumer-supplied `executor` with the plan, the runner,
+ *     and the configured `concurrency`.
+ *  3. For each step result, emits a `tool_execution_*` event pair and
+ *     appends a `ToolResultMessage` to the conversation history so the
+ *     model sees the outcome on the next turn.
+ *
+ * The executor returns an unknown value; the agent loop expects it to
+ * have `stepResults: Array<{ stepId, status, output, error? }>` and
+ * `status: ExecutionResultStatus`. Both are read structurally so the
+ * agent package does not need to import the F6 types.
+ */
+async function executeToolCallsViaPlan(
+	currentContext: AgentContext,
+	assistantMessage: AssistantMessage,
+	envelope: ExecutionPlanEnvelope,
+	config: AgentLoopConfig,
+	signal: AbortSignal | undefined,
+	emit: AgentEventSink,
+): Promise<ExecutedToolCallBatch> {
+	// The agent-loop's `emit` is a stream forwarder and does not
+	// persist tool result messages to `currentContext.messages`. To
+	// recover the real per-step tool result messages after the
+	// executor returns, the runner records the message it built
+	// (with the actual tool result content and the toolCallId the
+	// runner used) into this side-channel map, indexed by `stepId`.
+	// We pair it with the executor's `stepResults` below so the
+	// returned `messages` array reflects the real per-step
+	// outcomes, not a synthesized placeholder.
+	const messagesByStepId = new Map<string, ToolResultMessage>();
+	const planRunner = buildExecutionPlanStepRunner(
+		currentContext,
+		assistantMessage,
+		config,
+		signal,
+		emit,
+		messagesByStepId,
+	);
+	const concurrency = config.executionPlan?.concurrency ?? 1;
+	const executor = config.executionPlan!.executor!;
+	const result = (await executor(envelope.plan, planRunner, {
+		concurrency,
+		signal,
+	})) as {
+		status?: string;
+		stepResults?: Array<{
+			stepId: string;
+			status?: string;
+			output?: unknown;
+			error?: Error;
+		}>;
+	};
+
+	// The F6 executor reorders `stepResults` to topological order
+	// before returning, so pairing by index between
+	// `messagesByStepId` (which records messages in completion
+	// order) and the returned `stepResults` is not safe when
+	// `concurrency > 1`. Pair by `stepId` instead. The synthesized
+	// `finalized` outcome is still used for the
+	// `shouldTerminateToolBatch` check, because the
+	// `ToolResultMessage` shape does not carry the `terminate`
+	// hint that early-termination relies on.
+	const stepResults = Array.isArray(result?.stepResults) ? result.stepResults : [];
+	const finalizedCalls: FinalizedToolCallOutcome[] = [];
+	const messages: ToolResultMessage[] = [];
+	for (const stepResult of stepResults) {
+		const finalized: FinalizedToolCallOutcome = planFinalizedForStep(envelope, stepResult);
+		finalizedCalls.push(finalized);
+		const captured = messagesByStepId.get(stepResult.stepId);
+		messages.push(captured ?? createToolResultMessage(finalized));
+	}
+	return { messages, terminate: shouldTerminateToolBatch(finalizedCalls) };
+}
+
+/**
+ * Build a `StepRunner` that the F6 executor invokes for each plan step.
+ * The runner maps the step's `kind` and `target` to a concrete tool call,
+ * then runs the existing `prepareToolCall` + `executePreparedToolCall` +
+ * `finalizeExecutedToolCall` flow so plan steps share the exact same
+ * before/after hooks and outcome synthesis as natural tool calls.
+ */
+/**
+ * Build a `StepRunner` (typed as `unknown` here so the agent package does
+ * not import the F6 module) that the F6 executor invokes for each plan
+ * step. The runner maps the step's `kind` and `target` to a concrete tool
+ * call, then runs the existing `prepareToolCall` +
+ * `executePreparedToolCall` + `finalizeExecutedToolCall` flow so plan
+ * steps share the exact same `beforeToolCall` / `afterToolCall` plumbing
+ * and outcome synthesis as natural tool calls.
+ *
+ * Exported so higher-level packages (e.g. the coding-agent
+ * `AgentSession.executePlan(plan)` API) can build a runner that runs plan
+ * steps through the same agent-side tool execution path that
+ * `executeToolCalls` uses.
+ */
+export function createExecutionPlanRunner(
+	currentContext: AgentContext,
+	assistantMessage: AssistantMessage,
+	config: AgentLoopConfig,
+	signal: AbortSignal | undefined,
+	emit: AgentEventSink,
+	messagesByStepId?: Map<string, ToolResultMessage>,
+): (
+	step: unknown,
+	stepSignal: AbortSignal | undefined,
+) => Promise<{
+	stepId: string;
+	status: "succeeded" | "failed" | "cancelled" | "incomplete" | "unknown";
+	output?: unknown;
+	error?: Error;
+	startedAt: number;
+	endedAt: number;
+	wallTimeMs: number;
+}> {
+	return buildExecutionPlanStepRunner(currentContext, assistantMessage, config, signal, emit, messagesByStepId);
+}
+
+function buildExecutionPlanStepRunner(
+	currentContext: AgentContext,
+	assistantMessage: AssistantMessage,
+	config: AgentLoopConfig,
+	_signal: AbortSignal | undefined,
+	emit: AgentEventSink,
+	messagesByStepId?: Map<string, ToolResultMessage>,
+): (
+	step: unknown,
+	stepSignal: AbortSignal | undefined,
+) => Promise<{
+	stepId: string;
+	status: "succeeded" | "failed" | "cancelled" | "incomplete" | "unknown";
+	output?: unknown;
+	error?: Error;
+	startedAt: number;
+	endedAt: number;
+	wallTimeMs: number;
+}> {
+	return async (step, stepSignal) => {
+		const startedAt = Date.now();
+		const stepRecord = (step ?? {}) as {
+			id?: unknown;
+			kind?: unknown;
+			target?: unknown;
+			operation?: unknown;
+		};
+		const stepId = typeof stepRecord.id === "string" ? stepRecord.id : "step";
+		const kind = typeof stepRecord.kind === "string" ? stepRecord.kind : "";
+		const target = typeof stepRecord.target === "string" ? stepRecord.target : "";
+
+		const toolName = planStepKindToToolName(kind);
+		const toolCallId = `plan-${stepId}-${randomToolCallId()}`;
+		const toolCall: AgentToolCall = {
+			type: "toolCall",
+			id: toolCallId,
+			name: toolName,
+			arguments: planStepToToolArguments(kind, target, stepRecord),
+		};
+		await emit({
+			type: "tool_execution_start",
+			toolCallId,
+			toolName,
+			args: toolCall.arguments,
+		});
+
+		const preparation = await prepareToolCall(currentContext, assistantMessage, toolCall, config, stepSignal);
+		if (preparation.kind === "immediate") {
+			const endedAt = Date.now();
+			const immediateFinalized: FinalizedToolCallOutcome = {
+				toolCall,
+				result: preparation.result,
+				isError: preparation.isError,
+			};
+			await emitToolExecutionEnd(immediateFinalized, emit);
+			const immediateMessage = createToolResultMessage(immediateFinalized);
+			messagesByStepId?.set(stepId, immediateMessage);
+			await emit({ type: "message_start", message: immediateMessage });
+			await emit({ type: "message_end", message: immediateMessage });
+			return {
+				stepId,
+				status: preparation.isError ? "failed" : "unknown",
+				output: preparation.result.details,
+				error: preparation.isError ? new Error(extractErrorMessage(preparation.result)) : undefined,
+				startedAt,
+				endedAt,
+				wallTimeMs: Math.max(0, endedAt - startedAt),
+			};
+		}
+
+		const executed = await executePreparedToolCall(preparation, stepSignal, emit);
+		const finalized = await finalizeExecutedToolCall(
+			currentContext,
+			assistantMessage,
+			preparation,
+			executed,
+			config,
+			stepSignal,
+		);
+		await emitToolExecutionEnd(finalized, emit);
+		const toolResultMessage = createToolResultMessage(finalized);
+		messagesByStepId?.set(stepId, toolResultMessage);
+		await emit({ type: "message_start", message: toolResultMessage });
+		await emit({ type: "message_end", message: toolResultMessage });
+
+		const endedAt = Date.now();
+		const isError = finalized.isError === true;
+		return {
+			stepId,
+			status: isError ? "failed" : "succeeded",
+			output: finalized.result.details,
+			error: isError ? new Error(extractErrorMessage(finalized.result)) : undefined,
+			startedAt,
+			endedAt,
+			wallTimeMs: Math.max(0, endedAt - startedAt),
+		};
+	};
+}
+
+function planStepKindToToolName(kind: string): string {
+	switch (kind) {
+		case "read":
+			return "read";
+		case "edit":
+		case "write":
+			return kind;
+		case "bash":
+			return "bash";
+		case "grep":
+			return "grep";
+		case "find":
+			return "find";
+		default:
+			return "bash";
+	}
+}
+
+function planStepToToolArguments(
+	kind: string,
+	target: string,
+	step: { operation?: unknown } | undefined,
+): Record<string, unknown> {
+	switch (kind) {
+		case "read":
+		case "edit":
+		case "write":
+		case "grep":
+		case "find":
+			return { path: target };
+		case "bash":
+			return { command: typeof step?.operation === "string" ? step.operation : target };
+		default:
+			return { command: target };
+	}
+}
+
+function planFinalizedForStep(
+	envelope: ExecutionPlanEnvelope,
+	stepResult: {
+		stepId: string;
+		status?: string;
+		output?: unknown;
+		error?: Error;
+	},
+): FinalizedToolCallOutcome {
+	const step = (envelope.steps ?? []).find(
+		(candidate) =>
+			candidate && typeof candidate === "object" && (candidate as { id?: unknown }).id === stepResult.stepId,
+	) as { id?: unknown; kind?: unknown; target?: unknown; operation?: unknown } | undefined;
+	const kind = typeof step?.kind === "string" ? step.kind : "";
+	const target = typeof step?.target === "string" ? step.target : "";
+	const toolName = planStepKindToToolName(kind);
+	const toolCallId = `plan-${stepResult.stepId}-${randomToolCallId()}`;
+	const toolCall: AgentToolCall = {
+		type: "toolCall",
+		id: toolCallId,
+		name: toolName,
+		arguments: planStepToToolArguments(kind, target, step),
+	};
+	const status = typeof stepResult.status === "string" ? stepResult.status : "unknown";
+	const isError = status === "failed" || status === "incomplete" || stepResult.error !== undefined;
+	const message = stepResult.error?.message ?? `Plan step ${stepResult.stepId} ${status}`;
+	const result: AgentToolResult<any> = {
+		content: [{ type: "text", text: message }],
+		details: {
+			...(isError ? {} : { value: stepResult.output }),
+			...(isError ? {} : { stepId: stepResult.stepId, status }),
+			...(isError ? { error: message } : {}),
+		},
+	};
+	return { toolCall, result, isError };
+}
+
+function extractErrorMessage(result: AgentToolResult<unknown>): string {
+	const first = Array.isArray(result.content) ? result.content[0] : undefined;
+	if (first && first.type === "text") return first.text;
+	return "Plan step failed";
+}
+
+function randomToolCallId(): string {
+	return Math.random().toString(36).slice(2, 10);
+}
+

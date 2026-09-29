@@ -1,5 +1,5 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
-import { fauxAssistantMessage, fauxToolCall } from "@earendil-works/pi-ai";
+import type { AgentTool } from "@theta/agent-core";
+import { fauxAssistantMessage, fauxToolCall } from "@theta/ai";
 import { Type } from "typebox";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createHarness, type Harness } from "./harness.ts";
@@ -50,3 +50,4 @@ describe("AgentSession tool result images", () => {
 		expect(normalizeToolResultImages).toHaveBeenCalledWith(expect.any(Array), { autoResizeImages: false });
 	});
 });
+

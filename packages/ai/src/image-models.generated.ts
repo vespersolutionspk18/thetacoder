@@ -787,3 +787,4 @@ export const IMAGE_MODELS = {
 		} satisfies ImagesModel<"openrouter-images">,
 	},
 } as const satisfies Record<string, Record<string, ImagesModel<ImagesApi>>>;
+

@@ -61,3 +61,4 @@ describe("bedrock response headers", () => {
 		expect(responses[0].headers["x-bifrost-resolved-model"]).toBe(MODEL_ID);
 	});
 });
+

@@ -230,3 +230,4 @@ describe("summarizeHarnessComparisons", () => {
 		expect(formatted).toContain("  Latency  -4159.5ms (candidate 30694.2ms, baseline 34853.7ms)");
 	});
 });
+

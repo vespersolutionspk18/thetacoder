@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { BACKGROUND_CONTEXT, type SessionRepo } from "@earendil-works/pi-agent-core";
+import { BACKGROUND_CONTEXT, type SessionRepo } from "@theta/agent-core";
 import { createNodeSqliteFactory, SqliteSessionRepo } from "../../src/index.ts";
 import type { BenchmarkTarget } from "../../../../agent/benchmark/session/benchmark.ts";
 
@@ -15,7 +15,7 @@ export const sessionRepoBenchmarkTargets = [
 	{
 		name: "sqlite",
 		async createFixture() {
-			const directory = await mkdtemp(join(tmpdir(), "pi-sqlite-session-repo-benchmark-"));
+			const directory = await mkdtemp(join(tmpdir(), "theta-sqlite-session-repo-benchmark-"));
 			const repo = new SqliteSessionRepo({
 				directory,
 				databaseFactory: createNodeSqliteFactory(),
@@ -31,3 +31,4 @@ export const sessionRepoBenchmarkTargets = [
 		},
 	},
 ] satisfies readonly BenchmarkTarget<SessionRepoBenchmarkFixture>[];
+

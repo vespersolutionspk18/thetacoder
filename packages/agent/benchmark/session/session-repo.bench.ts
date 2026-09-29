@@ -60,3 +60,4 @@ await registerWriteBenchmarks({
 		return benchmark.scenario.run(subject.repo, subject.source, benchmark.dataset);
 	},
 });
+

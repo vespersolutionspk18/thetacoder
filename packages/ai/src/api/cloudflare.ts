@@ -13,3 +13,4 @@ export const CLOUDFLARE_AI_GATEWAY_OPENAI_BASE_URL =
 /** AI Gateway → Anthropic passthrough. */
 export const CLOUDFLARE_AI_GATEWAY_ANTHROPIC_BASE_URL =
 	"https://gateway.ai.cloudflare.com/v1/{CLOUDFLARE_ACCOUNT_ID}/{CLOUDFLARE_GATEWAY_ID}/anthropic";
+

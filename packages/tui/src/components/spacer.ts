@@ -26,3 +26,4 @@ export class Spacer implements Component {
 		return result;
 	}
 }
+

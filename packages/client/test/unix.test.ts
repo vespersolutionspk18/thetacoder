@@ -182,3 +182,4 @@ describe("discoverUnixServers", () => {
 		await expect(discoverUnixServers({ directory: file })).rejects.toMatchObject({ code: "ENOTDIR" });
 	});
 });
+

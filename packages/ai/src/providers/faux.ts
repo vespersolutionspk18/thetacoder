@@ -706,3 +706,4 @@ export function fauxProvider(options: RegisterFauxProviderOptions = {}): FauxPro
 		getPendingResponseCount: core.getPendingResponseCount,
 	};
 }
+

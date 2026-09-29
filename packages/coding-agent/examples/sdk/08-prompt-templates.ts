@@ -11,7 +11,7 @@ import {
 	getAgentDir,
 	type PromptTemplate,
 	SessionManager,
-} from "@earendil-works/pi-coding-agent";
+} from "@theta/coding-agent";
 
 // Define custom templates
 const deployTemplate: PromptTemplate = {
@@ -36,7 +36,7 @@ const loader = new DefaultResourceLoader({
 });
 await loader.reload();
 
-// Discover templates from cwd/.pi/prompts/ and ~/.pi/agent/prompts/
+// Discover templates from cwd/.theta/prompts/ and ~/.theta/agent/prompts/
 const discovered = loader.getPrompts().prompts;
 console.log("Discovered prompt templates:");
 for (const template of discovered) {
@@ -49,3 +49,4 @@ const { session } = await createAgentSession({
 });
 console.log(`Session created with ${discovered.length + 1} prompt templates`);
 session.dispose();
+

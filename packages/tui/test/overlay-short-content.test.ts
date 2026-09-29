@@ -60,3 +60,4 @@ describe("TUI overlay with short content", () => {
 		tui.stop();
 	});
 });
+

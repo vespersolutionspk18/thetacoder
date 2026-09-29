@@ -1,4 +1,4 @@
-import type { RemoteServiceErrorCode } from "@earendil-works/chord";
+import type { RemoteServiceErrorCode } from "@theta/chord";
 
 type ServerOperationErrorCode =
 	| RemoteServiceErrorCode
@@ -55,3 +55,4 @@ export class ServerDrainingError extends ServerError {
 		this.name = "ServerDrainingError";
 	}
 }
+

@@ -141,3 +141,4 @@ export function estimateContextTokens(context: Context | readonly Message[]): Co
 		lastUsageIndex: estimate.lastUsageIndex,
 	};
 }
+

@@ -87,3 +87,4 @@ describe("max thinking level", () => {
 		expect(payload).toMatchObject({ reasoning: { effort: "max", summary: "auto" } });
 	});
 });
+

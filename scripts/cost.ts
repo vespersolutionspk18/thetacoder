@@ -35,7 +35,7 @@ function encodeSessionDir(dir: string): string {
 	return "--" + normalized.replace(/\//g, "-") + "--";
 }
 
-const sessionsBase = path.join(process.env.HOME!, ".pi/agent/sessions");
+const sessionsBase = path.join(process.env.HOME!, ".theta/agent/sessions");
 const encodedDir = encodeSessionDir(directory);
 const sessionsDir = path.join(sessionsBase, encodedDir);
 
@@ -181,3 +181,4 @@ for (const provider of Object.keys(providerTotals).sort()) {
 console.log("-".repeat(40));
 console.log(`  ${"GRAND TOTAL:".padEnd(15)} $${grandTotal.toFixed(4).padStart(8)}`);
 console.log();
+

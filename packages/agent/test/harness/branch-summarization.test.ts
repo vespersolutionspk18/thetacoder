@@ -1,4 +1,4 @@
-import type { AgentMessage } from "@earendil-works/pi-agent-core";
+import type { AgentMessage } from "@theta/agent-core";
 import { describe, expect, it } from "vitest";
 import { collectEntriesForBranchSummary } from "../../src/harness/compaction/branch-summarization.ts";
 import { BACKGROUND_CONTEXT } from "../../src/harness/context.ts";
@@ -69,3 +69,4 @@ describe("v4 branch summarization", () => {
 		});
 	});
 });
+

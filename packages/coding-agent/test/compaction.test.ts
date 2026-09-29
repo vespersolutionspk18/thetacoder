@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import type { AssistantMessage, Usage } from "@earendil-works/pi-ai/compat";
-import { getModel } from "@earendil-works/pi-ai/compat";
+import type { AgentMessage } from "@theta/agent-core";
+import type { AssistantMessage, Usage } from "@theta/ai/compat";
+import { getModel } from "@theta/ai/compat";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -594,3 +594,4 @@ describe.skipIf(!process.env.ANTHROPIC_OAUTH_TOKEN)("LLM summarization", () => {
 		console.log("After compaction:", reloaded.messages.length);
 	}, 60000);
 });
+

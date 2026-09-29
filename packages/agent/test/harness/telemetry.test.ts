@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createTypedSpanStarter, NOOP_TELEMETRY_CONTEXT, type TelemetryContext } from "@earendil-works/pi-telemetry";
+import { createTypedSpanStarter, NOOP_TELEMETRY_CONTEXT, type TelemetryContext } from "@theta/telemetry";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { renderAgentTelemetrySchemaMarkdown } from "../../scripts/generate-telemetry-docs.ts";
 import { BACKGROUND_CONTEXT, withTelemetryContext } from "../../src/harness/context.ts";
@@ -22,17 +22,17 @@ describe("agent telemetry schemas", () => {
 		expect(() => JSON.stringify(HARNESS_TELEMETRY_SCHEMA)).not.toThrow();
 		expect(AGENT_TELEMETRY_SCHEMAS).toEqual([AI_TELEMETRY_SCHEMA, HARNESS_TELEMETRY_SCHEMA]);
 		expect(Object.keys(HARNESS_TELEMETRY_SCHEMA.spans)).toEqual([
-			"pi.harness.run",
-			"pi.harness.compaction",
-			"pi.harness.navigation",
-			"pi.harness.checkpoint",
-			"pi.harness.turn",
-			"pi.harness.step",
-			"pi.harness.tool",
-			"pi.harness.hook",
-			"pi.harness.sleep",
-			"pi.harness.event_handler",
-			"pi.session.write",
+			"theta.harness.run",
+			"theta.harness.compaction",
+			"theta.harness.navigation",
+			"theta.harness.checkpoint",
+			"theta.harness.turn",
+			"theta.harness.step",
+			"theta.harness.tool",
+			"theta.harness.hook",
+			"theta.harness.sleep",
+			"theta.harness.event_handler",
+			"theta.session.write",
 		]);
 		const actual = readFileSync(resolve(import.meta.dirname, "../../docs/telemetry-schema.md"), "utf8");
 		expect(actual).toBe(renderAgentTelemetrySchemaMarkdown());
@@ -41,26 +41,26 @@ describe("agent telemetry schemas", () => {
 	it("starts AI-request and harness spans through one composed typed starter", async () => {
 		const startSpan = createTypedSpanStarter(NOOP_TELEMETRY_CONTEXT, AGENT_TELEMETRY_SCHEMAS);
 		await startSpan(
-			"pi.harness.step",
+			"theta.harness.step",
 			{
-				"pi.lane.name": "main",
-				"pi.operation.id": "operation",
-				"pi.step.kind": "assistant",
-				"pi.step.attempt": 1,
+				"theta.lane.name": "main",
+				"theta.operation.id": "operation",
+				"theta.step.kind": "assistant",
+				"theta.step.attempt": 1,
 			},
 			async (stepSpan, startChildSpan) => {
-				stepSpan.setAttributes({ "pi.step.outcome": "succeeded" });
+				stepSpan.setAttributes({ "theta.step.outcome": "succeeded" });
 				await startChildSpan(
-					"pi.ai.request",
+					"theta.ai.request",
 					{
-						"pi.ai.operation": "stream",
-						"pi.ai.provider": "provider",
-						"pi.ai.model": "model",
-						"pi.ai.api": "api",
-						"pi.ai.streaming": true,
+						"theta.ai.operation": "stream",
+						"theta.ai.provider": "provider",
+						"theta.ai.model": "model",
+						"theta.ai.api": "api",
+						"theta.ai.streaming": true,
 					},
 					(requestSpan) => {
-						requestSpan.setAttributes({ "pi.ai.response.stop_reason": "stop" });
+						requestSpan.setAttributes({ "theta.ai.response.stop_reason": "stop" });
 					},
 				);
 			},
@@ -68,34 +68,34 @@ describe("agent telemetry schemas", () => {
 	});
 
 	it("infers exact AI start and optional end attributes", async () => {
-		type Start = AiSpanStartAttributes<"pi.ai.request">;
-		type End = AiSpanEndAttributes<"pi.ai.request">;
+		type Start = AiSpanStartAttributes<"theta.ai.request">;
+		type End = AiSpanEndAttributes<"theta.ai.request">;
 		expectTypeOf<Start>().toMatchTypeOf<{
-			"pi.ai.operation": "stream" | "fetch_deferred" | "cancel_deferred" | "generate_images";
-			"pi.ai.provider": string;
-			"pi.ai.model": string;
-			"pi.ai.api": string;
-			"pi.ai.streaming": boolean;
-			"pi.ai.deferred"?: boolean;
+			"theta.ai.operation": "stream" | "fetch_deferred" | "cancel_deferred" | "generate_images";
+			"theta.ai.provider": string;
+			"theta.ai.model": string;
+			"theta.ai.api": string;
+			"theta.ai.streaming": boolean;
+			"theta.ai.deferred"?: boolean;
 		}>();
-		expectTypeOf<End["pi.ai.response.stop_reason"]>().toEqualTypeOf<
+		expectTypeOf<End["theta.ai.response.stop_reason"]>().toEqualTypeOf<
 			"stop" | "length" | "tool_use" | "error" | "aborted" | "deferred" | undefined
 		>();
 
 		const telemetryContext: TelemetryContext = NOOP_TELEMETRY_CONTEXT;
 		const context = withTelemetryContext(telemetryContext, BACKGROUND_CONTEXT);
 		await startAiSpan(
-			"pi.ai.request",
+			"theta.ai.request",
 			{
-				"pi.ai.operation": "stream",
-				"pi.ai.provider": "provider",
-				"pi.ai.model": "model",
-				"pi.ai.api": "api",
-				"pi.ai.streaming": true,
+				"theta.ai.operation": "stream",
+				"theta.ai.provider": "provider",
+				"theta.ai.model": "model",
+				"theta.ai.api": "api",
+				"theta.ai.streaming": true,
 			},
 			(span) => {
-				span.setAttributes({ "pi.ai.response.stop_reason": "tool_use" });
-				// @ts-expect-error pi.ai.request declares no span events
+				span.setAttributes({ "theta.ai.response.stop_reason": "tool_use" });
+				// @ts-expect-error theta.ai.request declares no span events
 				span.addEvent("chunk");
 			},
 			context,
@@ -103,55 +103,55 @@ describe("agent telemetry schemas", () => {
 
 		const compileTimeFailures = () => {
 			const extraAttributes = {
-				"pi.ai.operation": "stream",
-				"pi.ai.provider": "provider",
-				"pi.ai.model": "model",
-				"pi.ai.api": "api",
-				"pi.ai.streaming": true,
-				"pi.ai.unknown": true,
+				"theta.ai.operation": "stream",
+				"theta.ai.provider": "provider",
+				"theta.ai.model": "model",
+				"theta.ai.api": "api",
+				"theta.ai.streaming": true,
+				"theta.ai.unknown": true,
 			} as const;
 			// @ts-expect-error variables with unknown attributes are rejected
-			void startAiSpan("pi.ai.request", extraAttributes, () => {}, context);
+			void startAiSpan("theta.ai.request", extraAttributes, () => {}, context);
 			// @ts-expect-error missing required start attributes
-			void startAiSpan("pi.ai.request", { "pi.ai.operation": "stream" }, () => {}, context);
+			void startAiSpan("theta.ai.request", { "theta.ai.operation": "stream" }, () => {}, context);
 		};
 		expectTypeOf(compileTimeFailures).toBeFunction();
 	});
 
 	it("infers per-span harness literals and optional completion enrichment", async () => {
-		type RunStart = HarnessSpanStartAttributes<"pi.harness.run">;
-		type RunEnd = HarnessSpanEndAttributes<"pi.harness.run">;
-		type WriteStart = HarnessSpanStartAttributes<"pi.session.write">;
-		type WriteEnd = HarnessSpanEndAttributes<"pi.session.write">;
-		expectTypeOf<RunStart["pi.operation.kind"]>().toEqualTypeOf<"run">();
-		expectTypeOf<RunEnd["pi.operation.outcome"]>().toEqualTypeOf<
+		type RunStart = HarnessSpanStartAttributes<"theta.harness.run">;
+		type RunEnd = HarnessSpanEndAttributes<"theta.harness.run">;
+		type WriteStart = HarnessSpanStartAttributes<"theta.session.write">;
+		type WriteEnd = HarnessSpanEndAttributes<"theta.session.write">;
+		expectTypeOf<RunStart["theta.operation.kind"]>().toEqualTypeOf<"run">();
+		expectTypeOf<RunEnd["theta.operation.outcome"]>().toEqualTypeOf<
 			"completed" | "aborted" | "failed" | "suspended" | undefined
 		>();
 		const writeStart = {
-			"pi.session.id": "session",
-			"pi.session.item_count": 2,
-			"pi.session.item_kinds": ["entry", "value", "list"],
+			"theta.session.id": "session",
+			"theta.session.item_count": 2,
+			"theta.session.item_kinds": ["entry", "value", "list"],
 		} satisfies WriteStart;
 		const writeEnd = {
-			"pi.session.first_seq": 1,
-			"pi.session.last_seq": 2,
+			"theta.session.first_seq": 1,
+			"theta.session.last_seq": 2,
 		} satisfies WriteEnd;
-		expectTypeOf(writeStart["pi.session.item_count"]).toEqualTypeOf<number>();
-		expectTypeOf(writeEnd["pi.session.last_seq"]).toEqualTypeOf<number>();
+		expectTypeOf(writeStart["theta.session.item_count"]).toEqualTypeOf<number>();
+		expectTypeOf(writeEnd["theta.session.last_seq"]).toEqualTypeOf<number>();
 
 		const telemetryContext: TelemetryContext = NOOP_TELEMETRY_CONTEXT;
 		const context = withTelemetryContext(telemetryContext, BACKGROUND_CONTEXT);
 		await startHarnessSpan(
-			"pi.harness.run",
+			"theta.harness.run",
 			{
-				"pi.session.id": "session",
-				"pi.lane.name": "main",
-				"pi.operation.id": "operation",
-				"pi.operation.kind": "run",
-				"pi.operation.recovery": false,
+				"theta.session.id": "session",
+				"theta.lane.name": "main",
+				"theta.operation.id": "operation",
+				"theta.operation.kind": "run",
+				"theta.operation.recovery": false,
 			},
 			(span) => {
-				span.setAttributes({ "pi.operation.outcome": "completed" });
+				span.setAttributes({ "theta.operation.outcome": "completed" });
 				span.setAttributes({});
 				// @ts-expect-error the harness schema declares no span events
 				span.addEvent("result");
@@ -161,44 +161,45 @@ describe("agent telemetry schemas", () => {
 
 		const compileTimeFailures = () => {
 			const extraRunAttributes = {
-				"pi.session.id": "session",
-				"pi.lane.name": "main",
-				"pi.operation.id": "operation",
-				"pi.operation.kind": "run",
-				"pi.operation.recovery": false,
-				"pi.unknown": true,
+				"theta.session.id": "session",
+				"theta.lane.name": "main",
+				"theta.operation.id": "operation",
+				"theta.operation.kind": "run",
+				"theta.operation.recovery": false,
+				"theta.unknown": true,
 			} as const;
 			// @ts-expect-error variables with unknown attributes are rejected
-			void startHarnessSpan("pi.harness.run", extraRunAttributes, () => {}, context);
+			void startHarnessSpan("theta.harness.run", extraRunAttributes, () => {}, context);
 			void startHarnessSpan(
-				"pi.harness.checkpoint",
+				"theta.harness.checkpoint",
 				{
-					"pi.lane.name": "main",
-					"pi.operation.id": "operation",
-					"pi.checkpoint.kind": "normal",
+					"theta.lane.name": "main",
+					"theta.operation.id": "operation",
+					"theta.checkpoint.kind": "normal",
 				},
 				(span) => {
 					// @ts-expect-error empty end schemas reject every attribute
-					span.setAttributes({ "pi.unknown": true });
+					span.setAttributes({ "theta.unknown": true });
 				},
 				context,
 			);
 			void startHarnessSpan(
-				"pi.harness.run",
+				"theta.harness.run",
 				{
-					"pi.session.id": "session",
-					"pi.lane.name": "main",
-					"pi.operation.id": "operation",
+					"theta.session.id": "session",
+					"theta.lane.name": "main",
+					"theta.operation.id": "operation",
 					// @ts-expect-error run spans accept only the run operation kind
-					"pi.operation.kind": "navigation",
-					"pi.operation.recovery": false,
+					"theta.operation.kind": "navigation",
+					"theta.operation.recovery": false,
 				},
 				() => {},
 				context,
 			);
 			// @ts-expect-error missing required run start attributes
-			void startHarnessSpan("pi.harness.run", {}, () => {}, context);
+			void startHarnessSpan("theta.harness.run", {}, () => {}, context);
 		};
 		expectTypeOf(compileTimeFailures).toBeFunction();
 	});
 });
+

@@ -1,4 +1,4 @@
-import { contentText, type Message } from "@earendil-works/pi-ai";
+import { contentText, type Message } from "@theta/ai";
 import type { AgentMessage } from "../../types.ts";
 
 /** File paths touched by a session branch or compaction range. */
@@ -130,3 +130,4 @@ export function serializeConversation(messages: Message[]): string {
 
 	return parts.join("\n\n");
 }
+

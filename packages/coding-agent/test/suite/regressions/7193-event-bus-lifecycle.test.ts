@@ -18,9 +18,9 @@ describe("issue #7193 extension event-bus lifecycle", () => {
 		let extensionCalls = 0;
 		let hostCalls = 0;
 		let firstApi: ExtensionAPI | undefined;
-		const factory: ExtensionFactory = (pi) => {
-			firstApi ??= pi;
-			pi.events.on("reload:test", () => extensionCalls++);
+		const factory: ExtensionFactory = (theta) => {
+			firstApi ??= theta;
+			theta.events.on("reload:test", () => extensionCalls++);
 		};
 		eventBus.on("reload:test", () => hostCalls++);
 
@@ -68,3 +68,4 @@ describe("issue #7193 extension event-bus lifecycle", () => {
 		expect(await emit()).toEqual({ extension: 0, host: 1 });
 	});
 });
+

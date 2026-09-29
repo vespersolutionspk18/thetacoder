@@ -1,5 +1,5 @@
 /**
- * pi-doom platform implementation for doomgeneric
+ * theta-doom platform implementation for doomgeneric
  *
  * Minimal implementation - no sound, just framebuffer and input.
  */
@@ -70,3 +70,4 @@ int DG_GetKey(int *pressed, unsigned char *key) {
 void DG_SetWindowTitle(const char *title) {
   (void)title;
 }
+

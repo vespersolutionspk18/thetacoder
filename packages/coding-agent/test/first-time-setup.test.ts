@@ -13,7 +13,7 @@ describe("shouldRunFirstTimeSetup", () => {
 	let settingsPath: string;
 
 	beforeEach(() => {
-		tempDir = mkdtempSync(join(tmpdir(), "pi-first-time-setup-"));
+		tempDir = mkdtempSync(join(tmpdir(), "theta-first-time-setup-"));
 		settingsPath = join(tempDir, "settings.json");
 		process.env.PI_EXPERIMENTAL = "1";
 		delete process.env[ENV_AGENT_DIR];
@@ -93,3 +93,4 @@ describe("analytics settings", () => {
 		expect(manager.getTrackingId()).toBe(trackingId);
 	});
 });
+

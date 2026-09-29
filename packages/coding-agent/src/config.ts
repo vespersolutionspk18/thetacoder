@@ -338,7 +338,7 @@ export function getSelfUpdateUnavailableInstruction(
 	const method = detectInstallMethod();
 	const target = normalizeSelfUpdatePackageTarget(updatePackageTarget);
 	if (method === "bun-binary") {
-		return `Download from: https://github.com/earendil-works/pi/releases/latest`;
+		return `Download from: https://github.com/example/theta/releases/latest`;
 	}
 	const command = getSelfUpdateCommandForMethod(method, packageName, target, npmCommand);
 	if (command) {
@@ -477,13 +477,13 @@ export function getBundledInteractiveAssetPath(name: string): string {
 }
 
 // =============================================================================
-// App Config (from package.json piConfig)
+// App Config (from package.json appConfig)
 // =============================================================================
 
 interface PackageJson {
 	name?: string;
 	version?: string;
-	piConfig?: {
+	appConfig?: {
 		name?: string;
 		configDir?: string;
 	};
@@ -497,14 +497,14 @@ try {
 	if (err.code !== "ENOENT") throw e;
 }
 
-const piConfigName: string | undefined = pkg.piConfig?.name;
-export const PACKAGE_NAME: string = pkg.name || "@earendil-works/pi-coding-agent";
-export const APP_NAME: string = piConfigName || "pi";
-export const APP_TITLE: string = piConfigName ? APP_NAME : "π";
-export const CONFIG_DIR_NAME: string = pkg.piConfig?.configDir || ".pi";
+const appConfigName: string | undefined = pkg.appConfig?.name;
+export const PACKAGE_NAME: string = pkg.name || "@theta/coding-agent";
+export const APP_NAME: string = appConfigName || "theta";
+export const APP_TITLE: string = appConfigName ? APP_NAME : "π";
+export const CONFIG_DIR_NAME: string = pkg.appConfig?.configDir || ".theta";
 export const VERSION: string = pkg.version || "0.0.0";
 
-// e.g., PI_CODING_AGENT_DIR or TAU_CODING_AGENT_DIR
+// e.g., THETA_CODING_AGENT_DIR or TAU_CODING_AGENT_DIR
 export const ENV_AGENT_DIR = `${APP_NAME.toUpperCase()}_CODING_AGENT_DIR`;
 export const ENV_SESSION_DIR = `${APP_NAME.toUpperCase()}_CODING_AGENT_SESSION_DIR`;
 
@@ -512,7 +512,7 @@ export function expandTildePath(path: string): string {
 	return normalizePath(path);
 }
 
-const DEFAULT_SHARE_VIEWER_URL = "https://pi.dev/session/";
+const DEFAULT_SHARE_VIEWER_URL = "https://theta.local/session/";
 
 /** Get the share viewer URL for a gist ID. */
 export function getShareViewerUrl(gistId: string): string {
@@ -521,10 +521,10 @@ export function getShareViewerUrl(gistId: string): string {
 }
 
 // =============================================================================
-// User Config Paths (~/.pi/agent/*)
+// User Config Paths (~/.theta/agent/*)
 // =============================================================================
 
-/** Get the agent config directory (e.g., ~/.pi/agent/) */
+/** Get the agent config directory (e.g., ~/.theta/agent/) */
 export function getAgentDir(): string {
 	const envDir = process.env[ENV_AGENT_DIR];
 	if (envDir) {
@@ -577,3 +577,4 @@ export function getSessionsDir(): string {
 export function getDebugLogPath(): string {
 	return join(getAgentDir(), `${APP_NAME}-debug.log`);
 }
+

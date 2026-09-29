@@ -283,3 +283,4 @@ export declare function replica<T>(): Replica<T>;
 //   JsonValue only. No Map, Set, Date, RegExp, class instances, getters, symbol
 //   keys, or cycles. That keeps this to five traps and one string algorithm, and
 //   makes structuredClone on payloads always safe.
+

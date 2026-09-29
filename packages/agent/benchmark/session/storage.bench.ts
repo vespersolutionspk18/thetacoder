@@ -33,3 +33,4 @@ await registerWriteBenchmarks({
 		return scenario.run(storage);
 	},
 });
+

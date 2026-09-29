@@ -47,3 +47,4 @@ describe("server lifecycle", () => {
 		lifetime.stop();
 	});
 });
+

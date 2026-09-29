@@ -545,3 +545,4 @@ export class ProcessTerminal implements Terminal {
 		return true;
 	}
 }
+

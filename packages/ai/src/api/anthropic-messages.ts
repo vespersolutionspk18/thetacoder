@@ -37,10 +37,10 @@ import { appendAssistantMessageDiagnostic } from "../utils/diagnostics.ts";
 import { AssistantMessageEventStream } from "../utils/event-stream.ts";
 import { headersToRecord } from "../utils/headers.ts";
 import { parseJsonWithRepair, parseStreamingJson } from "../utils/json-parse.ts";
-import { getPiUserAgent } from "../utils/pi-user-agent.ts";
 import { getProviderEnvValue } from "../utils/provider-env.ts";
 import { retryProviderRequest } from "../utils/provider-retry.ts";
 import { sanitizeSurrogates } from "../utils/sanitize-unicode.ts";
+import { getThetaUserAgent } from "../utils/theta-user-agent.ts";
 
 import { getJsonSchemaToolParameters, resolveJsonSchemaStrictSampling } from "./constrained-sampling.ts";
 import { buildCopilotDynamicHeaders, hasCopilotVisionInput } from "./github-copilot-headers.ts";
@@ -75,6 +75,139 @@ function getCacheControl(
 		retention,
 		cacheControl: { type: "ephemeral", ...(ttl && { ttl }) },
 	};
+}
+
+// -----------------------------------------------------------------------------
+// F2 cache-plan consumption
+// -----------------------------------------------------------------------------
+// Mirrors the structural shape produced by
+// `packages/coding-agent/src/core/cache-rendering.ts`. The F2 wire-in layer
+// in `sdk.ts` is expected to attach the computed `CachePlan` to the LAST
+// user/assistant message's `details` before the provider adapter sees it.
+// When a plan is present, the adapter honours it (preserving the F2 layer's
+// choice of breakpoints) instead of falling back to the positional walker.
+
+type F2CacheMarkerPosition = "system" | "last-tool" | "last-message";
+
+interface F2CacheMarker {
+	position: F2CacheMarkerPosition;
+	type: "ephemeral";
+	ttl?: "1h";
+}
+
+interface F2CachePlan {
+	breakpoints: number[];
+	estimatedStablePrefixTokens: number;
+	estimatedVolatileSuffixTokens: number;
+	markers: Array<{ messageIndex: number; marker: F2CacheMarker }>;
+	format: "anthropic" | "openai";
+	retention: "short" | "long";
+}
+
+interface MessageWithDetails {
+	role: string;
+	details?: { cachePlan?: F2CachePlan } & Record<string, unknown>;
+}
+
+/**
+ * Scan `context.messages` backwards for the last user/assistant message and
+ * return its `details.cachePlan` if present. Returns `undefined` when no
+ * user/assistant message is found, or the most recent one does not carry a
+ * plan (in which case the caller should fall back to the positional walker).
+ */
+function findCachePlanInMessages(messages: Message[]): F2CachePlan | undefined {
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const msg = messages[i] as MessageWithDetails;
+		if (msg.role !== "user" && msg.role !== "assistant") continue;
+		const plan = msg.details?.cachePlan;
+		if (plan && typeof plan === "object" && Array.isArray(plan.markers)) {
+			return plan;
+		}
+		return undefined;
+	}
+	return undefined;
+}
+
+/**
+ * Build the set of `F2CacheMarkerPosition` values present in the plan.
+ */
+function collectPlanPositions(plan: F2CachePlan): Set<F2CacheMarkerPosition> {
+	const positions = new Set<F2CacheMarkerPosition>();
+	for (const entry of plan.markers) {
+		if (entry?.marker && typeof entry.marker.position === "string") {
+			positions.add(entry.marker.position);
+		}
+	}
+	return positions;
+}
+
+/**
+ * Apply `cache_control` markers to the wire-format request based on the F2
+ * `CachePlan`. Each unique `position` recorded in the plan is honoured.
+ * Called from `buildParams` after the system blocks, converted messages,
+ * and tool definitions have been built; the caller is responsible for
+ * suppressing the legacy positional walker when a plan is present.
+ *
+ * `retention` is the F2 plan's retention tier. `supportsLongCacheRetention`
+ * is the model's compat flag — when both are positive, `ttl: "1h"` is added.
+ */
+function applyCachePlanMarkers(
+	systemBlocks: Array<{ cache_control?: CacheControlEphemeral }> | undefined,
+	convertedMessages: MessageParam[],
+	tools: Array<{ cache_control?: CacheControlEphemeral }> | undefined,
+	plan: F2CachePlan,
+	retention: "short" | "long",
+	supportsLongCacheRetention: boolean,
+): void {
+	const ttl = retention === "long" && supportsLongCacheRetention ? "1h" : undefined;
+	const cacheControl: CacheControlEphemeral = { type: "ephemeral", ...(ttl ? { ttl } : {}) };
+
+	const positions = collectPlanPositions(plan);
+
+	if (positions.has("system") && systemBlocks) {
+		for (const block of systemBlocks) {
+			block.cache_control = cacheControl;
+		}
+	}
+	if (positions.has("last-tool") && tools && tools.length > 0) {
+		const lastTool = tools[tools.length - 1];
+		lastTool.cache_control = cacheControl;
+	}
+	if (positions.has("last-message") && convertedMessages.length > 0) {
+		// Walk backwards over the wire-format messages and apply cache_control
+		// to the last user/assistant message. Mirrors the legacy walker but
+		// also accepts assistant messages (the F2 plan's "last-message"
+		// breakpoint can land on an assistant message that contains the
+		// most recent user-facing text or tool call).
+		for (let i = convertedMessages.length - 1; i >= 0; i--) {
+			const lastMessage = convertedMessages[i];
+			if (lastMessage.role !== "user" && lastMessage.role !== "assistant") continue;
+			if (Array.isArray(lastMessage.content)) {
+				for (let j = lastMessage.content.length - 1; j >= 0; j--) {
+					const block = lastMessage.content[j];
+					if (
+						block &&
+						(block.type === "text" ||
+							block.type === "image" ||
+							block.type === "tool_use" ||
+							block.type === "tool_result")
+					) {
+						(block as { cache_control?: CacheControlEphemeral }).cache_control = cacheControl;
+						break;
+					}
+				}
+			} else if (typeof lastMessage.content === "string") {
+				lastMessage.content = [
+					{
+						type: "text",
+						text: lastMessage.content,
+						cache_control: cacheControl,
+					},
+				] as MessageParam["content"];
+			}
+			break;
+		}
+	}
 }
 
 // Stealth mode: Mimic Claude Code's tool naming exactly
@@ -286,7 +419,7 @@ function mergeHeaders(...headerSources: (ProviderHeaders | undefined)[]): Provid
 }
 
 function mergeClientHeaders(...headerSources: (ProviderHeaders | undefined)[]): ProviderHeaders {
-	return mergeHeaders({ "User-Agent": getPiUserAgent() }, ...headerSources);
+	return mergeHeaders({ "User-Agent": getThetaUserAgent() }, ...headerSources);
 }
 
 function hasHeader(headers: ProviderHeaders | undefined, name: string): boolean {
@@ -1039,6 +1172,12 @@ function buildParams(
 		deferredTools = [];
 	}
 	const deferredToolNames = new Set(deferredTools.map((tool) => normalizeToolName(tool.name)));
+	// F2 layer: look for a `cachePlan` on the last user/assistant message's
+	// `details`. When present, the plan dictates which stable breakpoints to
+	// mark and `applyCachePlanMarkers` handles all three positions in one
+	// pass; the legacy positional walker is suppressed below.
+	const cachePlan = findCachePlanInMessages(context.messages);
+	const usePlan = cachePlan !== undefined;
 	const converted = convertMessages(
 		transformedMessages,
 		isOAuthToken,
@@ -1047,6 +1186,7 @@ function buildParams(
 		deferredToolNames,
 		normalizeToolName,
 		model.compat?.supportsMidConvoEffort === true ? model.provider : undefined,
+		!usePlan, // markLastMessage: only when no plan (plan path handles it)
 	);
 	const activeEffort = options?.effort ?? "high";
 	const betaFeatures = getBetaFeatures(model, context, isOAuthToken, options);
@@ -1067,14 +1207,14 @@ function buildParams(
 			{
 				type: "text",
 				text: "You are Claude Code, Anthropic's official CLI for Claude.",
-				...(cacheControl ? { cache_control: cacheControl } : {}),
+				...(cacheControl && !usePlan ? { cache_control: cacheControl } : {}),
 			},
 		];
 		if (context.systemPrompt) {
 			params.system.push({
 				type: "text",
 				text: sanitizeSurrogates(context.systemPrompt),
-				...(cacheControl ? { cache_control: cacheControl } : {}),
+				...(cacheControl && !usePlan ? { cache_control: cacheControl } : {}),
 			});
 		}
 	} else if (context.systemPrompt) {
@@ -1083,7 +1223,7 @@ function buildParams(
 			{
 				type: "text",
 				text: sanitizeSurrogates(context.systemPrompt),
-				...(cacheControl ? { cache_control: cacheControl } : {}),
+				...(cacheControl && !usePlan ? { cache_control: cacheControl } : {}),
 			},
 		];
 	}
@@ -1105,7 +1245,7 @@ function buildParams(
 				isOAuthToken,
 				compat.supportsEagerToolInputStreaming,
 				compat.supportsStrictTools,
-				compat.supportsCacheControlOnTools ? cacheControl : undefined,
+				!usePlan && compat.supportsCacheControlOnTools ? cacheControl : undefined,
 			),
 			...convertTools(
 				deferredTools,
@@ -1171,6 +1311,20 @@ function buildParams(
 		params.fallbacks = allowedFallbackModels.map((fallback) => ({ model: fallback.model }));
 	}
 
+	// F2 plan-based cache application. When a plan is present, the legacy
+	// positional walker was suppressed above and this single call honours
+	// the plan's per-position choices (system / last-tool / last-message).
+	if (usePlan && cachePlan) {
+		applyCachePlanMarkers(
+			params.system as Array<{ cache_control?: CacheControlEphemeral }> | undefined,
+			converted.messages,
+			params.tools as Array<{ cache_control?: CacheControlEphemeral }> | undefined,
+			cachePlan,
+			cachePlan.retention,
+			compat.supportsLongCacheRetention,
+		);
+	}
+
 	return params;
 }
 
@@ -1227,6 +1381,7 @@ function convertMessages(
 	deferredToolNames: ReadonlySet<string> = new Set(),
 	normalizeToolName: (name: string) => string = (name) => name,
 	managedProvider?: string,
+	markLastMessage: boolean = true,
 ): ConvertedAnthropicMessages {
 	const params: MessageParam[] = [];
 	const assistantLevels = new Map<number, AnthropicEffort>();
@@ -1370,8 +1525,11 @@ function convertMessages(
 		}
 	}
 
-	// Add cache_control to the last user message to cache conversation history
-	if (cacheControl && params.length > 0) {
+	// Add cache_control to the last user message to cache conversation history.
+	// `markLastMessage` defaults to true (legacy positional walker). The F2
+	// plan-based path sets it to false and applies cache_control itself via
+	// `applyCachePlanMarkers` based on the plan's `last-message` marker.
+	if (markLastMessage && cacheControl && params.length > 0) {
 		const lastMessage = params[params.length - 1];
 		if (lastMessage.role === "user") {
 			if (Array.isArray(lastMessage.content)) {
@@ -1487,3 +1645,4 @@ function mapStopReason(
 			throw new Error(`Unhandled stop reason: ${reason}`);
 	}
 }
+

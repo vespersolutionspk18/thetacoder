@@ -1,4 +1,4 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
+import type { AgentTool } from "@theta/agent-core";
 import type { ExtensionContext, ToolDefinition } from "../extensions/types.ts";
 
 /** Wrap a ToolDefinition into an AgentTool for the core runtime. */
@@ -45,3 +45,4 @@ export function createToolDefinitionFromAgentTool(tool: AgentTool<any>): ToolDef
 		execute: async (toolCallId, params, signal, onUpdate) => tool.execute(toolCallId, params, signal, onUpdate),
 	};
 }
+

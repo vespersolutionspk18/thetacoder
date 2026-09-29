@@ -115,3 +115,4 @@ export function matchError<TError extends TaggedErrorValue<string>, TValue>(
 	const matcher = (matchers as unknown as Record<string, (value: TError) => TValue>)[error._tag];
 	return matcher(error);
 }
+

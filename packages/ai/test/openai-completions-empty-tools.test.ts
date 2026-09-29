@@ -4,7 +4,7 @@ import { getModel, streamSimple } from "../src/compat.ts";
 // Empty tools arrays must NOT be serialized as `tools: []` — some OpenAI-compatible
 // backends (e.g. DashScope / Aliyun Qwen via compatible-mode) reject the request with
 // `"[] is too short - 'tools'"` (HTTP 400) when `--no-tools` produces an empty array.
-// Regression for https://github.com/earendil-works/pi/issues/3649
+// Regression for https://github.com/earendil-works/theta/issues/3649
 
 const mockState = vi.hoisted(() => ({
 	lastParams: undefined as unknown,
@@ -302,3 +302,4 @@ describe("openai-completions empty tools handling", () => {
 		expect(params.tools).toEqual([]);
 	});
 });
+

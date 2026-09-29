@@ -392,3 +392,4 @@ describe("facet loader", () => {
 		await Promise.all([first.dispose(), second.dispose()]);
 	});
 });
+

@@ -1,4 +1,4 @@
-import type { TelemetryContext } from "@earendil-works/pi-telemetry";
+import type { TelemetryContext } from "@theta/telemetry";
 import type { AnthropicOptions } from "./api/anthropic-messages.ts";
 import type { AzureOpenAIResponsesOptions } from "./api/azure-openai-responses.ts";
 import type { BedrockOptions } from "./api/bedrock-converse-stream.ts";
@@ -8,7 +8,7 @@ import type { MistralOptions } from "./api/mistral-conversations.ts";
 import type { OpenAICodexResponsesOptions } from "./api/openai-codex-responses.ts";
 import type { OpenAICompletionsOptions } from "./api/openai-completions.ts";
 import type { OpenAIResponsesOptions } from "./api/openai-responses.ts";
-import type { PiMessagesOptions } from "./api/pi-messages.ts";
+import type { PiMessagesOptions } from "./api/theta-messages.ts";
 import type { AssistantMessageDiagnostic } from "./utils/diagnostics.ts";
 import type { AssistantMessageEventStream } from "./utils/event-stream.ts";
 
@@ -24,7 +24,7 @@ export type KnownApi =
 	| "bedrock-converse-stream"
 	| "google-generative-ai"
 	| "google-vertex"
-	| "pi-messages";
+	| "theta-messages";
 
 export type Api = KnownApi | (string & {});
 
@@ -186,7 +186,7 @@ export interface StreamOptions extends ProviderRequestOptions<Model<Api>> {
 	/**
 	 * Arbitrary sampling parameters merged into the request body as-is, after the named request
 	 * fields, so keys here override them. Lets custom OpenAI-compatible servers (llama.cpp, vLLM,
-	 * SGLang, ...) receive parameters pi does not model, e.g. `top_p`, `top_k`, `min_p`,
+	 * SGLang, ...) receive parameters theta does not model, e.g. `top_p`, `top_k`, `min_p`,
 	 * `repetition_penalty`. Merged over `Model.samplingParams` per key. Only applied by
 	 * OpenAI-compatible adapters (completions, responses, Azure responses); other APIs ignore it.
 	 */
@@ -250,7 +250,7 @@ export interface ApiOptionsMap {
 	"google-vertex": GoogleVertexOptions;
 	"mistral-conversations": MistralOptions;
 	"bedrock-converse-stream": BedrockOptions;
-	"pi-messages": PiMessagesOptions;
+	"theta-messages": PiMessagesOptions;
 }
 
 /**
@@ -446,6 +446,19 @@ export interface AssistantMessage {
 	 * Preserved for debugging and does not currently affect agent control flow.
 	 */
 	endTurn?: boolean;
+	/**
+	 * Optional F6 {@link ExecutionPlan} envelope attached by an extension
+	 * or by the F2 context compiler's planning layer. When set, the agent
+	 * loop dispatches the plan through the F6 `executePlan` runtime
+	 * instead of letting the model drive individual tool calls. The
+	 * shape is owned by the F6 module in the higher-level package; the
+	 * agent loop reads it structurally so it does not need to import
+	 * the F6 type directly.
+	 */
+	executionPlan?: {
+		plan: unknown;
+		steps?: unknown[];
+	};
 	timestamp: number; // Unix timestamp in milliseconds
 }
 
@@ -574,7 +587,7 @@ export interface OpenAICompletionsCompat {
 	supportsReasoningEffort?: boolean;
 	/** Whether the provider supports `stream_options: { include_usage: true }` for token usage in streaming responses. Default: true. */
 	supportsUsageInStreaming?: boolean;
-	/** Whether streamed responses include `finish_reason`. When false, pi infers `stop` or `toolUse` when the stream ends. Default: true. */
+	/** Whether streamed responses include `finish_reason`. When false, theta infers `stop` or `toolUse` when the stream ends. Default: true. */
 	supportsFinishReason?: boolean;
 	/** Which field to use for max tokens. Default: auto-detected from URL. */
 	maxTokensField?: "max_completion_tokens" | "max_tokens";
@@ -599,9 +612,9 @@ export interface OpenAICompletionsCompat {
 		| "qwen-chat-template"
 		| "string-thinking"
 		| "ant-ling";
-	/** Kwargs to send as `chat_template_kwargs` when `thinkingFormat` is `chat-template`. Use `{ "$var": "thinking.enabled" }`, `{ "$var": "thinking.effort" }`, or `{ "$var": "thinking.budget" }` for pi-controlled thinking values. */
+	/** Kwargs to send as `chat_template_kwargs` when `thinkingFormat` is `chat-template`. Use `{ "$var": "thinking.enabled" }`, `{ "$var": "thinking.effort" }`, or `{ "$var": "thinking.budget" }` for theta-controlled thinking values. */
 	chatTemplateKwargs?: Record<string, ChatTemplateKwargValue>;
-	/** Arguments to send as `chat_template_args` when `thinkingFormat` is `baseten`. Use `{ "$var": "thinking.enabled" }`, `{ "$var": "thinking.effort" }`, or `{ "$var": "thinking.budget" }` for pi-controlled thinking values. */
+	/** Arguments to send as `chat_template_args` when `thinkingFormat` is `baseten`. Use `{ "$var": "thinking.enabled" }`, `{ "$var": "thinking.effort" }`, or `{ "$var": "thinking.budget" }` for theta-controlled thinking values. */
 	chatTemplateArgs?: Record<string, ChatTemplateKwargValue>;
 	/** OpenRouter-compatible routing preferences sent as the `provider` request field. */
 	openRouterRouting?: OpenRouterRouting;
@@ -848,7 +861,7 @@ export interface Model<TApi extends Api> {
 	baseUrl: string;
 	reasoning: boolean;
 	/**
-	 * Maps pi thinking levels to provider/model-specific values.
+	 * Maps theta thinking levels to provider/model-specific values.
 	 * Missing keys use provider defaults. null marks a level as unsupported.
 	 */
 	thinkingLevelMap?: ThinkingLevelMap;
@@ -877,3 +890,4 @@ export interface ImagesModel<TApi extends ImagesApi>
 	provider: ImagesProviderId;
 	output: ("text" | "image")[];
 }
+

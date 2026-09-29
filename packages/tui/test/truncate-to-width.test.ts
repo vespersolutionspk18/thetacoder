@@ -125,3 +125,4 @@ describe("visibleWidth", () => {
 		assert.strictEqual(visibleWidth(normalizeTerminalOutput("ຳabc")), visibleWidth("ຳabc"));
 	});
 });
+

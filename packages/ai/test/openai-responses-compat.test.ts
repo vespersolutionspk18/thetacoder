@@ -597,3 +597,4 @@ describe("openai-responses max_output_tokens compat", () => {
 		expect(capturedPayload?.max_output_tokens).toBeUndefined();
 	});
 });
+

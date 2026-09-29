@@ -98,3 +98,4 @@ test("Linux loads X11 lazily and rechecks DISPLAY", { skip: !["arm64", "x64"].in
 	process.env.DISPLAY = ":1";
 	assert.equal(getNativeClipboard(), clipboard);
 });
+

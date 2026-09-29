@@ -61,3 +61,4 @@ export function withBuiltInRenderers<TDefinition extends ToolRenderers>(
 		renderResult: definition.renderResult ?? builtIn.renderResult,
 	};
 }
+

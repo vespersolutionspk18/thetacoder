@@ -1,4 +1,4 @@
-import { complete, resetApiProviders } from "@earendil-works/pi-ai/compat";
+import { complete, resetApiProviders } from "@theta/ai/compat";
 import { describe, expect, it, vi } from "vitest";
 import { AuthStorage } from "../src/core/auth-storage.ts";
 import { ModelRegistry } from "../src/core/model-registry.ts";
@@ -100,3 +100,4 @@ describe("ModelRegistry Cloudflare compat streaming", () => {
 		expect(clientOptions.defaultHeaders?.["x-api-key"]).toBeNull();
 	});
 });
+

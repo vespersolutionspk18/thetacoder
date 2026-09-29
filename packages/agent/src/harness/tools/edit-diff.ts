@@ -16,6 +16,23 @@ export function normalizeToLF(text: string): string {
 	return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
 
+/**
+ * Compute a stable content identity string for optimistic-concurrency checks.
+ * Strips BOM, LF-normalizes, then returns `length + ":" + sha256(buf as utf-8)`.
+ */
+export async function contentIdentity(content: string): Promise<string> {
+	const { text } = stripBom(content);
+	const normalized = normalizeToLF(text);
+	const buf = Buffer.from(normalized, "utf-8");
+	// Indirect the import path so browser bundlers (e.g. esbuild in
+	// scripts/check-browser-smoke.mjs) do not try to statically resolve
+	// `node:crypto` when this module is part of a browser-facing entry.
+	const moduleName = "node" + ":" + "crypto";
+	const { createHash } = (await import(/* @vite-ignore */ moduleName)) as typeof import("node:crypto");
+	const hash = createHash("sha256").update(buf).digest("hex");
+	return `${buf.length}:${hash}`;
+}
+
 export function restoreLineEndings(text: string, ending: "\r\n" | "\n"): string {
 	return ending === "\r\n" ? text.replace(/\n/g, "\r\n") : text;
 }
@@ -498,3 +515,4 @@ export function generateDiffString(
 
 	return { diff: output.join("\n"), firstChangedLine };
 }
+

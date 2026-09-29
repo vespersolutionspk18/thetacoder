@@ -62,3 +62,4 @@ PI_NAPI_EXPORT napi_value napi_register_module_v1(napi_env env, napi_value expor
     set_function_export(env, exports, "state", get_state);
     return exports;
 }
+

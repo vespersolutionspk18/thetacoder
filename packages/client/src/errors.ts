@@ -1,4 +1,4 @@
-import type { ProtocolError, ProtocolErrorCode } from "@earendil-works/pi-protocol";
+import type { ProtocolError, ProtocolErrorCode } from "@theta/protocol";
 
 export class ServerError extends Error {
 	readonly code: ProtocolErrorCode;
@@ -32,3 +32,4 @@ export function toDisconnectedError(error: unknown): DisconnectedError {
 	const cause = toError(error);
 	return cause instanceof DisconnectedError ? cause : new DisconnectedError(cause.message, cause);
 }
+

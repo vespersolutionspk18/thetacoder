@@ -203,3 +203,4 @@ async function readCredential(
 		throw new ModelsError("auth", `Credential store read failed for ${providerId}`, { cause: error });
 	}
 }
+

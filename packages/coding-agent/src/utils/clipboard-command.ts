@@ -42,3 +42,4 @@ export function runClipboardCommand(
 		child.stdin?.end(options?.input);
 	});
 }
+

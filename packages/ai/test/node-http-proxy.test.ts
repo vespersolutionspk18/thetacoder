@@ -93,3 +93,4 @@ describe("node HTTP proxy resolution", () => {
 		expect(resolveHttpProxyUrlForTarget("https://127.0.0.1:3000")?.toString()).toBe("http://proxy.example:8080/");
 	});
 });
+

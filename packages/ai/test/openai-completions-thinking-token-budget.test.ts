@@ -200,3 +200,4 @@ describe("openai-completions thinking token budget", () => {
 		expect(params.chat_template_kwargs).toEqual({ enable_thinking: false });
 	});
 });
+

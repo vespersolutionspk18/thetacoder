@@ -1,4 +1,4 @@
-import { Editor, type EditorOptions, type EditorTheme, type TUI, visibleWidth } from "@earendil-works/pi-tui";
+import { Editor, type EditorOptions, type EditorTheme, type TUI, visibleWidth } from "@theta/tui";
 import type { AppKeybinding, KeybindingsManager } from "../../../core/keybindings.ts";
 import type { StatusIndicator } from "./status-indicator.ts";
 
@@ -146,3 +146,4 @@ export class CustomEditor extends Editor {
 		super.handleInput(data);
 	}
 }
+

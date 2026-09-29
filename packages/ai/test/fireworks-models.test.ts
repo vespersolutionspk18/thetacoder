@@ -330,3 +330,4 @@ describe("Fireworks Anthropic session affinity and tool compat", () => {
 		expect(tools[0].eager_input_streaming).toBe(true);
 	});
 });
+

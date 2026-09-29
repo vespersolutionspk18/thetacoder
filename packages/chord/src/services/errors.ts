@@ -24,3 +24,4 @@ export class RemoteServiceError extends Error {
 		this.code = code;
 	}
 }
+

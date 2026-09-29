@@ -22,3 +22,4 @@ export function xaiProvider(): Provider<"openai-responses"> {
 		api: openAIResponsesApi(),
 	});
 }
+

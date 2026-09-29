@@ -210,3 +210,4 @@ export function highlight(code: string, options: HighlightOptions = {}): string 
 export function supportsLanguage(name: string): boolean {
 	return hljs.getLanguage(name) !== undefined;
 }
+

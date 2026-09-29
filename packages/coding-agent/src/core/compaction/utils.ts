@@ -2,8 +2,8 @@
  * Shared utilities for compaction and branch summarization.
  */
 
-import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import { contentText, type Message } from "@earendil-works/pi-ai";
+import type { AgentMessage } from "@theta/agent-core";
+import { contentText, type Message } from "@theta/ai";
 
 // ============================================================================
 // File Operation Tracking
@@ -150,9 +150,49 @@ export function serializeConversation(messages: Message[]): string {
 }
 
 // ============================================================================
+// Full-Request Token Estimation (audit F3)
+// ============================================================================
+
+const CHARS_PER_TOKEN = 4;
+
+/**
+ * Estimate the token cost of the stable request prefix — the system
+ * prompt plus the serialized tool schemas — for compaction budgeting.
+ *
+ * The audit (Section 10, "Budget gap") calls out that message-only
+ * estimates are not a preflight of the final serialized request: the
+ * system prompt and tool definitions ride along on every request and
+ * consume real context window. This helper closes that gap for the
+ * compaction threshold check.
+ *
+ * Tool schemas are serialized once per call with the same conservative
+ * chars/4 heuristic `estimateTokens` uses. Serialization failures fall
+ * back to 0 for the offending shape rather than throwing.
+ */
+export function estimateRequestPrefixTokens(options: {
+	systemPrompt?: string;
+	tools?: ReadonlyArray<unknown>;
+}): number {
+	let chars = 0;
+	if (options.systemPrompt) {
+		chars += options.systemPrompt.length;
+	}
+	if (options.tools && options.tools.length > 0) {
+		try {
+			chars += (JSON.stringify(options.tools) ?? "").length;
+		} catch {
+			// Unserializable tool shape: skip rather than blow up the
+			// threshold check.
+		}
+	}
+	return Math.ceil(chars / CHARS_PER_TOKEN);
+}
+
+// ============================================================================
 // Summarization System Prompt
 // ============================================================================
 
 export const SUMMARIZATION_SYSTEM_PROMPT = `You are a context summarization assistant. Your task is to read a conversation between a user and an AI assistant, then produce a structured summary following the exact format specified.
 
 Do NOT continue the conversation. Do NOT respond to any questions in the conversation. ONLY output the structured summary.`;
+

@@ -694,3 +694,4 @@ export function imageFallback(mimeType: string, dimensions?: ImageDimensions, fi
 	if (dimensions) parts.push(`${dimensions.widthPx}x${dimensions.heightPx}`);
 	return `[Image: ${parts.join(" ")}]`;
 }
+

@@ -1,4 +1,4 @@
-# pi — design handoff
+# theta — design handoff
 
 Work in numbered order. Each unit is self-contained and independently testable;
 later units consume earlier ones.
@@ -71,11 +71,12 @@ once `retireScope` replaces the per-address deletes. That is the change landing.
 
 - Node 22+ for every shipped `.ts` file. They run under
   `node --experimental-strip-types` with no build step and no dependencies.
-- In the pi repo, tests run from the package:
+- In the theta repo, tests run from the package:
   `cd packages/agent && npx vitest run --config vitest.harness.config.ts`.
-  The root vitest config does **not** alias `@earendil-works/pi-ai`; the
+  The root vitest config does **not** alias `@theta/ai`; the
   per-package harness config does.
 - Typecheck with `npx tsgo --noEmit` from the repo root. **Baseline is ~788
   pre-existing errors**, almost all in `packages/ai/test`. Count only:
   `grep "error TS" | grep -E "packages/(agent|session-backends)/src"`.
 - `packages/ai` cannot be built offline — model data is fetched at build time.
+

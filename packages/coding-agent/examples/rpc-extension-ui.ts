@@ -27,7 +27,7 @@ import {
 	SelectList,
 	type TUI,
 	TuiMainScreen,
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -639,3 +639,4 @@ main().catch((err) => {
 	console.error(err);
 	process.exit(1);
 });
+

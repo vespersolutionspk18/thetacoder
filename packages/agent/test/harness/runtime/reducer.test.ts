@@ -1,4 +1,4 @@
-import { createModels, fauxAssistantMessage, fauxProvider } from "@earendil-works/pi-ai";
+import { createModels, fauxAssistantMessage, fauxProvider } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { AgentHarness, type HarnessEvent, type LaneSnapshot } from "../../../src/harness/agent-harness.ts";
 import { BACKGROUND_CONTEXT } from "../../../src/harness/context.ts";
@@ -293,3 +293,4 @@ describe("lane snapshot reducer", () => {
 		expect(reduced).toBe("rebase");
 	});
 });
+

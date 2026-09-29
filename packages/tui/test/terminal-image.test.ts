@@ -626,9 +626,9 @@ describe("imageFallback", () => {
 	it("shortens home-prefixed absolute paths without hyperlinks", () => {
 		setCapabilities({ images: null, trueColor: false, hyperlinks: false });
 		try {
-			const abs = join(homedir(), ".pi", "agent", "shot.png");
+			const abs = join(homedir(), ".theta", "agent", "shot.png");
 			const result = imageFallback("image/png", { widthPx: 1280, heightPx: 720 }, abs);
-			assert.strictEqual(result, "[Image: ~/.pi/agent/shot.png [image/png] 1280x720]");
+			assert.strictEqual(result, "[Image: ~/.theta/agent/shot.png [image/png] 1280x720]");
 		} finally {
 			resetCapabilitiesCache();
 		}
@@ -637,7 +637,7 @@ describe("imageFallback", () => {
 	it("wraps shortened absolute paths in OSC 8 file links when hyperlinks are enabled", () => {
 		setCapabilities({ images: null, trueColor: false, hyperlinks: true });
 		try {
-			const abs = join(homedir(), ".pi", "agent", "shot.png");
+			const abs = join(homedir(), ".theta", "agent", "shot.png");
 			const result = imageFallback("image/png", { widthPx: 10, heightPx: 10 }, abs);
 			assert.ok(result.includes("\x1b]8;;file://"), "expected OSC 8 file link");
 			assert.ok(
@@ -646,7 +646,7 @@ describe("imageFallback", () => {
 			);
 			// Visible text must use ~/... not the expanded home path.
 			const visible = result.replace(/\x1b\]8;;.*?\x1b\\/g, "");
-			assert.strictEqual(visible, "[Image: ~/.pi/agent/shot.png [image/png] 10x10]");
+			assert.strictEqual(visible, "[Image: ~/.theta/agent/shot.png [image/png] 10x10]");
 		} finally {
 			resetCapabilitiesCache();
 		}
@@ -655,8 +655,8 @@ describe("imageFallback", () => {
 	it("leaves bare basenames unchanged and does not hyperlink them", () => {
 		setCapabilities({ images: null, trueColor: false, hyperlinks: true });
 		try {
-			const result = imageFallback("image/png", { widthPx: 1, heightPx: 1 }, "clankolas.png");
-			assert.strictEqual(result, "[Image: clankolas.png [image/png] 1x1]");
+			const result = imageFallback("image/png", { widthPx: 1, heightPx: 1 }, "theta.png");
+			assert.strictEqual(result, "[Image: theta.png [image/png] 1x1]");
 			assert.ok(!result.includes("\x1b]8;"), "basename must not be hyperlinked");
 		} finally {
 			resetCapabilitiesCache();
@@ -698,3 +698,4 @@ describe("hyperlink", () => {
 		assert.ok(result.includes("README.md"));
 	});
 });
+

@@ -110,3 +110,4 @@ describe("fuzzyFilter", () => {
 		assert.deepStrictEqual(result, [item]);
 	});
 });
+

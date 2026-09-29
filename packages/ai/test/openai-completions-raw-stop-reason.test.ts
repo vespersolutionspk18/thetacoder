@@ -77,3 +77,4 @@ describe("OpenAI completions raw stop reasons", () => {
 		expect(message.errorMessage).toBe("Provider finish_reason: content_filter");
 	});
 });
+

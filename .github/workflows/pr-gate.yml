@@ -126,3 +126,4 @@ jobs:
             ].join('\n');
 
             await closePullRequest(message);
+

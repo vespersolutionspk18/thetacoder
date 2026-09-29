@@ -55,3 +55,4 @@ describe("uuidv7", () => {
 		expect(() => uuidv7(timestamp)).toThrow(RangeError);
 	});
 });
+

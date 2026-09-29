@@ -13,3 +13,4 @@ export function antLingProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

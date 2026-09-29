@@ -49,3 +49,4 @@ export class AltScreenFlashContainer implements Component {
 		});
 	}
 }
+

@@ -59,7 +59,7 @@ describe("protocol validation", () => {
 				type: "request",
 				id: "request-1",
 				target: { serverId },
-				call: { serviceId: "pi.models", member: "list", args: [] },
+				call: { serviceId: "theta.models", member: "list", args: [] },
 			}),
 		).toThrow(ProtocolValidationError);
 	});
@@ -156,7 +156,7 @@ describe("protocol validation", () => {
 				type: "request",
 				id: "",
 				target: { serverId: "00000000-0000-4000-8000-000000000001" },
-				call: { serviceId: "pi.models", member: "list", args: [] },
+				call: { serviceId: "theta.models", member: "list", args: [] },
 			},
 		],
 		[
@@ -165,7 +165,7 @@ describe("protocol validation", () => {
 				type: "request",
 				id: "request-1",
 				target: { serverId: "00000000-0000-4000-8000-000000000001" },
-				call: { serviceId: "pi.models", member: "list", args: [] },
+				call: { serviceId: "theta.models", member: "list", args: [] },
 				extra: true,
 			},
 		],
@@ -231,7 +231,7 @@ describe("validated framed protocol APIs", () => {
 			type: "request",
 			id: "request-1",
 			target: { serverId: "00000000-0000-4000-8000-000000000001" },
-			call: { serviceId: "pi.session-directory", member: "list", args: [] },
+			call: { serviceId: "theta.session-directory", member: "list", args: [] },
 		};
 		const first = encodeClientMessage(clientHello);
 		const second = encodeClientMessage(request);
@@ -280,3 +280,4 @@ describe("validated framed protocol APIs", () => {
 		expect(() => oversized.push(new Uint8Array([0, 0, 0, 4]))).toThrow(ProtocolValidationError);
 	});
 });
+

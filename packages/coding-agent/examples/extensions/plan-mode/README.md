@@ -64,3 +64,4 @@ Blocked commands:
 - Package install: `npm install`, `yarn add`, `pip install`
 - System: `sudo`, `kill`, `reboot`
 - Editors: `vim`, `nano`, `code`
+

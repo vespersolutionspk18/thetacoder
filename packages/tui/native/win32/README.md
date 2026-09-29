@@ -29,3 +29,4 @@ node --test test/native-platform.test.ts
 ```
 
 This opt-in test checks native text writes and reads. **It replaces the system clipboard contents.**
+

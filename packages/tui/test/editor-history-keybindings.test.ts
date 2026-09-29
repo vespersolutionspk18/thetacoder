@@ -41,3 +41,4 @@ describe("Editor prompt history keybindings", () => {
 		assert.deepStrictEqual(editor.getCursor(), { line: 0, col: 3 });
 	});
 });
+

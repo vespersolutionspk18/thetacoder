@@ -19,3 +19,4 @@ export async function generateImages<TApi extends ImagesApi>(
 	const provider = resolveImagesApiProvider(model.api);
 	return provider.generateImages(model, context, options);
 }
+

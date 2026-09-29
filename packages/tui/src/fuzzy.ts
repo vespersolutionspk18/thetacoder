@@ -135,3 +135,4 @@ export function fuzzyFilter<T>(items: T[], query: string, getText: (item: T) => 
 	results.sort((a, b) => a.totalScore - b.totalScore);
 	return results.map((r) => r.item);
 }
+

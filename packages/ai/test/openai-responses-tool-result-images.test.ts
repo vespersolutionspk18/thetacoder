@@ -192,3 +192,4 @@ describe("Responses API tool result images", () => {
 		);
 	});
 });
+

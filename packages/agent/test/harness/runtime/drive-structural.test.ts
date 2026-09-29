@@ -1,4 +1,4 @@
-import { createModels, fauxAssistantMessage, fauxProvider, type MutableModels } from "@earendil-works/pi-ai";
+import { createModels, fauxAssistantMessage, fauxProvider, type MutableModels } from "@theta/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { HarnessEvent, WatchHandle } from "../../../src/harness/agent-harness.ts";
 import { DEFAULT_COMPACTION_SETTINGS } from "../../../src/harness/compaction/compaction.ts";
@@ -883,7 +883,7 @@ describe("runtime structural drive", () => {
 			writes.flatMap((write) =>
 				write.kind === "value" &&
 				write.op === "set" &&
-				write.namespace === "pi.op.state" &&
+				write.namespace === "theta.op.state" &&
 				typeof write.value === "object" &&
 				write.value !== null &&
 				"request" in write.value &&
@@ -898,7 +898,7 @@ describe("runtime structural drive", () => {
 		expect(requestIndices).toEqual([0, 1]);
 		expect(attempts.flat().filter((write) => write.kind === "usage")).toHaveLength(2);
 		expect(
-			attempts.flat().some((write) => write.kind === "list" && write.namespace === "pi.pending.assistant_frame"),
+			attempts.flat().some((write) => write.kind === "list" && write.namespace === "theta.pending.assistant_frame"),
 		).toBe(false);
 		expect(
 			fixture.events.some((event) => ["message_start", "message_update", "message_end"].includes(event.type)),
@@ -1233,10 +1233,10 @@ describe("runtime structural drive", () => {
 		expect(await fixture.session.getLabel("target", BACKGROUND_CONTEXT)).toBe("chosen");
 		const writes = fixture.storage.getCommitAttempts().at(-1)!;
 		expect(
-			writes.some((write) => write.kind === "value" && write.namespace === "pi.op.state" && write.op === "delete"),
+			writes.some((write) => write.kind === "value" && write.namespace === "theta.op.state" && write.op === "delete"),
 		).toBe(true);
-		expect(writes.some((write) => write.kind === "value" && write.namespace === "pi.result")).toBe(true);
-		expect(writes.some((write) => write.kind === "value" && write.namespace === "pi.lane.state")).toBe(true);
+		expect(writes.some((write) => write.kind === "value" && write.namespace === "theta.result")).toBe(true);
+		expect(writes.some((write) => write.kind === "value" && write.namespace === "theta.lane.state")).toBe(true);
 	});
 
 	it("publishes a hook navigation summary with the target parent and source identity", async () => {
@@ -1449,3 +1449,4 @@ describe("runtime structural drive", () => {
 		);
 	});
 });
+

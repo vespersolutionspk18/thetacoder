@@ -1,7 +1,8 @@
-import { type ToolResultMessage, validateToolArguments } from "@earendil-works/pi-ai";
+import { type ToolResultMessage, validateToolArguments } from "@theta/ai";
 import type { AgentToolCall, AgentToolResult } from "../../types.ts";
 import { type Context, withAbortSignal } from "../context.ts";
 import type { JsonValue } from "../session/types.ts";
+import { startHarnessSpan } from "../telemetry.ts";
 import type { AgentHarnessTool, AgentHarnessToolInvocation, AgentHarnessToolUpdateCallback } from "../types.ts";
 import type { Gate } from "./effect-gate.ts";
 
@@ -38,6 +39,18 @@ export interface ClearedToolCall<TContext extends object | undefined> {
 export interface ExecutedToolCall {
 	result: AgentToolResult<unknown>;
 	isError: boolean;
+}
+
+/** Inputs required to wrap a tool execution call in a `theta.harness.tool` span. */
+export interface ExecuteToolCallSpanContext {
+	/** Lane name carrying the tool effect. */
+	lane: string;
+	/** Durable operation id driving the tool batch. */
+	operationId: string;
+	/** Invocation-local live turn id when a turn is active. */
+	turnId?: string;
+	/** Whether this is recovery execution. */
+	recovery: boolean;
 }
 
 /** Aggregated patch from the after-tool hook pipeline. */
@@ -121,8 +134,7 @@ export function applyBeforeToolDecision<TContext extends object | undefined>(
 	}
 }
 
-/** Execute one cleared external tool effect, converting expected tool throws to error output. */
-export function executeToolCall<TContext extends object | undefined>(
+function runAdmittedToolEffect<TContext extends object | undefined>(
 	call: ClearedToolCall<TContext>,
 	gate: Gate,
 	onUpdate: AgentHarnessToolUpdateCallback<unknown>,
@@ -155,6 +167,39 @@ export function executeToolCall<TContext extends object | undefined>(
 			acceptingUpdates = false;
 		}
 	});
+}
+
+/** Execute one cleared external tool effect, converting expected tool throws to error output. */
+export function executeToolCall<TContext extends object | undefined>(
+	call: ClearedToolCall<TContext>,
+	gate: Gate,
+	onUpdate: AgentHarnessToolUpdateCallback<unknown>,
+	toolContext: TContext,
+	invocation: AgentHarnessToolInvocation,
+	context: Context,
+	span?: ExecuteToolCallSpanContext,
+): Promise<ExecutedToolCall> {
+	if (span === undefined) {
+		return runAdmittedToolEffect(call, gate, onUpdate, toolContext, invocation, context);
+	}
+	return startHarnessSpan(
+		"theta.harness.tool",
+		{
+			"theta.lane.name": span.lane,
+			"theta.operation.id": span.operationId,
+			...(span.turnId === undefined ? {} : { "theta.turn.id": span.turnId }),
+			"theta.tool.name": call.toolCall.name,
+			"theta.tool.call_id": call.toolCall.id,
+			"theta.tool.replay": call.tool.replay ?? "never",
+			"theta.tool.recovery": span.recovery,
+		},
+		async (toolSpan, spanContext) => {
+			const result = await runAdmittedToolEffect(call, gate, onUpdate, toolContext, invocation, spanContext);
+			toolSpan.setAttributes({ "theta.tool.is_error": result.isError });
+			return result;
+		},
+		context,
+	);
 }
 
 /** Apply an after-tool patch field by field. */
@@ -208,3 +253,4 @@ export function createToolResultMessage(call: FinalizedToolCall): ToolResultMess
 		timestamp: Date.now(),
 	};
 }
+

@@ -1,8 +1,9 @@
 import { readdir as fsReaddir, stat as fsStat } from "node:fs/promises";
-import type { AgentTool } from "@earendil-works/pi-agent-core";
+import type { AgentTool, ToolOutcome } from "@theta/agent-core";
 import nodePath from "path";
 import { type Static, Type } from "typebox";
 import type { ExtensionContext, ToolDefinition } from "../extensions/types.ts";
+import { boundedAll } from "../runtime-hotspots.ts";
 import { pathExists, resolveToCwd } from "./path-utils.ts";
 import { lsRenderers } from "./renderers/ls.ts";
 import { wrapToolDefinition } from "./tool-definition-wrapper.ts";
@@ -25,6 +26,8 @@ const DEFAULT_LIMIT = 500;
 export interface LsToolDetails {
 	truncation?: TruncationResult;
 	entryLimitReached?: number;
+	/** Structured outcome synthesized by the agent loop. */
+	outcome?: ToolOutcome;
 }
 
 /**
@@ -108,25 +111,32 @@ export function createLsToolDefinition(
 						// Sort alphabetically, case-insensitive.
 						entries.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
-						// Format entries with directory indicators.
+						// Stat every entry concurrently with a bounded fan-out.
+						// `boundedAll` preserves the input order, so the resulting
+						// array can be walked in alphabetical order below. Failed
+						// stats map to `null` and are skipped — same behaviour as
+						// the previous sequential loop.
+						const statResults = await boundedAll(entries, 8, async (entry) => {
+							const fullPath = nodePath.join(dirPath, entry);
+							try {
+								const entryStat = await ops.stat(fullPath);
+								return { entry, suffix: entryStat.isDirectory() ? "/" : "" };
+							} catch {
+								return null;
+							}
+						});
+
+						// Format entries with directory indicators, honouring the
+						// effective entry limit and noting when it was reached.
 						const results: string[] = [];
 						let entryLimitReached = false;
-						for (const entry of entries) {
+						for (const r of statResults) {
+							if (r === null) continue;
 							if (results.length >= effectiveLimit) {
 								entryLimitReached = true;
 								break;
 							}
-
-							const fullPath = nodePath.join(dirPath, entry);
-							let suffix = "";
-							try {
-								const entryStat = await ops.stat(fullPath);
-								if (entryStat.isDirectory()) suffix = "/";
-							} catch {
-								// Skip entries we cannot stat.
-								continue;
-							}
-							results.push(entry + suffix);
+							results.push(r.entry + r.suffix);
 						}
 
 						signal?.removeEventListener("abort", onAbort);
@@ -173,3 +183,4 @@ export function createLsToolDefinition(
 export function createLsTool(cwd: string, options?: LsToolOptions): AgentTool<typeof lsSchema> {
 	return wrapToolDefinition(createLsToolDefinition(cwd, options));
 }
+

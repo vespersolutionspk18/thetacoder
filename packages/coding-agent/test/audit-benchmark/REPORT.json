@@ -1,0 +1,2036 @@
+{
+  "repetitions": 3,
+  "totalRuns": 36,
+  "tasks": [
+    {
+      "id": "known-function-fix",
+      "label": "known-function fix"
+    },
+    {
+      "id": "unknown-bug",
+      "label": "unknown bug"
+    },
+    {
+      "id": "navigation",
+      "label": "navigation"
+    }
+  ],
+  "cells": [
+    {
+      "cell": "known-function-fix|cold|F2-on|r1",
+      "taskId": "known-function-fix",
+      "cacheMode": "cold",
+      "f2Mode": "on",
+      "runs": [
+        {
+          "cell": "known-function-fix|cold|F2-on|r1",
+          "taskId": "known-function-fix",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 1.9501999999999953,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 1,
+          "f2CacheMisses": 25
+        },
+        {
+          "cell": "known-function-fix|cold|F2-on|r2",
+          "taskId": "known-function-fix",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 0.42020000000002256,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 1,
+          "f2CacheMisses": 25
+        },
+        {
+          "cell": "known-function-fix|cold|F2-on|r3",
+          "taskId": "known-function-fix",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 0.25469999999995707,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 1,
+          "f2CacheMisses": 25
+        }
+      ],
+      "logicalInferences": {
+        "mean": 3,
+        "stddev": 0,
+        "min": 3,
+        "max": 3,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 2,
+        "stddev": 0,
+        "min": 2,
+        "max": 2,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 180,
+        "stddev": 0,
+        "min": 180,
+        "max": 180,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 43,
+        "stddev": 0,
+        "min": 43,
+        "max": 43,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 9,
+        "stddev": 0,
+        "min": 9,
+        "max": 9,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 3,
+        "stddev": 0,
+        "min": 3,
+        "max": 3,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.875033333333325,
+        "stddev": 0.9347914651585906,
+        "min": 0.25469999999995707,
+        "max": 1.9501999999999953,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 25,
+        "stddev": 0,
+        "min": 25,
+        "max": 25,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.00001458388888888875,
+        "stddev": 0.00001557985775264318,
+        "min": 0.000004244999999999284,
+        "max": 0.000032503333333333256,
+        "n": 3
+      }
+    },
+    {
+      "cell": "known-function-fix|cold|F2-off|r1",
+      "taskId": "known-function-fix",
+      "cacheMode": "cold",
+      "f2Mode": "off",
+      "runs": [
+        {
+          "cell": "known-function-fix|cold|F2-off|r1",
+          "taskId": "known-function-fix",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.13179999999999836,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "known-function-fix|cold|F2-off|r2",
+          "taskId": "known-function-fix",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.12059999999996762,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "known-function-fix|cold|F2-off|r3",
+          "taskId": "known-function-fix",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.07380000000000564,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        }
+      ],
+      "logicalInferences": {
+        "mean": 3,
+        "stddev": 0,
+        "min": 3,
+        "max": 3,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 2,
+        "stddev": 0,
+        "min": 2,
+        "max": 2,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 180,
+        "stddev": 0,
+        "min": 180,
+        "max": 180,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 43,
+        "stddev": 0,
+        "min": 43,
+        "max": 43,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 9,
+        "stddev": 0,
+        "min": 9,
+        "max": 9,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 3,
+        "stddev": 0,
+        "min": 3,
+        "max": 3,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.10873333333332387,
+        "stddev": 0.030767081976240684,
+        "min": 0.07380000000000564,
+        "max": 0.13179999999999836,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.0000018122222222220646,
+        "stddev": 5.127846996040115e-7,
+        "min": 0.0000012300000000000939,
+        "max": 0.0000021966666666666396,
+        "n": 3
+      }
+    },
+    {
+      "cell": "known-function-fix|warm|F2-on|r1",
+      "taskId": "known-function-fix",
+      "cacheMode": "warm",
+      "f2Mode": "on",
+      "runs": [
+        {
+          "cell": "known-function-fix|warm|F2-on|r1",
+          "taskId": "known-function-fix",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 0.19470000000001164,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 1,
+          "f2CacheMisses": 25
+        },
+        {
+          "cell": "known-function-fix|warm|F2-on|r2",
+          "taskId": "known-function-fix",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 0.177599999999984,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 4,
+          "f2CacheMisses": 67
+        },
+        {
+          "cell": "known-function-fix|warm|F2-on|r3",
+          "taskId": "known-function-fix",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 0.19329999999990832,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 7,
+          "f2CacheMisses": 109
+        }
+      ],
+      "logicalInferences": {
+        "mean": 3,
+        "stddev": 0,
+        "min": 3,
+        "max": 3,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 2,
+        "stddev": 0,
+        "min": 2,
+        "max": 2,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 180,
+        "stddev": 0,
+        "min": 180,
+        "max": 180,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 43,
+        "stddev": 0,
+        "min": 43,
+        "max": 43,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 9,
+        "stddev": 0,
+        "min": 9,
+        "max": 9,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 3,
+        "stddev": 0,
+        "min": 3,
+        "max": 3,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.18853333333330133,
+        "stddev": 0.009494384305111266,
+        "min": 0.177599999999984,
+        "max": 0.19470000000001164,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 4,
+        "stddev": 3,
+        "min": 1,
+        "max": 7,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 67,
+        "stddev": 42,
+        "min": 25,
+        "max": 109,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.000003142222222221689,
+        "stddev": 1.5823973841852099e-7,
+        "min": 0.0000029599999999997332,
+        "max": 0.000003245000000000194,
+        "n": 3
+      }
+    },
+    {
+      "cell": "known-function-fix|warm|F2-off|r1",
+      "taskId": "known-function-fix",
+      "cacheMode": "warm",
+      "f2Mode": "off",
+      "runs": [
+        {
+          "cell": "known-function-fix|warm|F2-off|r1",
+          "taskId": "known-function-fix",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.084699999999998,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "known-function-fix|warm|F2-off|r2",
+          "taskId": "known-function-fix",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.05889999999999418,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "known-function-fix|warm|F2-off|r3",
+          "taskId": "known-function-fix",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.06130000000007385,
+          "logicalInferences": 3,
+          "toolCalls": 2,
+          "toolResults": 2,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 719,
+          "generatedChars": 171,
+          "promptTokens": 180,
+          "generatedTokens": 43,
+          "cacheControlEmissions": 9,
+          "freshnessWarningsEmitted": 3,
+          "uniqueSourcesRead": 1,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        }
+      ],
+      "logicalInferences": {
+        "mean": 3,
+        "stddev": 0,
+        "min": 3,
+        "max": 3,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 2,
+        "stddev": 0,
+        "min": 2,
+        "max": 2,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 180,
+        "stddev": 0,
+        "min": 180,
+        "max": 180,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 43,
+        "stddev": 0,
+        "min": 43,
+        "max": 43,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 9,
+        "stddev": 0,
+        "min": 9,
+        "max": 9,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 3,
+        "stddev": 0,
+        "min": 3,
+        "max": 3,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.06830000000002201,
+        "stddev": 0.014253420642060099,
+        "min": 0.05889999999999418,
+        "max": 0.084699999999998,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.0000011383333333337001,
+        "stddev": 2.3755701070100169e-7,
+        "min": 9.816666666665697e-7,
+        "max": 0.0000014116666666666333,
+        "n": 3
+      }
+    },
+    {
+      "cell": "unknown-bug|cold|F2-on|r1",
+      "taskId": "unknown-bug",
+      "cacheMode": "cold",
+      "f2Mode": "on",
+      "runs": [
+        {
+          "cell": "unknown-bug|cold|F2-on|r1",
+          "taskId": "unknown-bug",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 0.5428999999999178,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 5,
+          "f2CacheMisses": 81
+        },
+        {
+          "cell": "unknown-bug|cold|F2-on|r2",
+          "taskId": "unknown-bug",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 0.405399999999986,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 5,
+          "f2CacheMisses": 81
+        },
+        {
+          "cell": "unknown-bug|cold|F2-on|r3",
+          "taskId": "unknown-bug",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 0.37779999999997926,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 5,
+          "f2CacheMisses": 81
+        }
+      ],
+      "logicalInferences": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 4,
+        "stddev": 0,
+        "min": 4,
+        "max": 4,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 323,
+        "stddev": 0,
+        "min": 323,
+        "max": 323,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 84,
+        "stddev": 0,
+        "min": 84,
+        "max": 84,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 15,
+        "stddev": 0,
+        "min": 15,
+        "max": 15,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.44203333333329436,
+        "stddev": 0.08843643668379501,
+        "min": 0.37779999999997926,
+        "max": 0.5428999999999178,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 81,
+        "stddev": 0,
+        "min": 81,
+        "max": 81,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.000007367222222221573,
+        "stddev": 0.0000014739406113965832,
+        "min": 0.000006296666666666321,
+        "max": 0.000009048333333331962,
+        "n": 3
+      }
+    },
+    {
+      "cell": "unknown-bug|cold|F2-off|r1",
+      "taskId": "unknown-bug",
+      "cacheMode": "cold",
+      "f2Mode": "off",
+      "runs": [
+        {
+          "cell": "unknown-bug|cold|F2-off|r1",
+          "taskId": "unknown-bug",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.22889999999995325,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "unknown-bug|cold|F2-off|r2",
+          "taskId": "unknown-bug",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.12060000000008131,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "unknown-bug|cold|F2-off|r3",
+          "taskId": "unknown-bug",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.13649999999995543,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        }
+      ],
+      "logicalInferences": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 4,
+        "stddev": 0,
+        "min": 4,
+        "max": 4,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 323,
+        "stddev": 0,
+        "min": 323,
+        "max": 323,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 84,
+        "stddev": 0,
+        "min": 84,
+        "max": 84,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 15,
+        "stddev": 0,
+        "min": 15,
+        "max": 15,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.16199999999999667,
+        "stddev": 0.05847999657998146,
+        "min": 0.12060000000008131,
+        "max": 0.22889999999995325,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.000002699999999999944,
+        "stddev": 9.746666096663575e-7,
+        "min": 0.000002010000000001355,
+        "max": 0.000003814999999999221,
+        "n": 3
+      }
+    },
+    {
+      "cell": "unknown-bug|warm|F2-on|r1",
+      "taskId": "unknown-bug",
+      "cacheMode": "warm",
+      "f2Mode": "on",
+      "runs": [
+        {
+          "cell": "unknown-bug|warm|F2-on|r1",
+          "taskId": "unknown-bug",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 0.3848999999999023,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 5,
+          "f2CacheMisses": 81
+        },
+        {
+          "cell": "unknown-bug|warm|F2-on|r2",
+          "taskId": "unknown-bug",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 1.0789999999999509,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 25,
+          "f2CacheMisses": 241
+        },
+        {
+          "cell": "unknown-bug|warm|F2-on|r3",
+          "taskId": "unknown-bug",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 0.2899999999999636,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 45,
+          "f2CacheMisses": 401
+        }
+      ],
+      "logicalInferences": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 4,
+        "stddev": 0,
+        "min": 4,
+        "max": 4,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 323,
+        "stddev": 0,
+        "min": 323,
+        "max": 323,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 84,
+        "stddev": 0,
+        "min": 84,
+        "max": 84,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 15,
+        "stddev": 0,
+        "min": 15,
+        "max": 15,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.5846333333332723,
+        "stddev": 0.4307555029635016,
+        "min": 0.2899999999999636,
+        "max": 1.0789999999999509,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 25,
+        "stddev": 20,
+        "min": 5,
+        "max": 45,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 241,
+        "stddev": 160,
+        "min": 81,
+        "max": 401,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.000009743888888887871,
+        "stddev": 0.000007179258382725027,
+        "min": 0.000004833333333332727,
+        "max": 0.000017983333333332515,
+        "n": 3
+      }
+    },
+    {
+      "cell": "unknown-bug|warm|F2-off|r1",
+      "taskId": "unknown-bug",
+      "cacheMode": "warm",
+      "f2Mode": "off",
+      "runs": [
+        {
+          "cell": "unknown-bug|warm|F2-off|r1",
+          "taskId": "unknown-bug",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.12140000000010787,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "unknown-bug|warm|F2-off|r2",
+          "taskId": "unknown-bug",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.07579999999995835,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "unknown-bug|warm|F2-off|r3",
+          "taskId": "unknown-bug",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.07320000000004256,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 0,
+          "incorrectRepositoryClaims": 0,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 1291,
+          "generatedChars": 336,
+          "promptTokens": 323,
+          "generatedTokens": 84,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 1,
+          "uniqueSourcesRead": 2,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        }
+      ],
+      "logicalInferences": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 4,
+        "stddev": 0,
+        "min": 4,
+        "max": 4,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 323,
+        "stddev": 0,
+        "min": 323,
+        "max": 323,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 84,
+        "stddev": 0,
+        "min": 84,
+        "max": 84,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 15,
+        "stddev": 0,
+        "min": 15,
+        "max": 15,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.09013333333336959,
+        "stddev": 0.027108916122497082,
+        "min": 0.07320000000004256,
+        "max": 0.12140000000010787,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.0000015022222222228265,
+        "stddev": 4.5181526870828463e-7,
+        "min": 0.0000012200000000007094,
+        "max": 0.000002023333333335131,
+        "n": 3
+      }
+    },
+    {
+      "cell": "navigation|cold|F2-on|r1",
+      "taskId": "navigation",
+      "cacheMode": "cold",
+      "f2Mode": "on",
+      "runs": [
+        {
+          "cell": "navigation|cold|F2-on|r1",
+          "taskId": "navigation",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 0.4017000000000053,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 5,
+          "f2CacheMisses": 65
+        },
+        {
+          "cell": "navigation|cold|F2-on|r2",
+          "taskId": "navigation",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 0.2726000000000113,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 5,
+          "f2CacheMisses": 65
+        },
+        {
+          "cell": "navigation|cold|F2-on|r3",
+          "taskId": "navigation",
+          "cacheMode": "cold",
+          "f2Mode": "on",
+          "wallClockMs": 0.23820000000000618,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 5,
+          "f2CacheMisses": 65
+        }
+      ],
+      "logicalInferences": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 4,
+        "stddev": 0,
+        "min": 4,
+        "max": 4,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 196,
+        "stddev": 0,
+        "min": 196,
+        "max": 196,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 77,
+        "stddev": 0,
+        "min": 77,
+        "max": 77,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 15,
+        "stddev": 0,
+        "min": 15,
+        "max": 15,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.30416666666667425,
+        "stddev": 0.08619978731605481,
+        "min": 0.23820000000000618,
+        "max": 0.4017000000000053,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 65,
+        "stddev": 0,
+        "min": 65,
+        "max": 65,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.00000506944444444457,
+        "stddev": 0.0000014366631219342465,
+        "min": 0.0000039700000000001034,
+        "max": 0.0000066950000000000875,
+        "n": 3
+      }
+    },
+    {
+      "cell": "navigation|cold|F2-off|r1",
+      "taskId": "navigation",
+      "cacheMode": "cold",
+      "f2Mode": "off",
+      "runs": [
+        {
+          "cell": "navigation|cold|F2-off|r1",
+          "taskId": "navigation",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.08500000000003638,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "navigation|cold|F2-off|r2",
+          "taskId": "navigation",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.07670000000007349,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "navigation|cold|F2-off|r3",
+          "taskId": "navigation",
+          "cacheMode": "cold",
+          "f2Mode": "off",
+          "wallClockMs": 0.07719999999994798,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        }
+      ],
+      "logicalInferences": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 4,
+        "stddev": 0,
+        "min": 4,
+        "max": 4,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 196,
+        "stddev": 0,
+        "min": 196,
+        "max": 196,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 77,
+        "stddev": 0,
+        "min": 77,
+        "max": 77,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 15,
+        "stddev": 0,
+        "min": 15,
+        "max": 15,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.07963333333335261,
+        "stddev": 0.00465438861005821,
+        "min": 0.07670000000007349,
+        "max": 0.08500000000003638,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.0000013272222222225434,
+        "stddev": 7.757314350097018e-8,
+        "min": 0.0000012783333333345581,
+        "max": 0.000001416666666667273,
+        "n": 3
+      }
+    },
+    {
+      "cell": "navigation|warm|F2-on|r1",
+      "taskId": "navigation",
+      "cacheMode": "warm",
+      "f2Mode": "on",
+      "runs": [
+        {
+          "cell": "navigation|warm|F2-on|r1",
+          "taskId": "navigation",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 0.3269999999999982,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 5,
+          "f2CacheMisses": 65
+        },
+        {
+          "cell": "navigation|warm|F2-on|r2",
+          "taskId": "navigation",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 0.4619999999999891,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 25,
+          "f2CacheMisses": 195
+        },
+        {
+          "cell": "navigation|warm|F2-on|r3",
+          "taskId": "navigation",
+          "cacheMode": "warm",
+          "f2Mode": "on",
+          "wallClockMs": 0.25540000000000873,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 45,
+          "f2CacheMisses": 325
+        }
+      ],
+      "logicalInferences": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 4,
+        "stddev": 0,
+        "min": 4,
+        "max": 4,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 196,
+        "stddev": 0,
+        "min": 196,
+        "max": 196,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 77,
+        "stddev": 0,
+        "min": 77,
+        "max": 77,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 15,
+        "stddev": 0,
+        "min": 15,
+        "max": 15,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.348133333333332,
+        "stddev": 0.10490878577760454,
+        "min": 0.25540000000000873,
+        "max": 0.4619999999999891,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 25,
+        "stddev": 20,
+        "min": 5,
+        "max": 45,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 195,
+        "stddev": 130,
+        "min": 65,
+        "max": 325,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.0000058022222222222,
+        "stddev": 0.0000017484797629600754,
+        "min": 0.0000042566666666668125,
+        "max": 0.000007699999999999818,
+        "n": 3
+      }
+    },
+    {
+      "cell": "navigation|warm|F2-off|r1",
+      "taskId": "navigation",
+      "cacheMode": "warm",
+      "f2Mode": "off",
+      "runs": [
+        {
+          "cell": "navigation|warm|F2-off|r1",
+          "taskId": "navigation",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.09199999999998454,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "navigation|warm|F2-off|r2",
+          "taskId": "navigation",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.06090000000006057,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        },
+        {
+          "cell": "navigation|warm|F2-off|r3",
+          "taskId": "navigation",
+          "cacheMode": "warm",
+          "f2Mode": "off",
+          "wallClockMs": 0.06219999999996162,
+          "logicalInferences": 5,
+          "toolCalls": 4,
+          "toolResults": 4,
+          "failedEdits": 1,
+          "incorrectRepositoryClaims": 1,
+          "redundantSourceDeliveries": 0,
+          "promptChars": 781,
+          "generatedChars": 308,
+          "promptTokens": 196,
+          "generatedTokens": 77,
+          "cacheControlEmissions": 15,
+          "freshnessWarningsEmitted": 0,
+          "uniqueSourcesRead": 3,
+          "completed": true,
+          "f2CacheHits": 0,
+          "f2CacheMisses": 0
+        }
+      ],
+      "logicalInferences": {
+        "mean": 5,
+        "stddev": 0,
+        "min": 5,
+        "max": 5,
+        "n": 3
+      },
+      "toolCalls": {
+        "mean": 4,
+        "stddev": 0,
+        "min": 4,
+        "max": 4,
+        "n": 3
+      },
+      "failedEdits": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "incorrectRepositoryClaims": {
+        "mean": 1,
+        "stddev": 0,
+        "min": 1,
+        "max": 1,
+        "n": 3
+      },
+      "redundantSourceDeliveries": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "promptTokens": {
+        "mean": 196,
+        "stddev": 0,
+        "min": 196,
+        "max": 196,
+        "n": 3
+      },
+      "generatedTokens": {
+        "mean": 77,
+        "stddev": 0,
+        "min": 77,
+        "max": 77,
+        "n": 3
+      },
+      "cacheControlEmissions": {
+        "mean": 15,
+        "stddev": 0,
+        "min": 15,
+        "max": 15,
+        "n": 3
+      },
+      "freshnessWarningsEmitted": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMs": {
+        "mean": 0.07170000000000225,
+        "stddev": 0.01759232787323487,
+        "min": 0.06090000000006057,
+        "max": 0.09199999999998454,
+        "n": 3
+      },
+      "f2CacheHits": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "f2CacheMisses": {
+        "mean": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "n": 3
+      },
+      "wallClockMinPerTask": {
+        "mean": 0.0000011950000000000375,
+        "stddev": 2.932054645539146e-7,
+        "min": 0.0000010150000000010095,
+        "max": 0.0000015333333333330757,
+        "n": 3
+      }
+    }
+  ]
+}

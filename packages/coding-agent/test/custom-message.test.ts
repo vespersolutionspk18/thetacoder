@@ -1,4 +1,4 @@
-import { Text } from "@earendil-works/pi-tui";
+import { Text } from "@theta/tui";
 import { describe, expect, test } from "vitest";
 import type { MessageRenderer, MessageRenderOptions } from "../src/core/extensions/types.ts";
 import type { CustomMessage } from "../src/core/messages.ts";
@@ -42,3 +42,4 @@ describe("CustomMessageComponent", () => {
 		).toBe(true);
 	});
 });
+

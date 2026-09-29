@@ -819,3 +819,4 @@ export async function runRpcMode(runtimeHost: AgentSessionRuntime): Promise<neve
 	// Keep process alive forever
 	return new Promise(() => {});
 }
+

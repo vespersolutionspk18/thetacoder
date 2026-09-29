@@ -22,3 +22,4 @@ export function cleanupSessionResources(sessionId?: string): void {
 		throw new AggregateError(errors, "Failed to cleanup session resources");
 	}
 }
+

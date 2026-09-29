@@ -615,3 +615,4 @@ the beginning.
 Address interning in the JSONL log is the same trick as path interning, applied
 one layer up over `namespace` + `key`. It is **not** an open question — it is
 specified in [scopes.md](../02-scopes/scopes.md) §12 and is a separate dictionary from this one.
+

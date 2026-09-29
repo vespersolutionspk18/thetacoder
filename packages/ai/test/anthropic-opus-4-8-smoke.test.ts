@@ -69,3 +69,4 @@ describe.skipIf(!process.env.ANTHROPIC_API_KEY)("Anthropic Opus 4.8 smoke", () =
 		expect(text).toBe("sum=353418362; divisibleBy11=yes");
 	});
 });
+

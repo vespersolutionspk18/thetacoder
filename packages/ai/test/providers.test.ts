@@ -627,3 +627,4 @@ describe("fauxProvider", () => {
 		});
 	});
 });
+

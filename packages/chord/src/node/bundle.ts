@@ -94,7 +94,7 @@ async function bundleEntry(input: {
 		define: input.options.define,
 		entryNames: `${entryPrefix}-[hash]`,
 		entryPoints: [input.source],
-		external: [...new Set(["@earendil-works/chord", "@earendil-works/chord/*", ...(input.options.external ?? [])])],
+		external: [...new Set(["@theta/chord", "@theta/chord/*", ...(input.options.external ?? [])])],
 		format: "cjs",
 		legalComments: "none",
 		logLevel: "silent",
@@ -220,3 +220,4 @@ function isMissingPath(error: unknown): boolean {
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+

@@ -156,3 +156,4 @@ function sameAddress(left: ServiceInstanceAddress | undefined, right: ServiceIns
 function describeState(instance: ServiceInstanceAddress | undefined, member: string): string {
 	return instance === undefined ? member : `${instance.key}@${instance.generation}.${member}`;
 }
+

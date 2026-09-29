@@ -43,3 +43,4 @@ export function appendAssistantMessageDiagnostic<T extends { diagnostics?: Assis
 ): void {
 	message.diagnostics = [...(message.diagnostics ?? []), diagnostic];
 }
+

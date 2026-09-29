@@ -128,3 +128,4 @@ editor.onSubmit = (value: string) => {
 
 // Start the TUI
 tui.start();
+

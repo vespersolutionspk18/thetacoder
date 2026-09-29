@@ -166,3 +166,4 @@ export function markCompletedSteps(text: string, items: TodoItem[]): number {
 	}
 	return doneSteps.length;
 }
+

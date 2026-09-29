@@ -1,4 +1,4 @@
-import type { Context, ContextKey } from "@earendil-works/chord";
+import type { Context, ContextKey } from "@theta/chord";
 import {
 	awaitWithContext,
 	BACKGROUND_CONTEXT,
@@ -8,8 +8,8 @@ import {
 	withCancel,
 	withContextValue,
 	withoutAbortSignal,
-} from "@earendil-works/chord/context";
-import { NOOP_TELEMETRY_CONTEXT, type TelemetryContext } from "@earendil-works/pi-telemetry";
+} from "@theta/chord/context";
+import { NOOP_TELEMETRY_CONTEXT, type TelemetryContext } from "@theta/telemetry";
 
 export {
 	awaitWithContext,
@@ -24,7 +24,7 @@ export {
 	withoutAbortSignal,
 };
 
-const TELEMETRY_CONTEXT_KEY = createContextKey<TelemetryContext>("pi.telemetryContext");
+const TELEMETRY_CONTEXT_KEY = createContextKey<TelemetryContext>("theta.telemetryContext");
 
 /** Return the telemetry parent attached to a context, or the shared no-op parent. */
 export function getTelemetryContext(context: Context): TelemetryContext {
@@ -35,3 +35,4 @@ export function getTelemetryContext(context: Context): TelemetryContext {
 export function withTelemetryContext(telemetryContext: TelemetryContext, context: Context): Context {
 	return withContextValue(TELEMETRY_CONTEXT_KEY, telemetryContext, context);
 }
+

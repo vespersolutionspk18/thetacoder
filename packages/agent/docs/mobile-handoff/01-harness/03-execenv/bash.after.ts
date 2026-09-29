@@ -170,3 +170,4 @@ export function createBashTool<TContext extends ExecutionToolContext = Execution
 		},
 	};
 }
+

@@ -1,7 +1,7 @@
-import { uuidv7 } from "@earendil-works/pi-ai";
-import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-import { DynamicBorder, getMarkdownTheme } from "@earendil-works/pi-coding-agent";
-import { Container, Markdown, matchesKey, Text } from "@earendil-works/pi-tui";
+import { uuidv7 } from "@theta/ai";
+import type { ExtensionAPI, ExtensionCommandContext } from "@theta/coding-agent";
+import { DynamicBorder, getMarkdownTheme } from "@theta/coding-agent";
+import { Container, Markdown, matchesKey, Text } from "@theta/tui";
 
 type ContentBlock = {
 	type?: string;
@@ -142,8 +142,8 @@ const showSummaryUi = async (summary: string, ctx: ExtensionCommandContext) => {
 	});
 };
 
-export default function (pi: ExtensionAPI) {
-	pi.registerCommand("summarize", {
+export default function (theta: ExtensionAPI) {
+	theta.registerCommand("summarize", {
 		description: "Summarize the current conversation in a custom UI",
 		handler: async (_args, ctx) => {
 			const branch = ctx.sessionManager.getBranch();
@@ -197,3 +197,4 @@ export default function (pi: ExtensionAPI) {
 		},
 	});
 }
+

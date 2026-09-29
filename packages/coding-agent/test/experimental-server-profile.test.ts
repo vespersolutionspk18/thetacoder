@@ -79,3 +79,4 @@ describe("experimental server profile", () => {
 		await expect(acquireServerProfile(directory, "invalid")).rejects.toThrow("Invalid experimental server ID");
 	});
 });
+

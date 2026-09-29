@@ -1,5 +1,5 @@
-import type { ServiceSubscriptionSnapshot } from "@earendil-works/chord";
-import type { RpcTarget, SessionTarget } from "@earendil-works/pi-protocol";
+import type { ServiceSubscriptionSnapshot } from "@theta/chord";
+import type { RpcTarget, SessionTarget } from "@theta/protocol";
 import type { ByteTransportFactory } from "./transport.ts";
 
 export type ConnectionState = "disconnected" | "connecting" | "connected";
@@ -30,3 +30,4 @@ export interface ClientOptions {
 	/** Reports subscriber failures without allowing them to corrupt client state. */
 	onListenerError?: ListenerErrorHandler;
 }
+

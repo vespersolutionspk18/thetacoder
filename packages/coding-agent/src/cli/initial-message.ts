@@ -1,4 +1,4 @@
-import type { ImageContent } from "@earendil-works/pi-ai";
+import type { ImageContent } from "@theta/ai";
 import type { Args } from "./args.ts";
 
 export interface InitialMessageInput {
@@ -41,3 +41,4 @@ export function buildInitialMessage({
 		initialImages: fileImages && fileImages.length > 0 ? fileImages : undefined,
 	};
 }
+

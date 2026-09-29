@@ -1,7 +1,7 @@
 import { applyPatch } from "diff";
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
-import { join } from "path";
+import { basename, join } from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { executeBashWithOperations } from "../src/core/bash-executor.ts";
 import type { ExtensionContext } from "../src/core/extensions/types.ts";
@@ -88,7 +88,9 @@ describe("Coding Agent Tools", () => {
 			expect(getTextOutput(result)).toBe(content);
 			// No truncation message since file fits within limits
 			expect(getTextOutput(result)).not.toContain("Use offset=");
-			expect(result.details).toBeUndefined();
+			// contentIdentity is always returned so the model can pass it back as
+			// expectedVersion on a subsequent edit/write to detect concurrent modifications.
+			expect(result.details?.contentIdentity).toBeTypeOf("string");
 		});
 
 		it("should handle non-existent files", async () => {
@@ -257,7 +259,9 @@ describe("Coding Agent Tools", () => {
 			const result = await writeTool.execute("test-call-3", { path: testFile, content });
 
 			expect(getTextOutput(result)).toBe(`Successfully wrote to ${testFile}`);
-			expect(result.details).toBeUndefined();
+			expect(result.details).toBeDefined();
+			expect(typeof result.details?.contentIdentity).toBe("string");
+			expect(result.details?.contentIdentity).toBeTruthy();
 		});
 
 		it("should create parent directories", async () => {
@@ -432,7 +436,7 @@ describe("Coding Agent Tools", () => {
 			expect(readFileSync(testFile, "utf-8")).toBe(originalContent);
 		});
 
-		it("should include EACCES for read-only files", async () => {
+		it.skipIf(process.platform === "win32")("should include EACCES for read-only files", async () => {
 			const testFile = join(testDir, "edit-readonly.txt");
 			writeFileSync(testFile, "hello\n");
 			chmodSync(testFile, 0o444);
@@ -471,15 +475,18 @@ describe("Coding Agent Tools", () => {
 			expect(result).toEqual({ error: `Could not edit file: ${missingFile}. Error code: ENOENT.` });
 		});
 
-		it("should include EACCES in diff preview for unreadable files", async () => {
-			const unreadableFile = join(testDir, "unreadable-preview.txt");
-			writeFileSync(unreadableFile, "hello\n");
-			chmodSync(unreadableFile, 0o222);
+		it.skipIf(process.platform === "win32")(
+			"should include EACCES in diff preview for unreadable files",
+			async () => {
+				const unreadableFile = join(testDir, "unreadable-preview.txt");
+				writeFileSync(unreadableFile, "hello\n");
+				chmodSync(unreadableFile, 0o222);
 
-			const result = await computeEditsDiff(unreadableFile, [{ oldText: "hello", newText: "world" }], testDir);
+				const result = await computeEditsDiff(unreadableFile, [{ oldText: "hello", newText: "world" }], testDir);
 
-			expect(result).toEqual({ error: `Could not edit file: ${unreadableFile}. Error code: EACCES.` });
-		});
+				expect(result).toEqual({ error: `Could not edit file: ${unreadableFile}. Error code: EACCES.` });
+			},
+		);
 	});
 
 	describe("bash tool", () => {
@@ -816,7 +823,10 @@ describe("Coding Agent Tools", () => {
 
 		it("should treat flag-like patterns as search text", async () => {
 			const marker = join(testDir, "grep-injection-marker");
-			const payload = join(testDir, "payload.sh");
+			// On Windows, backslashes in the path would be parsed by ripgrep as
+			// regex escapes and break the search; normalize to forward slashes
+			// so the pattern stays a literal string.
+			const payload = join(testDir, "payload.sh").replace(/\\/g, "/");
 			const testFile = join(testDir, "target.txt");
 			writeFileSync(payload, `#!/bin/sh\necho executed > ${marker}\ncat "$1"\n`);
 			chmodSync(payload, 0o755);
@@ -1007,7 +1017,10 @@ describe("tool cwd resolution", () => {
 			fakeCtx(testDir),
 		);
 		const output = getTextOutput(result);
-		expect(output).toContain(testDir);
+		// On Windows, MSYS bash auto-mounts `/tmp` to the user's temp dir, so
+		// `pwd` reports `/tmp/<rest>` instead of the literal `testDir` path.
+		// The directory's basename is identical in both forms, so use it.
+		expect(output).toContain(basename(testDir));
 	});
 });
 
@@ -1045,12 +1058,12 @@ describe("edit tool fuzzy matching", () => {
 
 		const result = await editTool.execute("test-fuzzy-chinese", {
 			path: testFile,
-			edits: [{ oldText: "你好,世界\n你好(世界)\n", newText: "你好，pi\n你好(pi)\n" }],
+			edits: [{ oldText: "你好,世界\n你好(世界)\n", newText: "你好，theta\n你好(theta)\n" }],
 		});
 
 		expect(getTextOutput(result)).toContain("Successfully replaced");
 		const content = readFileSync(testFile, "utf-8");
-		expect(content).toBe("你好，pi\n你好(pi)\n");
+		expect(content).toBe("你好，theta\n你好(theta)\n");
 	});
 
 	it("should match compatibility-equivalent Unicode forms", async () => {
@@ -1331,3 +1344,4 @@ describe("edit tool CRLF handling", () => {
 		expect(content).toBe("\uFEFFfirst\r\nSECOND\r\nthird\r\nFOURTH\r\n");
 	});
 });
+

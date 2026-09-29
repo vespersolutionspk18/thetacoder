@@ -284,3 +284,4 @@ class BufferedEventWatcher<T> implements WatchHandle<T> {
 			});
 	}
 }
+

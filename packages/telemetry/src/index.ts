@@ -355,3 +355,4 @@ export function createTypedSpanStarter<const Schemas extends TelemetrySchemaTupl
 
 export type { RecordedTelemetryEvent, RecordedTelemetrySpan } from "./memory.ts";
 export { InMemoryTelemetryContext } from "./memory.ts";
+

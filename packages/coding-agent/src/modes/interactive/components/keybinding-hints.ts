@@ -2,7 +2,7 @@
  * Utilities for formatting keybinding hints in the UI.
  */
 
-import { getKeybindings, type Keybinding, type KeyId } from "@earendil-works/pi-tui";
+import { getKeybindings, type Keybinding, type KeyId } from "@theta/tui";
 import { theme } from "../theme/theme.ts";
 
 export interface KeyTextFormatOptions {
@@ -46,3 +46,4 @@ export function keyHint(keybinding: Keybinding, description: string): string {
 export function rawKeyHint(key: string, description: string): string {
 	return theme.fg("dim", formatKeyText(key)) + theme.fg("muted", ` ${description}`);
 }
+

@@ -1,16 +1,6 @@
 import { createConnection, type Socket } from "node:net";
 import { isAbsolute } from "node:path";
 import {
-	isJsonValue,
-	type JsonValue,
-	parseServiceProviderUpdate,
-	REMOTE_SERVICE_ERROR_CODES,
-	RemoteServiceError,
-	type RemoteServiceErrorCode,
-	type ServiceCall,
-	type ServiceProviderUpdate,
-} from "@earendil-works/chord";
-import {
 	AgentHarness,
 	type AgentHarness as AgentHarnessInstance,
 	type AgentLane,
@@ -23,8 +13,18 @@ import {
 	type Session,
 	TODO_CONTEXT,
 	withCancel,
-} from "@earendil-works/pi-agent-core";
-import { NodeExecutionEnv } from "@earendil-works/pi-agent-core/node";
+} from "@theta/agent-core";
+import { NodeExecutionEnv } from "@theta/agent-core/node";
+import {
+	isJsonValue,
+	type JsonValue,
+	parseServiceProviderUpdate,
+	REMOTE_SERVICE_ERROR_CODES,
+	RemoteServiceError,
+	type RemoteServiceErrorCode,
+	type ServiceCall,
+	type ServiceProviderUpdate,
+} from "@theta/chord";
 import lockfile from "proper-lockfile";
 import Type, { type Static } from "typebox";
 import { Check } from "typebox/value";
@@ -882,3 +882,4 @@ if (isDirectInternalProcessEntry(import.meta.url)) {
 	}
 	void runSessionWorkerProcess(process.argv.slice(2)).catch(() => process.exit(1));
 }
+

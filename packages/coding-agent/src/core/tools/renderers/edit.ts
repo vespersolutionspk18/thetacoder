@@ -6,7 +6,7 @@
  * definition, so the tool's public shape is unchanged.
  */
 
-import { Box, Container, Spacer, Text } from "@earendil-works/pi-tui";
+import { Box, Container, Spacer, Text } from "@theta/tui";
 import { renderDiff } from "../../../modes/interactive/components/diff.ts";
 import type { Theme } from "../../../modes/interactive/theme/theme.ts";
 import type { ToolDefinition } from "../../extensions/types.ts";
@@ -24,6 +24,7 @@ type RenderableEditArgs = {
 	edits?: Edit[];
 	oldText?: string;
 	newText?: string;
+	expectedVersion?: string;
 };
 type EditToolResultLike = {
 	content: Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
@@ -56,7 +57,9 @@ function getEditCallRenderComponent(state: EditRenderState, lastComponent: unkno
 	state.callComponent = component;
 	return component;
 }
-function getRenderablePreviewInput(args: RenderableEditArgs | undefined): { path: string; edits: Edit[] } | null {
+function getRenderablePreviewInput(
+	args: RenderableEditArgs | undefined,
+): { path: string; edits: Edit[]; expectedVersion?: string } | null {
 	if (!args) {
 		return null;
 	}
@@ -66,16 +69,18 @@ function getRenderablePreviewInput(args: RenderableEditArgs | undefined): { path
 		return null;
 	}
 
+	const expectedVersion = typeof args.expectedVersion === "string" ? args.expectedVersion : undefined;
+
 	if (
 		Array.isArray(args.edits) &&
 		args.edits.length > 0 &&
 		args.edits.every((edit) => typeof edit?.oldText === "string" && typeof edit?.newText === "string")
 	) {
-		return { path, edits: args.edits };
+		return { path, edits: args.edits, expectedVersion };
 	}
 
 	if (typeof args.oldText === "string" && typeof args.newText === "string") {
-		return { path, edits: [{ oldText: args.oldText, newText: args.newText }] };
+		return { path, edits: [{ oldText: args.oldText, newText: args.newText }], expectedVersion };
 	}
 
 	return null;
@@ -184,12 +189,14 @@ export const editRenderers: Pick<ToolDefinition<any, any>, "renderCall" | "rende
 		if (context.argsComplete && previewInput && !component.preview && !component.previewPending) {
 			component.previewPending = true;
 			const requestKey = argsKey;
-			void computeEditsDiff(previewInput.path, previewInput.edits, context.cwd).then((preview) => {
-				if (component.previewArgsKey === requestKey) {
-					setEditPreview(component, preview, requestKey);
-					context.invalidate();
-				}
-			});
+			void computeEditsDiff(previewInput.path, previewInput.edits, context.cwd, previewInput.expectedVersion).then(
+				(preview) => {
+					if (component.previewArgsKey === requestKey) {
+						setEditPreview(component, preview, requestKey);
+						context.invalidate();
+					}
+				},
+			);
 		}
 
 		return buildEditCallComponent(component, args as RenderableEditArgs | undefined, theme, context.cwd);
@@ -236,3 +243,4 @@ export const editRenderers: Pick<ToolDefinition<any, any>, "renderCall" | "rende
 		return component;
 	},
 };
+

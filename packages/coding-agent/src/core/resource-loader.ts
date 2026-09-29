@@ -1095,3 +1095,4 @@ export class DefaultResourceLoader implements ResourceLoader {
 		return conflicts;
 	}
 }
+

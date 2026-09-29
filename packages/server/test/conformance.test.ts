@@ -1,5 +1,5 @@
-import type { ServiceCall } from "@earendil-works/chord";
-import { BACKGROUND_CONTEXT, type SessionMetadata } from "@earendil-works/pi-agent-core";
+import { BACKGROUND_CONTEXT, type SessionMetadata } from "@theta/agent-core";
+import type { ServiceCall } from "@theta/chord";
 import { afterEach, describe, expect, test } from "vitest";
 import type { ByteConnection, ByteConnectionHandler } from "../src/connection.ts";
 import { SessionAmbiguousError } from "../src/errors.ts";
@@ -141,7 +141,7 @@ describe("Session protocol", () => {
 				attachClient(presentation) {
 					return {
 						async invokeService(call, _publish, context) {
-							if (call.serviceId !== "pi.session-management") throw new Error("Unexpected service");
+							if (call.serviceId !== "theta.session-management") throw new Error("Unexpected service");
 							if (call.member === "attach" && typeof call.args[0] === "string") {
 								await presentation.attachSession(call.args[0], context);
 								return null;
@@ -171,7 +171,7 @@ describe("Session protocol", () => {
 
 		const detached = client.next((message) => message.type === "attachment" && message.attachment === null);
 		await expect(
-			client.requestService({ serverId }, { serviceId: "pi.session-management", member: "detach", args: [] }),
+			client.requestService({ serverId }, { serviceId: "theta.session-management", member: "detach", args: [] }),
 		).resolves.toMatchObject({ ok: true });
 		await expect(detached).resolves.toMatchObject({ type: "attachment", attachment: null });
 		expect(backing.latestHarness("session-1").attachedClients).toBe(0);
@@ -500,3 +500,4 @@ describe("routed Session acquisition failures", () => {
 		await host.latestHarness("session-1").close(BACKGROUND_CONTEXT);
 	});
 });
+

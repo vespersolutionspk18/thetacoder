@@ -9,7 +9,7 @@ import {
 	type SelectListLayoutOptions,
 	Spacer,
 	Text,
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 import { getSelectListTheme, theme } from "../theme/theme.ts";
 
 const SUBMENU_SELECT_LIST_LAYOUT: SelectListLayoutOptions = {
@@ -256,3 +256,4 @@ export class SteppedSubmenu extends Container {
 		this.activeComponent.invalidate?.();
 	}
 }
+

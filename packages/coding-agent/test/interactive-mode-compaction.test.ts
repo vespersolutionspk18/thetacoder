@@ -1,5 +1,5 @@
-import type { Usage } from "@earendil-works/pi-ai";
-import { Container } from "@earendil-works/pi-tui";
+import type { Usage } from "@theta/ai";
+import { Container } from "@theta/tui";
 import { describe, expect, test, vi } from "vitest";
 import type { SessionEntry } from "../src/core/session-manager.ts";
 import { InteractiveMode } from "../src/modes/interactive/interactive-mode.ts";
@@ -254,3 +254,4 @@ describe("InteractiveMode compaction events", () => {
 		expect(fakeThis.showError).not.toHaveBeenCalled();
 	});
 });
+

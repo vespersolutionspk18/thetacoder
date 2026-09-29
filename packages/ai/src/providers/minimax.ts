@@ -13,3 +13,4 @@ export function minimaxProvider(): Provider<"anthropic-messages"> {
 		api: anthropicMessagesApi(),
 	});
 }
+

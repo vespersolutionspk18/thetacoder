@@ -12,7 +12,7 @@ import type {
 	Tool,
 	ToolResultMessage,
 	Usage,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import type { Static, TSchema } from "typebox";
 
 /**
@@ -146,6 +146,114 @@ export interface AgentLoopTurnUpdate {
 
 export interface PrepareNextTurnContext extends ShouldStopAfterTurnContext {}
 
+/**
+ * Configuration for the F2 context-compiler routing step inside the agent loop.
+ *
+ * When `enabled` is true, the agent loop runs the output of `transformContext`
+ * through the provided `compile` callback before handing it off to
+ * `convertToLlm`. When `enabled` is false (the default) the agent loop is a
+ * pure passthrough over `transformContext`, preserving the existing
+ * chronological-replay behavior byte-for-byte.
+ *
+ * The agent package treats `taskState` as an opaque `unknown` so the agent
+ * package does not need to import any TaskState definition from downstream
+ * packages. The higher-level package that supplies the F2 module is
+ * responsible for typing the value it returns from `getTaskState` and for
+ * casting it back to its own TaskState type inside the `compile` callback.
+ */
+export interface ContextCompilerConfig {
+	/** When true, the agent loop routes `transformContext` output through `compile`. */
+	enabled: boolean;
+	/**
+	 * Resolve the latest TaskState for the current session. Called once per
+	 * assistant turn. The agent package does not interpret the return value;
+	 * it is forwarded to `compile` as-is.
+	 */
+	getTaskState?: () => unknown;
+	/**
+	 * Project the input messages into a budgeted form. Receives the messages
+	 * after `transformContext` ran, the latest TaskState (or undefined), and
+	 * the budget configuration. The default agent-side values are:
+	 * - `tokenBudget = max(0, model.contextWindow - keepRecentTokens - maxTokens)`
+	 * - `keepRecentTurns = 20`
+	 *
+	 * The default estimator is chars/4 rounded up. Consumers that need a
+	 * different estimator can compute it inside the `compile` callback.
+	 */
+	compile?: (
+		messages: AgentMessage[],
+		taskState: unknown,
+		options: { tokenBudget: number; keepRecentTurns: number },
+	) => AgentMessage[] | Promise<AgentMessage[]>;
+	/**
+	 * Tokens reserved inside the context window for the recent untrimmed tail
+	 * and TaskState. Subtracted from `model.contextWindow` along with
+	 * `model.maxTokens` to derive the projection budget. Default: 20000.
+	 */
+	keepRecentTokens?: number;
+	/**
+	 * Maximum number of recent turns to keep before the budget step trims
+	 * older messages. Default: 20.
+	 */
+	keepRecentTurns?: number;
+}
+
+/**
+ * F6 ExecutionPlan routing.
+ *
+ * When `enabled` is `true`, the agent loop dispatches tool calls from an
+ * assistant message that carries an `executionPlan` field through the
+ * provided `executor` (default: the F6 `executePlan` from the
+ * coding-agent package) instead of the natural `executeToolCalls` path.
+ * The `runner` argument the executor receives is built by the agent loop
+ * and wraps the existing `prepareToolCall` + `executePreparedToolCall` +
+ * `finalizeExecutedToolCall` flow, so plan steps and natural tool calls
+ * share the same prepare / execute / finalize pipeline.
+ *
+ * When `enabled` is `false` (the default) or the field is omitted, the
+ * agent loop ignores `executionPlan` on the assistant message and falls
+ * through to `executeToolCalls` byte-for-byte, preserving the pre-F6
+ * behavior.
+ *
+ * The agent package treats `plan` as an opaque `unknown` so it does not
+ * import the F6 module. The higher-level package that supplies the
+ * `executor` callback is responsible for typing the value it reads back
+ * off the assistant message as its own F6 `ExecutionPlan` type and
+ * passing that same value back to the `executor`.
+ */
+export interface ExecutionPlanConfig {
+	/** When true, dispatch plan-bearing assistant messages through `executor`. */
+	enabled: boolean;
+	/**
+	 * Maximum number of plan steps in flight at once. The agent loop
+	 * forwards this value to the `executor` as its concurrency parameter.
+	 * Values < 1 are treated as 1.
+	 */
+	concurrency?: number;
+	/**
+	 * Plan runner the agent loop calls for each plan step. The agent loop
+	 * supplies a `StepRunner` that wraps the existing
+	 * `prepareToolCall` + `executePreparedToolCall` + `finalizeExecutedToolCall`
+	 * flow and maps the step's `kind` and `target` to a concrete tool call.
+	 *
+	 * The default in the higher-level package is the F6 `executePlan` from
+	 * `coding-agent/src/core/execution-plan/executor.ts`. The agent package
+	 * never imports that module directly to avoid a circular dependency.
+	 *
+	 * The `plan` and `runner` arguments are typed as `unknown` here so the
+	 * agent package does not need to know the F6 shapes. The higher-level
+	 * `executor` implementation casts both to the F6 types it owns. The
+	 * third argument carries the agent loop's `concurrency` and `signal`;
+	 * executors can ignore the third argument if they accept those settings
+	 * through other channels.
+	 */
+	executor?: (
+		plan: unknown,
+		runner: unknown,
+		options?: { concurrency?: number; signal?: AbortSignal },
+	) => Promise<unknown>;
+}
+
 export interface AgentLoopConfig extends SimpleStreamOptions {
 	model: Model<any>;
 
@@ -198,6 +306,43 @@ export interface AgentLoopConfig extends SimpleStreamOptions {
 	 * ```
 	 */
 	transformContext?: (messages: AgentMessage[], signal?: AbortSignal) => Promise<AgentMessage[]>;
+
+	/**
+	 * Optional F2 context-compiler routing.
+	 *
+	 * When `enabled` is true, the agent loop runs the output of `transformContext`
+	 * through the provided `compile` callback before passing it to `convertToLlm`.
+	 * This replaces the chronological-replay behavior of the extension hook with a
+	 * budgeted projection. When `enabled` is false (the default) or when the
+	 * field is omitted, the agent loop preserves the existing passthrough
+	 * behavior byte-for-byte.
+	 *
+	 * The `compile` callback is provided by the higher-level package that owns
+	 * the F2 module. The agent package intentionally does not import the F2
+	 * module directly to avoid a circular dependency; the agent package only
+	 * knows how to compute the budget and forward the messages and the resolved
+	 * TaskState to the consumer.
+	 */
+	contextCompiler?: ContextCompilerConfig;
+
+	/**
+	 * Optional F6 ExecutionPlan routing.
+	 *
+	 * When `enabled` is `true`, the agent loop dispatches tool calls from an
+	 * assistant message that carries an `executionPlan` field through the
+	 * provided `executor` callback instead of `executeToolCalls`. When
+	 * `enabled` is `false` (the default) or the field is omitted, the agent
+	 * loop preserves the existing `executeToolCalls` path byte-for-byte.
+	 *
+	 * The agent loop builds the `StepRunner` that maps a plan step's
+	 * `kind` and `target` to a concrete tool call (read → `read`,
+	 * bash → `bash`, etc.) and wraps the existing
+	 * `prepareToolCall` + `executePreparedToolCall` + `finalizeExecutedToolCall`
+	 * path. The `executor` is provided by the higher-level package that
+	 * owns the F6 module; the agent package intentionally does not import
+	 * the F6 module directly to avoid a circular dependency.
+	 */
+	executionPlan?: ExecutionPlanConfig;
 
 	/**
 	 * Resolves an API key dynamically for each LLM call.
@@ -296,7 +441,7 @@ export interface AgentLoopConfig extends SimpleStreamOptions {
 /**
  * Thinking/reasoning level for models that support it.
  * Note: "xhigh" and "max" are only supported by selected model families. Use model
- * thinking-level metadata from @earendil-works/pi-ai to detect support for a concrete model.
+ * thinking-level metadata from @theta/ai to detect support for a concrete model.
  */
 export type ThinkingLevel = "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
 
@@ -356,6 +501,29 @@ export interface AgentState {
 	readonly pendingToolCalls: ReadonlySet<string>;
 	/** Error message from the most recent failed or aborted assistant turn, if any. */
 	readonly errorMessage?: string;
+}
+
+/** Structured outcome synthesized for every tool result. */
+export type ToolOutcomeStatus = "succeeded" | "failed" | "cancelled" | "incomplete" | "unknown";
+
+/** Structured outcome synthesized for every tool result. */
+export interface ToolOutcome {
+	/** Terminal status of this tool call. */
+	status: ToolOutcomeStatus;
+	/** Process exit code, when applicable (shell tools). */
+	exitStatus?: number;
+	/** Identity of the code path that produced the result (parser, transport, snapshot path). */
+	source?: { snapshot?: string; parser?: string };
+	/** Per-tool structured observations: match counts, overwrite flags, etc. */
+	observations?: Record<string, unknown>;
+	/** Non-fatal warnings surfaced by the tool. */
+	warnings?: string[];
+	/** Raw evidence preserved for debugging or replay. */
+	rawEvidence?: string;
+	/** Stable identity of the parser used to interpret the underlying output. */
+	parserIdentity?: string;
+	/** Confidence in the synthesized status, in [0, 1]. */
+	confidence?: number;
 }
 
 /** Final or partial result produced by a tool. */
@@ -444,3 +612,4 @@ export type AgentEvent =
 	| { type: "tool_execution_start"; toolCallId: string; toolName: string; args: any }
 	| { type: "tool_execution_update"; toolCallId: string; toolName: string; args: any; partialResult: any }
 	| { type: "tool_execution_end"; toolCallId: string; toolName: string; result: any; isError: boolean };
+

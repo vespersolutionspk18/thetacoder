@@ -146,3 +146,4 @@ Each real costly boundary gets its own publisher instance. A colocated deploymen
 - Put spills in an environment-owned session directory and sweep them after session lifetime plus a crash-retention floor.
 - Decide explicit limits for images and structured details; text is bounded, those values are not yet.
 - Define raw binary-output behavior. Current shell output remains lossy UTF-8 text.
+

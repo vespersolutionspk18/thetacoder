@@ -3,13 +3,14 @@
 	"compilerOptions": {
 		"outDir": "./dist",
 		"paths": {
-			"@earendil-works/chord": ["../chord/dist/index.d.ts"],
-			"@earendil-works/pi-telemetry": ["../telemetry/dist/index.d.ts"],
-			"@earendil-works/pi-ai": ["../ai/dist/index.d.ts"],
-			"@earendil-works/pi-ai/*": ["../ai/dist/*.d.ts", "../ai/dist/providers/*.d.ts"]
+			"@theta/chord": ["../chord/dist/index.d.ts"],
+			"@theta/telemetry": ["../telemetry/dist/index.d.ts"],
+			"@theta/ai": ["../ai/dist/index.d.ts"],
+			"@theta/ai/*": ["../ai/dist/*.d.ts", "../ai/dist/providers/*.d.ts"]
 		},
 		"rootDir": "./src"
 	},
 	"include": ["src/**/*.ts"],
 	"exclude": ["node_modules", "dist", "**/*.d.ts", "src/**/*.d.ts"]
 }
+

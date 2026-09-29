@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build DOOM for pi-doom using doomgeneric and Emscripten
+# Build DOOM for theta-doom using doomgeneric and Emscripten
 
 set -e
 
@@ -8,7 +8,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 DOOM_DIR="$PROJECT_ROOT/doom"
 BUILD_DIR="$PROJECT_ROOT/doom/build"
 
-echo "=== pi-doom Build Script ==="
+echo "=== theta-doom Build Script ==="
 
 # Check for emcc
 if ! command -v emcc &> /dev/null; then
@@ -150,3 +150,4 @@ emcc -O2 \
 echo ""
 echo "Build complete!"
 echo "Output: $BUILD_DIR/doom.js and $BUILD_DIR/doom.wasm"
+

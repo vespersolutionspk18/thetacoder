@@ -36,3 +36,4 @@ export const defaultEditorTheme: EditorTheme = {
 	borderColor: (text: string) => chalk.dim(text),
 	selectList: defaultSelectListTheme,
 };
+

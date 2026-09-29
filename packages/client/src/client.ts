@@ -15,8 +15,8 @@ import {
 	type ServiceProviderUpdate,
 	type ServiceStateDecoder,
 	type ServiceSubscriptionSnapshot,
-} from "@earendil-works/chord";
-import { BACKGROUND_CONTEXT } from "@earendil-works/chord/context";
+} from "@theta/chord";
+import { BACKGROUND_CONTEXT } from "@theta/chord/context";
 import {
 	type AttachmentEnvelope,
 	encodeClientMessage,
@@ -27,7 +27,7 @@ import {
 	type ServerHello,
 	type ServiceEventEnvelope,
 	type SessionTarget,
-} from "@earendil-works/pi-protocol";
+} from "@theta/protocol";
 import { Connection } from "./connection.ts";
 import { ClientDisposedError, DisconnectedError, ServerError, toError } from "./errors.ts";
 import { createPromiseResolvers } from "./promise.ts";
@@ -477,3 +477,4 @@ function abortError(signal: AbortSignal): Error {
 	const reason: unknown = signal.reason;
 	return reason instanceof Error ? reason : new DOMException("The operation was aborted", "AbortError");
 }
+

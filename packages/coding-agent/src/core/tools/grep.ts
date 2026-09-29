@@ -1,6 +1,6 @@
 import { readFile as fsReadFile, stat as fsStat } from "node:fs/promises";
 import { createInterface } from "node:readline";
-import type { AgentTool } from "@earendil-works/pi-agent-core";
+import type { AgentTool, ToolOutcome } from "@theta/agent-core";
 import { spawn } from "child_process";
 import path from "path";
 import { type Static, Type } from "typebox";
@@ -44,6 +44,8 @@ export interface GrepToolDetails {
 	truncation?: TruncationResult;
 	matchLimitReached?: number;
 	linesTruncated?: boolean;
+	/** Structured outcome synthesized by the agent loop. */
+	outcome?: ToolOutcome;
 }
 
 /**
@@ -321,3 +323,4 @@ export function createGrepToolDefinition(
 export function createGrepTool(cwd: string, options?: GrepToolOptions): AgentTool<typeof grepSchema> {
 	return wrapToolDefinition(createGrepToolDefinition(cwd, options));
 }
+

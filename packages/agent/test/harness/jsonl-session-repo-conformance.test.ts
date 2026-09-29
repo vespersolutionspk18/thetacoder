@@ -63,3 +63,4 @@ registerConformance("JsonlSessionRepo conformance", [
 		jsonlRepo.close(BACKGROUND_CONTEXT),
 	),
 ]);
+

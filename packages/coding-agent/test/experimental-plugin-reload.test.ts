@@ -1,5 +1,5 @@
-import { defineFacet, type FacetLoader } from "@earendil-works/chord";
-import { type AgentLane, BACKGROUND_CONTEXT, type LaneSnapshot } from "@earendil-works/pi-agent-core";
+import { type AgentLane, BACKGROUND_CONTEXT, type LaneSnapshot } from "@theta/agent-core";
+import { defineFacet, type FacetLoader } from "@theta/chord";
 import { describe, expect, test, vi } from "vitest";
 import { SessionPlugins } from "../src/experimental/services/plugins.ts";
 import { createSessionWorkerServices } from "../src/experimental/services/worker.ts";
@@ -92,3 +92,4 @@ describe("experimental plugin reload", () => {
 		expect(disposals).toEqual([1, 2]);
 	});
 });
+

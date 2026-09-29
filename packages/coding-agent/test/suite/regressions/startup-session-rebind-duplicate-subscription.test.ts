@@ -75,3 +75,4 @@ describe("overlapping startup and replacement session rebinds", () => {
 		expect(updateTerminalTitle).toHaveBeenCalledTimes(1);
 	});
 });
+

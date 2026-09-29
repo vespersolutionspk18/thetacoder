@@ -26,3 +26,4 @@ export class UndoStack<S> {
 		return this.stack.length;
 	}
 }
+

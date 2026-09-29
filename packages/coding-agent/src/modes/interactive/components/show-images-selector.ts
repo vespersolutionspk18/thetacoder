@@ -1,4 +1,4 @@
-import { Container, type SelectItem, SelectList, type SelectListLayoutOptions } from "@earendil-works/pi-tui";
+import { Container, type SelectItem, SelectList, type SelectListLayoutOptions } from "@theta/tui";
 import { getSelectListTheme } from "../theme/theme.ts";
 import { DynamicBorder } from "./dynamic-border.ts";
 
@@ -48,3 +48,4 @@ export class ShowImagesSelectorComponent extends Container {
 		return this.selectList;
 	}
 }
+

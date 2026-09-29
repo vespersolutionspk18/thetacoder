@@ -75,3 +75,4 @@ describe("MemorySessionRepo metadata", () => {
 		await Promise.all([reopened.close(BACKGROUND_CONTEXT), repo.close(BACKGROUND_CONTEXT)]);
 	});
 });
+

@@ -118,3 +118,4 @@ console.error("");
 console.error("If this lockfile change is intentional, commit with:");
 console.error("  PI_ALLOW_LOCKFILE_CHANGE=1 git commit ...");
 process.exit(1);
+

@@ -268,3 +268,4 @@ export function substituteArgs(content: string, args: string[]): string {
 export function formatPromptTemplateInvocation(template: PromptTemplate, args: string[] = []): string {
 	return substituteArgs(template.content, args);
 }
+

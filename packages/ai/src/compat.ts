@@ -1,11 +1,11 @@
 /**
- * Temporary compatibility entrypoint preserving the old global pi-ai API
+ * Temporary compatibility entrypoint preserving the old global theta-ai API
  * surface: api-dispatch `stream()`/`complete()` with env API key injection,
  * the api-registry, generated catalog reads (`getModel`/`getModels`/
  * `getProviders`), per-API lazy stream wrappers, and image generation.
  *
- * Existing apps switch imports from "@earendil-works/pi-ai" to
- * "@earendil-works/pi-ai/compat" unchanged; new code uses `createModels()`
+ * Existing apps switch imports from "@theta/ai" to
+ * "@theta/ai/compat" unchanged; new code uses `createModels()`
  * and the provider factories. This module is deleted with the coding-agent
  * ModelManager migration.
  */
@@ -19,7 +19,7 @@ export * from "./api/mistral-conversations.lazy.ts";
 export * from "./api/openai-codex-responses.lazy.ts";
 export * from "./api/openai-completions.lazy.ts";
 export * from "./api/openai-responses.lazy.ts";
-export * from "./api/pi-messages.lazy.ts";
+export * from "./api/theta-messages.lazy.ts";
 export * from "./env-api-keys.ts";
 export * from "./image-models.ts";
 export * from "./images.ts";
@@ -37,7 +37,7 @@ import { mistralConversationsApi } from "./api/mistral-conversations.lazy.ts";
 import { openAICodexResponsesApi } from "./api/openai-codex-responses.lazy.ts";
 import { openAICompletionsApi } from "./api/openai-completions.lazy.ts";
 import { openAIResponsesApi } from "./api/openai-responses.lazy.ts";
-import { piMessagesApi } from "./api/pi-messages.lazy.ts";
+import { piMessagesApi } from "./api/theta-messages.lazy.ts";
 import { getEnvApiKey } from "./env-api-keys.ts";
 import type { ModelsApiStreamOptions } from "./models.ts";
 import { builtinModels, getBuiltinModel, getBuiltinModels, getBuiltinProviders } from "./providers/all.ts";
@@ -59,13 +59,13 @@ import type {
 	StreamOptions,
 } from "./types.ts";
 
-/** @deprecated Static catalog read. Use `getBuiltinModel` from "@earendil-works/pi-ai/providers/all" or `Models.getModel()`. */
+/** @deprecated Static catalog read. Use `getBuiltinModel` from "@theta/ai/providers/all" or `Models.getModel()`. */
 export const getModel = getBuiltinModel;
 
-/** @deprecated Static catalog read. Use `getBuiltinModels` from "@earendil-works/pi-ai/providers/all" or `Models.getModels()`. */
+/** @deprecated Static catalog read. Use `getBuiltinModels` from "@theta/ai/providers/all" or `Models.getModels()`. */
 export const getModels = getBuiltinModels;
 
-/** @deprecated Static catalog read. Use `getBuiltinProviders` from "@earendil-works/pi-ai/providers/all" or `Models.getProviders()`. */
+/** @deprecated Static catalog read. Use `getBuiltinProviders` from "@theta/ai/providers/all" or `Models.getProviders()`. */
 export const getProviders = getBuiltinProviders;
 
 export type ApiStreamFunction = (
@@ -185,7 +185,7 @@ const BUILTIN_APIS: [Api, ProviderStreams][] = [
 	["google-vertex", googleVertexApi()],
 	["mistral-conversations", mistralConversationsApi()],
 	["bedrock-converse-stream", bedrockConverseStreamApi()],
-	["pi-messages", piMessagesApi()],
+	["theta-messages", piMessagesApi()],
 ];
 
 const builtinApiProviderInstances = new Map<Api, ReturnType<typeof getApiProvider>>();
@@ -296,3 +296,4 @@ export async function completeSimple<TApi extends Api>(
 	const s = streamSimple(model, context, options);
 	return s.result();
 }
+

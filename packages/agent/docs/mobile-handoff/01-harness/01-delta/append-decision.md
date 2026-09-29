@@ -37,3 +37,4 @@ The prototype required a text-specific dirty-node state, proxy-to-tracker lookup
 That complexity does not justify saving microseconds below the surrounding replication, isolation, and rendering costs. Keep ordinary string mutation and the generic Chord op vocabulary.
 
 Reopen only when a production profile shows delta flush time is a meaningful fraction of a real workload. Re-measure the generic fast path first; a regression there is cheaper and safer to fix than adding a producer-specific API.
+

@@ -1,7 +1,7 @@
 /** Service contracts and everything that crosses the wire. */
 
-import type { HarnessEvent, LaneSnapshot } from "@earendil-works/pi-agent-core";
-import type { AuthEvent, AuthPrompt } from "@earendil-works/pi-ai";
+import type { HarnessEvent, LaneSnapshot } from "@theta/agent-core";
+import type { AuthEvent, AuthPrompt } from "@theta/ai";
 
 /** Commands answer with data, never exceptions, exactly like a remote call would. */
 export type CommandResult = { ok: true } | { ok: false; error: string };
@@ -23,7 +23,7 @@ export interface ProviderAccount {
 	configured: boolean;
 	/** Where the credential came from, for display: "stored", "environment", an env var name. */
 	source?: string;
-	/** False for ambient credentials pi cannot collect itself, such as AWS profiles or env vars. */
+	/** False for ambient credentials theta cannot collect itself, such as AWS profiles or env vars. */
 	interactive: boolean;
 	methodName?: string;
 }
@@ -136,3 +136,4 @@ export const Models = defineService<ModelsServiceApi, ModelsEvent>("models");
 export const Worker = defineService<WorkerServiceApi>("worker");
 /** Provided by the server. */
 export const Sessions = defineService<SessionsServiceApi>("sessions");
+

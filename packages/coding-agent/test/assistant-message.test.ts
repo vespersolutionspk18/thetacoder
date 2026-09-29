@@ -1,5 +1,5 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
-import type { TuiMouseEvent } from "@earendil-works/pi-tui";
+import type { AssistantMessage } from "@theta/ai";
+import type { TuiMouseEvent } from "@theta/tui";
 import { describe, expect, test } from "vitest";
 import { AssistantMessageComponent } from "../src/modes/interactive/components/assistant-message.ts";
 import { UserMessageComponent } from "../src/modes/interactive/components/user-message.ts";
@@ -275,3 +275,4 @@ describe("AssistantMessageComponent", () => {
 		expect(unpaddedLines.some((line) => line.startsWith("hello"))).toBe(true);
 	});
 });
+

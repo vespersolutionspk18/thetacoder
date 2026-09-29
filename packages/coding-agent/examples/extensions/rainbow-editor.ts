@@ -1,10 +1,10 @@
 /**
  * Rainbow Editor - highlights "ultrathink" with animated shine effect
  *
- * Usage: pi --extension ./examples/extensions/rainbow-editor.ts
+ * Usage: theta --extension ./examples/extensions/rainbow-editor.ts
  */
 
-import { CustomEditor, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { CustomEditor, type ExtensionAPI } from "@theta/coding-agent";
 
 // Base colors (coral → yellow → green → teal → blue → purple → pink)
 const COLORS: [number, number, number][] = [
@@ -81,8 +81,9 @@ class RainbowEditor extends CustomEditor {
 	}
 }
 
-export default function (pi: ExtensionAPI) {
-	pi.on("session_start", (_event, ctx) => {
+export default function (theta: ExtensionAPI) {
+	theta.on("session_start", (_event, ctx) => {
 		ctx.ui.setEditorComponent((tui, theme, kb) => new RainbowEditor(tui, theme, kb));
 	});
 }
+

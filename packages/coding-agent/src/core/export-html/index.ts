@@ -1,4 +1,4 @@
-import type { AgentState } from "@earendil-works/pi-agent-core";
+import type { AgentState } from "@theta/agent-core";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { basename, join } from "path";
 import { APP_NAME, getExportTemplateDir } from "../../config.ts";
@@ -314,3 +314,4 @@ export async function exportFromFile(inputPath: string, options?: ExportOptions 
 	writeFileSync(outputPath, html, "utf8");
 	return outputPath;
 }
+

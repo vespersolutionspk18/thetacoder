@@ -13,3 +13,4 @@ export function xiaomiProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

@@ -32,3 +32,4 @@ npm run bench:session:allocations
 ```
 
 Timing results are not CI performance gates. Run them on an otherwise idle machine and compare results produced on the same hardware and Node.js version.
+

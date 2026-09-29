@@ -1,8 +1,9 @@
 {
-	"name": "@earendil-works/pi-tui",
+	"name": "@theta/tui",
 	"version": "0.85.1",
 	"description": "Terminal User Interface library with differential rendering for efficient text-based applications",
 	"type": "module",
+	"private": true,
 	"main": "dist/index.js",
 	"scripts": {
 		"clean": "shx rm -rf dist",
@@ -10,9 +11,8 @@
 		"build:native:darwin": "native/darwin/build.sh",
 		"build:native:linux": "native/linux/build.sh",
 		"build:native:win32": "node native/win32/build.mjs",
-		"test": "node --test --test-reporter=dot --test-reporter-destination=stdout test/*.test.ts",
-		"prepublishOnly": "npm run clean && npm run build"
-	},
+		"test": "node --test --test-reporter=dot --test-reporter-destination=stdout test/*.test.ts"
+},
 	"files": [
 		"dist/**/*",
 		"native/napi.h",
@@ -40,14 +40,8 @@
 		"typescript",
 		"cli"
 	],
-	"author": "Mario Zechner",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
-		"directory": "packages/tui"
-	},
-	"engines": {
+		"license": "UNLICENSED",
+		"engines": {
 		"node": ">=22.19.0"
 	},
 	"types": "./dist/index.d.ts",

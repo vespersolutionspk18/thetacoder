@@ -17,3 +17,4 @@ export function fireworksProvider(): Provider<"anthropic-messages" | "openai-com
 		},
 	});
 }
+

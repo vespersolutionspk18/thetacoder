@@ -1,25 +1,25 @@
 # Settings
 
-Pi uses JSON settings files with project settings overriding global settings.
+Theta uses JSON settings files with project settings overriding global settings.
 
 | Location | Scope |
 |----------|-------|
-| `~/.pi/agent/settings.json` | Global (all projects) |
-| `.pi/settings.json` | Project (current directory) |
+| `~/.theta/agent/settings.json` | Global (all projects) |
+| `.theta/settings.json` | Project (current directory) |
 
 Edit directly or use `/settings` for common options. To save startup model defaults interactively, use `/model` and press Ctrl+S on the desired model. To save the startup thinking level, use `/thinking` and press Ctrl+S.
 
 ## Project Trust
 
-On interactive startup, pi asks before trusting a project folder that contains project-local settings, resources, or project `.agents/skills` and has no saved decision for the folder or a parent folder in `~/.pi/agent/trust.json`. Trusting a project allows pi to load `.pi/settings.json` and `.pi` resources, install missing project packages, and execute project extensions.
+On interactive startup, theta asks before trusting a project folder that contains project-local settings, resources, or project `.agents/skills` and has no saved decision for the folder or a parent folder in `~/.theta/agent/trust.json`. Trusting a project allows theta to load `.theta/settings.json` and `.theta` resources, install missing project packages, and execute project extensions.
 
 Non-interactive modes (`-p`, `--mode json`, and `--mode rpc`) do not show a trust prompt. Without an applicable saved trust decision, they use `defaultProjectTrust` from global settings: `ask` (default) and `never` ignore those project resources, while `always` trusts them. Pass `--approve`/`-a` or `--no-approve`/`-na` to override project trust for one run.
 
-If no extension or saved decision applies, `defaultProjectTrust` controls the fallback behavior. Set it to `"ask"`, `"always"`, or `"never"` in `~/.pi/agent/settings.json`, or change it with `/settings`.
+If no extension or saved decision applies, `defaultProjectTrust` controls the fallback behavior. Set it to `"ask"`, `"always"`, or `"never"` in `~/.theta/agent/settings.json`, or change it with `/settings`.
 
-`pi config` and package commands use the same project trust flow, except `pi update` never prompts. Pass `--approve` to trust project-local settings for one command or `--no-approve` to ignore them.
+`theta config` and package commands use the same project trust flow, except `theta update` never prompts. Pass `--approve` to trust project-local settings for one command or `--no-approve` to ignore them.
 
-Use `/trust` in interactive mode to save a project trust decision for future sessions, including trust for the immediate parent folder. It writes `~/.pi/agent/trust.json` only; the current session is not reloaded, so restart pi for changes to take effect.
+Use `/trust` in interactive mode to save a project trust decision for future sessions, including trust for the immediate parent folder. It writes `~/.theta/agent/trust.json` only; the current session is not reloaded, so restart theta for changes to take effect.
 
 ## All Settings
 
@@ -71,7 +71,7 @@ Use `/trust` in interactive mode to save a project trust decision for future ses
 | `fullscreenScrollbar` | string | `"auto"` | Fullscreen transcript scrollbar: `"auto"` shows it temporarily while scrolling or while the pointer is over its rightmost-column track, `"always"` reserves that column and keeps it visible, and `"hidden"` hides it. Has no effect in regular TUI mode |
 | `fullscreenCopyOnSelect` | boolean | `true` | Automatically copy selected text in fullscreen mode. When disabled, selections stay highlighted and `Ctrl+X` copies the active selection |
 
-For VS Code, include `--wait` so pi resumes after the editor exits:
+For VS Code, include `--wait` so theta resumes after the editor exits:
 
 ```json
 {
@@ -81,9 +81,9 @@ For VS Code, include `--wait` so pi resumes after the editor exits:
 
 ### Telemetry and update checks
 
-`enableInstallTelemetry` controls the anonymous install/update ping to `https://pi.dev/api/report-install` and Pi attribution headers for OpenRouter, NVIDIA NIM, and Cloudflare provider requests. Opting out disables both. It does not disable update checks; Pi can still fetch `https://pi.dev/api/latest-version` to look for the latest version.
+`enableInstallTelemetry` controls the anonymous install/update ping to `https://theta.local/api/report-install` and Theta attribution headers for OpenRouter, NVIDIA NIM, and Cloudflare provider requests. Opting out disables both. It does not disable update checks; Theta can still fetch `https://theta.local/api/latest-version` to look for the latest version.
 
-Set `PI_SKIP_VERSION_CHECK=1` to disable the Pi version update check. Use `--offline` or `PI_OFFLINE=1` to disable all startup network operations described here, including update checks, package update checks, and install/update telemetry.
+Set `PI_SKIP_VERSION_CHECK=1` to disable the Theta version update check. Use `--offline` or `PI_OFFLINE=1` to disable all startup network operations described here, including update checks, package update checks, and install/update telemetry.
 
 ### Network
 
@@ -136,6 +136,57 @@ Set `PI_SKIP_VERSION_CHECK=1` to disable the Pi version update check. Use `--off
 | `branchSummary.reserveTokens` | number | `16384` | Tokens reserved when selecting branch history; output is capped at 4096 tokens |
 | `branchSummary.skipPrompt` | boolean | `false` | Skip "Summarize branch?" prompt on `/tree` navigation (defaults to no summary) |
 
+### Context Compiler (F2)
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `contextCompiler.enabled` | boolean | `false` | Route the existing extension `context` hook output through the F2 context compiler before sending each assistant request. When false, the agent loop is a byte-identical passthrough over the extension hook output (preserves pre-F2 chronological replay). |
+
+```json
+{
+  "contextCompiler": {
+    "enabled": true
+  }
+}
+```
+
+The F2 context compiler replaces unconditional chronological replay with a
+budgeted projection. When enabled, the agent loop computes a per-request token
+budget from `model.contextWindow - 20000 - model.maxTokens` (with `20000`
+mirroring the `compaction.keepRecentTokens` default) and routes the messages
+through the F2 module, which selects the most recent 20 turns, dedupes
+identical tool results, drops pre-compaction tool results, and prepends
+TaskState-derived context (objective, active constraints, decisions/hypotheses,
+failed verifications) as custom messages.
+
+The flag is off by default. Flipping it is a major behavior change for the
+message stream, so opt in deliberately — first in global settings, then per
+project as needed.
+
+### Verification (F16)
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `verification.enabled` | boolean | `true` | Evaluate the completion gate at the end of every turn and surface `blocked`/`unknown` verdicts to the model |
+| `verification.runOnEveryTurn` | boolean | `false` | (Reserved) proactive re-spawn of every-turn checks at `turn_end` |
+| `verification.policyPath` | string | undefined | Path to a `.theta/verification.json` policy file |
+| `verification.autoRunChecks` | boolean | `false` | Authorize the harness to spawn missing policy checks through the verification runner when the gate is blocked for lack of current evidence. Runs repository-defined commands; keep off unless you trust the policy |
+
+```json
+{
+  "verification": {
+    "enabled": true,
+    "autoRunChecks": false
+  }
+}
+```
+
+### Skills catalog (F9)
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `skillsCatalogBudgetTokens` | number | undefined | Maximum estimated tokens the visible skill catalog may occupy in the system prompt. When set, skills are selected by relevance/compactness and a note reports dropped skills. Undefined keeps the full catalog |
+
 ### Retry
 
 | Setting | Type | Default | Description |
@@ -149,7 +200,7 @@ Set `PI_SKIP_VERSION_CHECK=1` to disable the Pi version update check. Use `--off
 
 When a provider requests a retry delay longer than `retry.provider.maxRetryDelayMs`, the request fails immediately with an informative error instead of waiting silently. Set it to `0` to disable the limit.
 
-Keep `retry.provider.maxRetries` at `0` unless provider-level retries are explicitly needed. Setting it above `0` can make SDK/provider retries handle out-of-usage-limit errors before Pi sees them, which may block the agent until the provider quota resets in some circumstances.
+Keep `retry.provider.maxRetries` at `0` unless provider-level retries are explicitly needed. Setting it above `0` can make SDK/provider retries handle out-of-usage-limit errors before Theta sees them, which may block the agent until the provider quota resets in some circumstances.
 
 ```json
 {
@@ -217,13 +268,13 @@ Windows paths in JSON must use forward slashes or escaped backslashes:
 }
 ```
 
-`npmCommand` is used for all npm package-manager operations, including installs, uninstalls, and dependency installs inside git packages. User-scoped npm packages install under `~/.pi/agent/npm/`; project-scoped npm packages install under `.pi/npm/`. Use argv-style entries exactly as the process should be launched. When `npmCommand` is configured, git package dependency installs use plain `install` to avoid npm-specific flags in wrappers or alternate package managers.
+`npmCommand` is used for all npm package-manager operations, including installs, uninstalls, and dependency installs inside git packages. User-scoped npm packages install under `~/.theta/agent/npm/`; project-scoped npm packages install under `.theta/npm/`. Use argv-style entries exactly as the process should be launched. When `npmCommand` is configured, git package dependency installs use plain `install` to avoid npm-specific flags in wrappers or alternate package managers.
 
 ### Tools
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `defaultTools` | string[] | - | Built-in tools enabled initially. When omitted, Pi uses its standard defaults |
+| `defaultTools` | string[] | - | Built-in tools enabled initially. When omitted, Theta uses its standard defaults |
 
 `defaultTools` selects the built-in tools enabled at startup. Extension and SDK custom tools remain enabled. Available built-ins are `read`, `bash`, `powershell`, `edit`, `write`, `grep`, `find`, and `ls`:
 
@@ -250,10 +301,10 @@ An empty array starts with no built-in tools while preserving extension and SDK 
 | `sessionDir` | string | - | Directory where session files are stored. Accepts absolute or relative paths, plus `~`. |
 
 ```json
-{ "sessionDir": ".pi/sessions" }
+{ "sessionDir": ".theta/sessions" }
 ```
 
-When multiple sources specify a session directory, precedence is `--session-dir`, `PI_CODING_AGENT_SESSION_DIR`, then `sessionDir` in settings.json.
+When multiple sources specify a session directory, precedence is `--session-dir`, `THETA_CODING_AGENT_SESSION_DIR`, then `sessionDir` in settings.json.
 
 ### Model Cycling
 
@@ -278,7 +329,7 @@ When multiple sources specify a session directory, precedence is `--session-dir`
 
 These settings define where to load extensions, skills, prompts, and themes from.
 
-Paths in `~/.pi/agent/settings.json` resolve relative to `~/.pi/agent`. Paths in `.pi/settings.json` resolve relative to `.pi`. Absolute paths and `~` are supported.
+Paths in `~/.theta/agent/settings.json` resolve relative to `~/.theta/agent`. Paths in `.theta/settings.json` resolve relative to `.theta`. Absolute paths and `~` are supported.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
@@ -297,7 +348,7 @@ String form loads all resources from a package:
 
 ```json
 {
-  "packages": ["pi-skills", "@org/my-extension"]
+  "packages": ["theta-skills", "@org/my-extension"]
 }
 ```
 
@@ -307,7 +358,7 @@ Object form filters which resources to load:
 {
   "packages": [
     {
-      "source": "pi-skills",
+      "source": "theta-skills",
       "skills": ["brave-search", "transcribe"],
       "extensions": []
     }
@@ -341,22 +392,22 @@ See [packages.md](packages.md) for package management details.
   "warnings": {
     "anthropicExtraUsage": true
   },
-  "packages": ["pi-skills"]
+  "packages": ["theta-skills"]
 }
 ```
 
 ## Project Overrides
 
-Project settings (`.pi/settings.json`) override global settings. Nested objects are merged:
+Project settings (`.theta/settings.json`) override global settings. Nested objects are merged:
 
 ```json
-// ~/.pi/agent/settings.json (global)
+// ~/.theta/agent/settings.json (global)
 {
   "theme": "dark",
   "compaction": { "enabled": true, "reserveTokens": 16384 }
 }
 
-// .pi/settings.json (project)
+// .theta/settings.json (project)
 {
   "compaction": { "reserveTokens": 8192 }
 }
@@ -367,3 +418,4 @@ Project settings (`.pi/settings.json`) override global settings. Nested objects 
   "compaction": { "enabled": true, "reserveTokens": 8192 }
 }
 ```
+

@@ -161,3 +161,4 @@ describe("getSupportedThinkingLevels", () => {
 		expect(getSupportedThinkingLevels(model!)).not.toContain("off");
 	});
 });
+

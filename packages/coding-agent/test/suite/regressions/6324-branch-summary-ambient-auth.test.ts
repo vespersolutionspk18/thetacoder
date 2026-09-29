@@ -1,4 +1,4 @@
-import { createAssistantMessageEventStream } from "@earendil-works/pi-ai";
+import { createAssistantMessageEventStream } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { assistantMsg, userMsg } from "../../utilities.ts";
 import { createHarness, type Harness } from "../harness.ts";
@@ -60,3 +60,4 @@ describe("issue #6324 branch summary ambient auth", () => {
 		expect(result.summaryEntry?.usage?.cost.total).toBe(0.25);
 	});
 });
+

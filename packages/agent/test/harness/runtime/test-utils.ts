@@ -30,3 +30,4 @@ export function deferred(): { promise: Promise<void>; resolve(): void } {
 	});
 	return { promise, resolve: () => resolvePromise?.() };
 }
+

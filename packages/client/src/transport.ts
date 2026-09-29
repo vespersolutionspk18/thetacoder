@@ -16,3 +16,4 @@ export interface ByteTransportHandlers {
 
 /** Creates a fresh connected, authenticated transport. Exactly one terminal handler is expected. */
 export type ByteTransportFactory = (handlers: ByteTransportHandlers) => ByteTransport | Promise<ByteTransport>;
+

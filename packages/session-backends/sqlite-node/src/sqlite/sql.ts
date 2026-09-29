@@ -64,3 +64,4 @@ export function joinSqlFragments(fragments: readonly SqlQuery[], separator: stri
 	}
 	return new SqlQuery(queryText, params);
 }
+

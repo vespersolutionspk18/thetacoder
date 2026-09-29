@@ -2,7 +2,7 @@
 
 ## Status and baseline
 
-- Repository: `earendil-works/pi`
+- Repository: `earendil-works/theta`
 - Branch at handoff creation: `dev`
 - Baseline commit: `d14d6b22327d545d6a253f932165b63e48d7f9c8`
 - The user reported the worktree clean immediately before this handoff.
@@ -478,7 +478,7 @@ Mini/presentation:
 22. `packages/coding-agent/src/experimental/client-tui-chat.ts`
 23. `packages/coding-agent/src/modes/interactive/components/tool-execution.ts`
 
-Before editing, run `git status --short` and inspect current diffs because other Pi sessions may share the worktree.
+Before editing, run `git status --short` and inspect current diffs because other Theta sessions may share the worktree.
 
 ## Validation commands
 
@@ -515,3 +515,4 @@ Keep extensions enabled.
 - No work on the separate recovery `turn_end` discrepancy between `response.ts` and `tool-placement.ts`.
 - No backward-compatibility layer unless the user explicitly asks for one.
 - Do not commit unless the user asks.
+

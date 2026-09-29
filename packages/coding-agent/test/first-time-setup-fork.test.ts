@@ -7,7 +7,7 @@ vi.mock("../src/config.ts", async (importOriginal) => {
 	const actual = await importOriginal();
 	return {
 		...(actual as Record<string, unknown>),
-		PACKAGE_NAME: "@example/pi-coding-agent",
+		PACKAGE_NAME: "@example/theta-coding-agent",
 	};
 });
 
@@ -19,7 +19,7 @@ describe("shouldRunFirstTimeSetup in forked distributions", () => {
 	let settingsPath: string;
 
 	beforeEach(() => {
-		tempDir = mkdtempSync(join(tmpdir(), "pi-first-time-setup-fork-"));
+		tempDir = mkdtempSync(join(tmpdir(), "theta-first-time-setup-fork-"));
 		settingsPath = join(tempDir, "settings.json");
 		process.env.PI_EXPERIMENTAL = "1";
 	});
@@ -37,3 +37,4 @@ describe("shouldRunFirstTimeSetup in forked distributions", () => {
 		expect(shouldRunFirstTimeSetup(settingsPath)).toBe(false);
 	});
 });
+

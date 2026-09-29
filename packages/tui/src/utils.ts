@@ -1335,3 +1335,4 @@ export function extractSegments(
 
 	return { before, beforeWidth, after, afterWidth };
 }
+

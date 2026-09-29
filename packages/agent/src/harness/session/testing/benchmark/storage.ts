@@ -141,3 +141,4 @@ export const STORAGE_WRITE_BENCHMARK_SCENARIOS: readonly StorageWriteBenchmarkSc
 		},
 	},
 ];
+

@@ -1,4 +1,4 @@
-import type { Api, Model } from "@earendil-works/pi-ai";
+import type { Api, Model } from "@theta/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { InteractiveMode } from "../../../src/modes/interactive/interactive-mode.ts";
 import { createHarness, type Harness } from "../harness.ts";
@@ -44,3 +44,4 @@ describe("issue #7443 /model cached match", () => {
 		expect(context.showStatus).toHaveBeenCalledWith("Refreshing model catalogs…");
 	});
 });
+

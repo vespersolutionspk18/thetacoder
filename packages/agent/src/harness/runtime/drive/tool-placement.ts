@@ -1,4 +1,4 @@
-import type { AssistantMessage, ToolResultMessage } from "@earendil-works/pi-ai";
+import type { AssistantMessage, ToolResultMessage } from "@theta/ai";
 import type { AgentToolCall } from "../../../types.ts";
 import type { HarnessEvent } from "../../agent-harness.ts";
 import { insertEntry, insertUsage } from "../../session/commit.ts";
@@ -324,3 +324,4 @@ export async function materializeReady<TContext extends object | undefined>(
 		);
 	}
 }
+

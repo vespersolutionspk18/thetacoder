@@ -87,3 +87,4 @@ static void set_function_export(napi_env env, napi_value exports, const char* na
 }
 
 #endif
+

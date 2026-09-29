@@ -61,3 +61,4 @@ describe("Mistral tool schema serialization", () => {
 		expect(response.errorMessage).not.toContain("Input validation failed");
 	});
 });
+

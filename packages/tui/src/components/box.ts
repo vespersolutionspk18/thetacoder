@@ -165,3 +165,4 @@ export class Box implements Component {
 		return padded;
 	}
 }
+

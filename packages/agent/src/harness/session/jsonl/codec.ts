@@ -61,3 +61,4 @@ export function parseJsonlSessionHeader(line: string): Result<JsonlParsedSession
 	if (isLegacyV3SessionHeader(value)) return ok({ format: "v3-legacy", header: value });
 	return err(new Error("Unsupported JSONL session header"));
 }
+

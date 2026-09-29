@@ -146,3 +146,4 @@ function readState(runtime: ModelRuntime, refreshing: boolean): ModelsState {
 function message(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
+

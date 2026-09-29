@@ -1,6 +1,6 @@
-import type { Context, RemoteServices } from "@earendil-works/chord";
-import { BACKGROUND_CONTEXT } from "@earendil-works/chord/context";
-import type { Client } from "@earendil-works/pi-client";
+import type { Context, RemoteServices } from "@theta/chord";
+import { BACKGROUND_CONTEXT } from "@theta/chord/context";
+import type { Client } from "@theta/client";
 import {
 	createServerServiceSource,
 	createSessionServiceSource,
@@ -88,3 +88,4 @@ function throwFailures(results: readonly PromiseSettledResult<unknown>[], messag
 	if (errors.length === 1) throw errors[0];
 	if (errors.length > 1) throw new AggregateError(errors, message);
 }
+

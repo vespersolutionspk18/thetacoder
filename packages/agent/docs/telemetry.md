@@ -11,7 +11,7 @@ The invocation context must solve two related problems without `AsyncLocalStorag
 1. preserve correct telemetry parentage through concurrent asynchronous work;
 2. carry an `AbortSignal`, when one exists, that an RPC adapter can map to request cancellation.
 
-This work must reuse `@earendil-works/pi-telemetry`. It must not introduce another span abstraction.
+This work must reuse `@theta/telemetry`. It must not introduce another span abstraction.
 
 ## Context model
 
@@ -85,7 +85,7 @@ The design retains:
 
 ```ts
 return startHarnessSpan(
-	"pi.harness.run",
+	"theta.harness.run",
 	attributes,
 	async (span, runContext) => {
 		return runDrive(runContext);
@@ -126,11 +126,11 @@ tool.execute(toolCallId, params, onUpdate, toolContext, invocation, context);
 mutation(mutator, context);
 ```
 
-Current propagation preserves context through callbacks and gives `before_tool` and `after_tool` handlers a child context derived from `pi.harness.hook`. Extending that span behavior to every hook type remains work; handlers without an installed hook span currently receive the operation context directly.
+Current propagation preserves context through callbacks and gives `before_tool` and `after_tool` handlers a child context derived from `theta.harness.hook`. Extending that span behavior to every hook type remains work; handlers without an installed hook span currently receive the operation context directly.
 
-Within the harness process, events preserve the context that caused each event, and buffered event watchers store `{ event, context }` rather than only `event`. Starting `pi.harness.event_handler` from that event context and passing its child context to each listener remains work. Event registration itself is host-local configuration and has no operation parent.
+Within the harness process, events preserve the context that caused each event, and buffered event watchers store `{ event, context }` rather than only `event`. Starting `theta.harness.event_handler` from that event context and passing its child context to each listener remains work. Event registration itself is host-local configuration and has no operation parent.
 
-Session mutation callbacks and commits receive the same explicit invocation context. Starting `pi.session.write` from the committing invocation and passing its child context through the storage commit remains work.
+Session mutation callbacks and commits receive the same explicit invocation context. Starting `theta.session.write` from the committing invocation and passing its child context through the storage commit remains work.
 
 ## Drive execution and joiners
 
@@ -216,7 +216,7 @@ RPC cancellation and telemetry propagation are independent control-plane channel
 
 Receiver methods now use a required trailing `Context`. Concrete implementations, calls, callback adapters, and object-literal façades have been migrated rather than relying only on interface assignability.
 
-`TODO_CONTEXT` remains a temporary migration marker, not a semantic root. Current uses cluster at unresolved transport and worker boundaries that cannot yet reconstruct a caller context, notably Pi protocol request ingress and worker RPC ingress. `BACKGROUND_CONTEXT` means intentionally start without a caller.
+`TODO_CONTEXT` remains a temporary migration marker, not a semantic root. Current uses cluster at unresolved transport and worker boundaries that cannot yet reconstruct a caller context, notably Theta protocol request ingress and worker RPC ingress. `BACKGROUND_CONTEXT` means intentionally start without a caller.
 
 Continue to inventory `TODO_CONTEXT` separately. Replace each transport-boundary use only when the boundary can construct a request-local cancellation context and telemetry parent; substituting `BACKGROUND_CONTEXT` would hide unfinished propagation. Compilation still does not prove telemetry or cancellation correctness.
 
@@ -249,3 +249,4 @@ Current tests cover immutable typed-value layering and shadowing, distinct empty
 - trace-carrier adapter ownership and shape;
 - which context values, if any, may cross an RPC boundary;
 - exact span names/outcome attributes for RPC calls and drive join waits.
+

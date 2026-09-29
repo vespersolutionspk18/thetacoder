@@ -999,3 +999,4 @@ The implementation is complete when:
 - Layout boxes are internal and rebuilt per requested frame.
 - Expensive leaf rendering continues to use existing component caches.
 - All focused tests and `npm run check` pass.
+

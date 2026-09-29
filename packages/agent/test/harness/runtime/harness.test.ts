@@ -1,4 +1,4 @@
-import { createModels, fauxAssistantMessage, fauxProvider, type Provider } from "@earendil-works/pi-ai";
+import { createModels, fauxAssistantMessage, fauxProvider, type Provider } from "@theta/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AgentHarness, HarnessFault, InvalidLane, UnknownTarget } from "../../../src/harness/agent-harness.ts";
 import { BACKGROUND_CONTEXT } from "../../../src/harness/context.ts";
@@ -395,3 +395,4 @@ describe("runtime Harness global metadata", () => {
 		await repo.close(BACKGROUND_CONTEXT);
 	});
 });
+

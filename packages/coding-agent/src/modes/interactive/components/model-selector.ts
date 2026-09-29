@@ -1,14 +1,5 @@
-import { type Model, modelsAreEqual } from "@earendil-works/pi-ai";
-import {
-	Container,
-	type Focusable,
-	fuzzyFilter,
-	getKeybindings,
-	Input,
-	Spacer,
-	Text,
-	type TUI,
-} from "@earendil-works/pi-tui";
+import { type Model, modelsAreEqual } from "@theta/ai";
+import { Container, type Focusable, fuzzyFilter, getKeybindings, Input, Spacer, Text, type TUI } from "@theta/tui";
 import type { ModelRuntime } from "../../../core/model-runtime.ts";
 import { refreshModelCatalogs } from "../model-catalog-refresh.ts";
 import { getModelSelectorSearchText } from "../model-search.ts";
@@ -419,3 +410,4 @@ export class ModelSelectorComponent extends Container implements Focusable {
 		return this.searchInput;
 	}
 }
+

@@ -32,3 +32,4 @@ for (const mode of ["one isolate, N contexts", "N isolates"]) {
   console.log(`50 facets, ${mode.padEnd(24)}: ${(((rss() - before) / 50) * 1024).toFixed(0)} KB each, ${Date.now() - t} ms`);
   if (shared) { try { shared.dispose(); } catch {} } else for (const i of held) { try { i.dispose(); } catch {} }
 }
+

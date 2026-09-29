@@ -1,4 +1,4 @@
-import type { Usage } from "@earendil-works/pi-ai/compat";
+import type { Usage } from "@theta/ai/compat";
 import type { SessionEntry } from "./session-manager.ts";
 
 export interface UsageTotals {
@@ -68,3 +68,4 @@ export function getUsageCostBreakdown(entries: SessionEntry[]): UsageCostBreakdo
 		.filter((entry) => entry.cost > 0 || entry.tokens > 0)
 		.sort((a, b) => b.cost - a.cost);
 }
+

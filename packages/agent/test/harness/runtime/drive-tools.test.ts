@@ -1,10 +1,4 @@
-import {
-	createModels,
-	fauxAssistantMessage,
-	fauxProvider,
-	fauxToolCall,
-	type ToolResultMessage,
-} from "@earendil-works/pi-ai";
+import { createModels, fauxAssistantMessage, fauxProvider, fauxToolCall, type ToolResultMessage } from "@theta/ai";
 import { Type } from "typebox";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { HarnessEvent, WatchHandle } from "../../../src/harness/agent-harness.ts";
@@ -75,18 +69,18 @@ class ObservedMemoryStorage extends MemoryStorage {
 	override async commit(writes: Write[], context: Context) {
 		const result = await super.commit(writes, context);
 		if (
-			writes.some((write) => write.kind === "value" && write.op === "set" && write.namespace === "pi.op.tool_args")
+			writes.some((write) => write.kind === "value" && write.op === "set" && write.namespace === "theta.op.tool_args")
 		) {
 			this.observations.push("intent_commit");
 		}
 		const stagesOutcome = writes.some(
-			(write) => write.kind === "value" && write.op === "set" && write.namespace === "pi.pending.entry",
+			(write) => write.kind === "value" && write.op === "set" && write.namespace === "theta.pending.entry",
 		);
 		if (stagesOutcome) this.observations.push("outcome_commit");
 		if (
 			!stagesOutcome &&
 			writes.some(
-				(write) => write.kind === "value" && write.op === "delete" && write.namespace === "pi.pending.tool_output",
+				(write) => write.kind === "value" && write.op === "delete" && write.namespace === "theta.pending.tool_output",
 			)
 		) {
 			this.observations.push("replay_commit");
@@ -761,3 +755,4 @@ describe("durable tool batch", () => {
 		});
 	});
 });
+

@@ -214,3 +214,4 @@ export function encodeCbor(value: unknown, options?: CborOptions): Uint8Array {
 	encodeValue(writer, value, resolved, 0, new Set<object>());
 	return writer.finish();
 }
+

@@ -13,3 +13,4 @@ export function deepseekProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

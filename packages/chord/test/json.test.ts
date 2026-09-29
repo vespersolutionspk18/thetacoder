@@ -12,3 +12,4 @@ describe("isJsonValue", () => {
 		expect(isJsonValue(cyclic)).toBe(false);
 	});
 });
+

@@ -11,7 +11,7 @@ let env: NodeExecutionEnv;
 const readers: TextLineReader[] = [];
 
 beforeEach(async () => {
-	root = await mkdtemp(join(tmpdir(), "pi-text-line-reader-"));
+	root = await mkdtemp(join(tmpdir(), "theta-text-line-reader-"));
 	env = new NodeExecutionEnv({ cwd: root });
 });
 
@@ -118,3 +118,4 @@ describe("TextLineReader", () => {
 		});
 	});
 });
+

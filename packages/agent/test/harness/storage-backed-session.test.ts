@@ -1,4 +1,4 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
+import type { AssistantMessage } from "@theta/ai";
 import { describe, expect, it } from "vitest";
 import { BACKGROUND_CONTEXT } from "../../src/harness/context.ts";
 import type { CustomMessage } from "../../src/harness/messages.ts";
@@ -395,3 +395,4 @@ describe("StorageBackedSession", () => {
 		await expect(session.scanBranch({ start: ENTRY_ID }, BACKGROUND_CONTEXT)).rejects.toThrow("Session is closed");
 	});
 });
+

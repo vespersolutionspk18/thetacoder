@@ -26,3 +26,4 @@ export function cloudflareStreams(streams: ProviderStreams): ProviderStreams {
 			streams.streamSimple(resolveCloudflareModel(model, options?.env), context, options),
 	};
 }
+

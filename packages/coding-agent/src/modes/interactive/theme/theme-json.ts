@@ -144,3 +144,4 @@ export function validateThemeJson(label: string, json: unknown): ValidatedThemeJ
 	}
 	return themeJson;
 }
+

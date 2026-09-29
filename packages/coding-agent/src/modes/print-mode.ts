@@ -2,11 +2,11 @@
  * Print mode (single-shot): Send prompts, output result, exit.
  *
  * Used for:
- * - `pi -p "prompt"` - text output
- * - `pi --mode json "prompt"` - JSON event stream
+ * - `theta -p "prompt"` - text output
+ * - `theta --mode json "prompt"` - JSON event stream
  */
 
-import type { AssistantMessage, ImageContent } from "@earendil-works/pi-ai";
+import type { AssistantMessage, ImageContent } from "@theta/ai";
 import type { AgentSessionRuntime } from "../core/agent-session-runtime.ts";
 import { flushRawStdout, waitForRawStdoutBackpressure, writeRawStdout } from "../core/output-guard.ts";
 import { killTrackedDetachedChildren } from "../utils/shell.ts";
@@ -167,3 +167,4 @@ export async function runPrintMode(runtimeHost: AgentSessionRuntime, options: Pr
 		await flushRawStdout();
 	}
 }
+

@@ -29,3 +29,4 @@ export interface SqliteDatabaseFactory {
 	/** Open an existing database read-only. */
 	openReadOnly(path: string): Promise<SqliteDatabase>;
 }
+

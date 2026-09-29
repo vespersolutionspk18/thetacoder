@@ -30,7 +30,7 @@ elif [[ "$(uname -s)" == "Darwin" ]]; then
     sdk_flags=(-isysroot "$sdkroot" "-F$sdkroot/System/Library/Frameworks")
 fi
 
-temporary_dir="$(mktemp -d "${TMPDIR:-/tmp}/pi-tui-darwin.XXXXXX")"
+temporary_dir="$(mktemp -d "${TMPDIR:-/tmp}/theta-tui-darwin.XXXXXX")"
 trap 'rm -rf "$temporary_dir"' EXIT
 
 build() {
@@ -67,3 +67,4 @@ build() {
 
 build arm64 arm64-apple-macos11.0
 build x64 x86_64-apple-macos10.15
+

@@ -1,4 +1,4 @@
-import type { UsageRow, UsageScan } from "@earendil-works/pi-agent-core";
+import type { UsageRow, UsageScan } from "@theta/agent-core";
 import { joinSqlFragments, type SqlQuery, sql } from "../sql.ts";
 import type { SqliteDatabase, SqliteStatement } from "../types.ts";
 
@@ -65,3 +65,4 @@ export function scanUsageLedgerRows(db: SqliteDatabase, sessionId: string, query
 	return sql`SELECT id, seq, entry_id, adjustment, usage, details
 		FROM usage_ledger WHERE ${joinSqlFragments(filters, " AND ")} ${order} ${limit}`.all<UsageLedgerRow>(db);
 }
+

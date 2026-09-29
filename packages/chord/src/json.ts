@@ -48,3 +48,4 @@ function check(value: unknown, ancestors: Set<object>, depth: number): boolean {
 		ancestors.delete(value);
 	}
 }
+

@@ -1,4 +1,4 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage } from "@theta/ai";
 import { describe, expect, it } from "vitest";
 import { createHarness } from "../harness.ts";
 
@@ -29,3 +29,4 @@ describe("regression: issue 6019 explicit provider retry messages", () => {
 		}
 	});
 });
+

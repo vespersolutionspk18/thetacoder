@@ -13,3 +13,4 @@ export function zaiProvider(): Provider<"openai-completions"> {
 		api: openAICompletionsApi(),
 	});
 }
+

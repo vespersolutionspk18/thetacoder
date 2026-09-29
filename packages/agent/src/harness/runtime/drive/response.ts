@@ -4,7 +4,7 @@ import {
 	isContextOverflow,
 	isRecoverableLength,
 	isRetryableAssistantError,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import type { HarnessEvent } from "../../agent-harness.ts";
 import type { Context } from "../../context.ts";
 import type { AssistantResponseMetadata, AssistantStreamObserver } from "../../execution/assistant.ts";
@@ -482,3 +482,4 @@ export async function publishResponse<TContext extends object | undefined>(
 		drive.context,
 	);
 }
+

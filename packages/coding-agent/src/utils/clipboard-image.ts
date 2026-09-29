@@ -1,4 +1,4 @@
-import { getNativeClipboard } from "@earendil-works/pi-tui";
+import { getNativeClipboard } from "@theta/tui";
 import { randomUUID } from "crypto";
 import { readFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
@@ -128,7 +128,7 @@ function isWSL(env: NodeJS.ProcessEnv = process.env): boolean {
  * directly, so we use it as a fallback.
  */
 async function readClipboardImageViaPowerShell(): Promise<ClipboardImage | null> {
-	const tmpFile = join(tmpdir(), `pi-wsl-clip-${randomUUID()}.png`);
+	const tmpFile = join(tmpdir(), `theta-wsl-clip-${randomUUID()}.png`);
 
 	try {
 		const winPathResult = await runClipboardCommand("wslpath", ["-w", tmpFile], {
@@ -257,3 +257,4 @@ export async function readClipboardImage(options?: {
 
 	return image;
 }
+

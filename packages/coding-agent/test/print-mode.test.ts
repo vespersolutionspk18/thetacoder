@@ -1,4 +1,4 @@
-import type { AssistantMessage, ImageContent } from "@earendil-works/pi-ai";
+import type { AssistantMessage, ImageContent } from "@theta/ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { SessionShutdownEvent } from "../src/index.ts";
 import { runPrintMode } from "../src/modes/print-mode.ts";
@@ -140,3 +140,4 @@ describe("runPrintMode", () => {
 		expect(session.extensionRunner.emit).toHaveBeenCalledWith({ type: "session_shutdown", reason: "quit" });
 	});
 });
+

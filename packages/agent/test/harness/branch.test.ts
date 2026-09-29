@@ -108,3 +108,4 @@ describe("Branch", () => {
 		await session.close(BACKGROUND_CONTEXT);
 	});
 });
+

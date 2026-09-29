@@ -15,7 +15,7 @@ import {
 	createAgentSessionServices,
 	getAgentDir,
 	SessionManager,
-} from "@earendil-works/pi-coding-agent";
+} from "@theta/coding-agent";
 
 const createRuntime: CreateAgentSessionRuntimeFactory = async ({ cwd, sessionManager, sessionStartEvent }) => {
 	const services = await createAgentSessionServices({ cwd });
@@ -65,3 +65,4 @@ if (originalSessionFile) {
 
 unsubscribe?.();
 await runtime.dispose();
+

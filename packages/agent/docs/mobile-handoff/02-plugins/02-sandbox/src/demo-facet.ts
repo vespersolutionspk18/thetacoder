@@ -20,3 +20,4 @@ console.log("command ->", commands.get("footer.reset")());
 subs[0]({ entries: [1, 2, 3] });
 console.log("notifications:", notifications);
 c.dispose();
+

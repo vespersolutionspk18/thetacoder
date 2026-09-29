@@ -68,3 +68,4 @@ static void clipboard_execute(clipboard_job* job) {
     }
     pthread_mutex_unlock(&worker_mutex);
 }
+

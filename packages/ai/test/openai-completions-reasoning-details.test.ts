@@ -249,3 +249,4 @@ describe("openai-completions reasoning_details streaming", () => {
 		expect(getAssistantPayload(mockState.payloads[1])?.reasoning_details).toEqual(expectedReasoningDetails);
 	});
 });
+

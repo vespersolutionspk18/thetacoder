@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const moduleRequire = createRequire(import.meta.url);
-const TUI_PACKAGE_NAME = "@earendil-works/pi-tui";
+const TUI_PACKAGE_NAME = "@theta/tui";
 
 export interface NativeModuleCandidateOptions {
 	moduleUrl?: string;
@@ -29,3 +29,4 @@ export function getNativeModuleCandidates(nativePath: string, options: NativeMod
 	);
 	return Array.from(new Set(candidates));
 }
+

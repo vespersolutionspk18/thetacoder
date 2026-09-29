@@ -1,0 +1,17 @@
+/**
+ * F1 file-watcher — placeholder for debug fixture.
+ *
+ * This file was originally a temporary debug helper used to diagnose
+ * the rename-pairing race. The race is fixed in
+ * `file-watcher-rename.test.ts` and `test/file-watcher-helpers.ts`;
+ * the file is kept as an empty test stub so the git history stays
+ * consistent. The single test below is a no-op.
+ */
+
+import { describe, expect, it } from "vitest";
+
+describe("file-watcher-rename-debug placeholder", () => {
+	it("is a no-op", () => {
+		expect(true).toBe(true);
+	});
+});

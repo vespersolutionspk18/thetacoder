@@ -27,3 +27,4 @@ describe("RpcClient clearQueue", () => {
 		expect(result).toEqual({ steering: ["Change direction"], followUp: ["Summarize when finished"] });
 	});
 });
+

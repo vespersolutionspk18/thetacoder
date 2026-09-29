@@ -1,6 +1,6 @@
 import { once } from "node:events";
 import { createConnection, type Socket } from "node:net";
-import type { JsonValue, ServiceCall } from "@earendil-works/chord";
+import type { JsonValue, ServiceCall } from "@theta/chord";
 import {
 	type ClientMessage,
 	encodeClientMessage,
@@ -9,7 +9,7 @@ import {
 	type RpcTarget,
 	type ServerMessage,
 	ServerMessageDecoder,
-} from "@earendil-works/pi-protocol";
+} from "@theta/protocol";
 import { Deferred } from "./host.ts";
 
 interface MessageWaiter {
@@ -63,7 +63,7 @@ export class ProtocolTestClient {
 	attach(serverId: string, sessionId: string): Promise<ResponseEnvelope> {
 		return this.requestService(
 			{ serverId },
-			{ serviceId: "pi.session-management", member: "attach", args: [sessionId] },
+			{ serviceId: "theta.session-management", member: "attach", args: [sessionId] },
 		);
 	}
 
@@ -181,3 +181,4 @@ function writeSocket(socket: Socket, chunk: Uint8Array): Promise<void> {
 		});
 	});
 }
+

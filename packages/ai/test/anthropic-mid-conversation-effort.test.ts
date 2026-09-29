@@ -210,3 +210,4 @@ describe("Anthropic mid-conversation effort", () => {
 		expect(getModel("anthropic", "claude-opus-5").compat?.allowedFallbackModels).toBeUndefined();
 	});
 });
+

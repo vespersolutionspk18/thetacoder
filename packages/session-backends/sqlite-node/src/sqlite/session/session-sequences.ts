@@ -12,3 +12,4 @@ export function advanceNextSeq(db: SqliteDatabase, sessionId: string, nextSeq: n
 	if (result.changes !== 1)
 		throw new Error(`Expected to update one SQLite session ${sessionId}, updated ${result.changes}`);
 }
+

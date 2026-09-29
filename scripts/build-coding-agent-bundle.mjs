@@ -16,11 +16,11 @@ const banner = {
 	js: 'import { createRequire as __piCreateRequire } from "node:module"; const require = __piCreateRequire(import.meta.url);',
 };
 const allowedExternalPackages = new Set([
-	"@earendil-works/chord",
-	"@earendil-works/chord/bundler",
-	"@earendil-works/chord/context",
-	"@earendil-works/chord/delta",
-	"@earendil-works/chord/node",
+	"@theta/chord",
+	"@theta/chord/bundler",
+	"@theta/chord/context",
+	"@theta/chord/delta",
+	"@theta/chord/node",
 	"@silvia-odwyer/photon-node",
 	"jiti",
 	// Optional native accelerators. Their callers fall back to JavaScript when absent.
@@ -86,7 +86,7 @@ function commonBuildOptions() {
 		banner,
 		bundle: true,
 		define: { PI_BUNDLED_NODE: "true" },
-		external: ["@earendil-works/chord", "@silvia-odwyer/photon-node"],
+		external: ["@theta/chord", "@silvia-odwyer/photon-node"],
 		format: "esm",
 		legalComments: "none",
 		logLevel: "warning",
@@ -211,3 +211,4 @@ chmodSync(join(bundleDir, "rpc-entry.js"), 0o755);
 const files = new Set([...Object.keys(mainResult.metafile.outputs), ...Object.keys(lazyResult.metafile.outputs)]).size;
 const mib = outputBytes([mainResult.metafile, lazyResult.metafile]) / (1024 * 1024);
 console.log(`Built ${relative(repoRoot, bundleDir)} (${files} files, ${mib.toFixed(1)} MiB)`);
+

@@ -31,3 +31,4 @@ export const STORAGE_BENCHMARK_DATASETS: readonly StorageBenchmarkDataset[] = [
 	createDataset("10k entries", 10_000),
 	createDataset("100k entries", 100_000),
 ];
+

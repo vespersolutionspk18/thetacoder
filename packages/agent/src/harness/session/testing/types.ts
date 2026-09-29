@@ -11,3 +11,4 @@ export interface ConformanceCase {
 	readonly name: string;
 	run(): Promise<void>;
 }
+

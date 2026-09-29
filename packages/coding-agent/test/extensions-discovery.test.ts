@@ -12,7 +12,7 @@ describe("extensions discovery", () => {
 	let extensionsDir: string;
 
 	beforeEach(() => {
-		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-ext-test-"));
+		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "theta-ext-test-"));
 		extensionsDir = path.join(tempDir, "extensions");
 		fs.mkdirSync(extensionsDir);
 	});
@@ -22,15 +22,15 @@ describe("extensions discovery", () => {
 	});
 
 	const extensionCode = `
-		export default function(pi) {
-			pi.registerCommand("test", { handler: async () => {} });
+		export default function(theta) {
+			theta.registerCommand("test", { handler: async () => {} });
 		}
 	`;
 
 	const extensionCodeWithTool = (toolName: string) => `
 		import { Type } from "typebox";
-		export default function(pi) {
-			pi.registerTool({
+		export default function(theta) {
+			theta.registerTool({
 				name: "${toolName}",
 				label: "${toolName}",
 				description: "Test tool",
@@ -51,14 +51,14 @@ describe("extensions discovery", () => {
 		expect(result.extensions.map((e) => path.basename(e.path)).sort()).toEqual(["bar.ts", "foo.ts"]);
 	});
 
-	it("loads the coding-agent entrypoint without rewriting pi-ai provider subpaths", async () => {
+	it("loads the coding-agent entrypoint without rewriting theta-ai provider subpaths", async () => {
 		fs.writeFileSync(
 			path.join(extensionsDir, "coding-agent-import.ts"),
 			`
-				import { getAgentDir } from "@earendil-works/pi-coding-agent";
+				import { getAgentDir } from "@theta/coding-agent";
 				void getAgentDir;
-				export default function(pi) {
-					pi.registerCommand("test", { handler: async () => {} });
+				export default function(theta) {
+					theta.registerCommand("test", { handler: async () => {} });
 				}
 			`,
 		);
@@ -69,14 +69,14 @@ describe("extensions discovery", () => {
 		expect(result.extensions).toHaveLength(1);
 	});
 
-	it("keeps the type-only pi-ai OAuth compatibility barrel resolvable", async () => {
+	it("keeps the type-only theta-ai OAuth compatibility barrel resolvable", async () => {
 		fs.writeFileSync(
 			path.join(extensionsDir, "oauth-import.ts"),
 			`
-				import * as oauth from "@earendil-works/pi-ai/oauth";
+				import * as oauth from "@theta/ai/oauth";
 				void oauth;
-				export default function(pi) {
-					pi.registerCommand("test", { handler: async () => {} });
+				export default function(theta) {
+					theta.registerCommand("test", { handler: async () => {} });
 				}
 			`,
 		);
@@ -135,7 +135,7 @@ describe("extensions discovery", () => {
 		expect(result.extensions[0].path).toContain("index.ts");
 	});
 
-	it("discovers subdirectory with package.json pi field", async () => {
+	it("discovers subdirectory with package.json theta field", async () => {
 		const subdir = path.join(extensionsDir, "my-package");
 		const srcDir = path.join(subdir, "src");
 		fs.mkdirSync(subdir);
@@ -145,7 +145,7 @@ describe("extensions discovery", () => {
 			path.join(subdir, "package.json"),
 			JSON.stringify({
 				name: "my-package",
-				pi: {
+				theta: {
 					extensions: ["./src/main.ts"],
 				},
 			}),
@@ -159,7 +159,7 @@ describe("extensions discovery", () => {
 		expect(result.extensions[0].path).toContain("main.ts");
 	});
 
-	it("keeps package.json pi extension entries with leading tilde package-relative", async () => {
+	it("keeps package.json theta extension entries with leading tilde package-relative", async () => {
 		const subdir = path.join(extensionsDir, "tilde-package");
 		const directExtensionPath = path.join(subdir, "~entry.ts");
 		const slashExtensionPath = path.join(subdir, "~", "entry.ts");
@@ -170,7 +170,7 @@ describe("extensions discovery", () => {
 			path.join(subdir, "package.json"),
 			JSON.stringify({
 				name: "tilde-package",
-				pi: {
+				theta: {
 					extensions: ["~entry.ts", "~/entry.ts"],
 				},
 			}),
@@ -193,7 +193,7 @@ describe("extensions discovery", () => {
 			path.join(subdir, "package.json"),
 			JSON.stringify({
 				name: "my-package",
-				pi: {
+				theta: {
 					extensions: ["./ext1.ts", "./ext2.ts"],
 				},
 			}),
@@ -205,7 +205,7 @@ describe("extensions discovery", () => {
 		expect(result.extensions).toHaveLength(2);
 	});
 
-	it("package.json with pi field takes precedence over index.ts", async () => {
+	it("package.json with theta field takes precedence over index.ts", async () => {
 		const subdir = path.join(extensionsDir, "my-package");
 		fs.mkdirSync(subdir);
 		fs.writeFileSync(path.join(subdir, "index.ts"), extensionCodeWithTool("from-index"));
@@ -214,7 +214,7 @@ describe("extensions discovery", () => {
 			path.join(subdir, "package.json"),
 			JSON.stringify({
 				name: "my-package",
-				pi: {
+				theta: {
 					extensions: ["./custom.ts"],
 				},
 			}),
@@ -230,7 +230,7 @@ describe("extensions discovery", () => {
 		expect(result.extensions[0].tools.has("from-index")).toBe(false);
 	});
 
-	it("ignores package.json without pi field, falls back to index.ts", async () => {
+	it("ignores package.json without theta field, falls back to index.ts", async () => {
 		const subdir = path.join(extensionsDir, "my-package");
 		fs.mkdirSync(subdir);
 		fs.writeFileSync(path.join(subdir, "index.ts"), extensionCode);
@@ -288,7 +288,7 @@ describe("extensions discovery", () => {
 		const subdir2 = path.join(extensionsDir, "with-manifest");
 		fs.mkdirSync(subdir2);
 		fs.writeFileSync(path.join(subdir2, "entry.ts"), extensionCode);
-		fs.writeFileSync(path.join(subdir2, "package.json"), JSON.stringify({ pi: { extensions: ["./entry.ts"] } }));
+		fs.writeFileSync(path.join(subdir2, "package.json"), JSON.stringify({ theta: { extensions: ["./entry.ts"] } }));
 
 		const result = await discoverAndLoadExtensions([], tempDir, tempDir);
 
@@ -303,7 +303,7 @@ describe("extensions discovery", () => {
 		fs.writeFileSync(
 			path.join(subdir, "package.json"),
 			JSON.stringify({
-				pi: {
+				theta: {
 					extensions: ["./exists.ts", "./missing.ts"],
 				},
 			}),
@@ -373,14 +373,14 @@ describe("extensions discovery", () => {
 
 	it("registers message and entry renderers", async () => {
 		const extCode = `
-			export default function(pi) {
-				pi.registerMarkdownTransformer((markdown) => {
+			export default function(theta) {
+				theta.registerMarkdownTransformer((markdown) => {
 					return markdown;
 				});
-				pi.registerMessageRenderer("my-custom-type", (message, options, theme) => {
+				theta.registerMessageRenderer("my-custom-type", (message, options, theme) => {
 					return null; // Use default rendering
 				});
-				pi.registerEntryRenderer("my-entry-type", (entry, options, theme) => {
+				theta.registerEntryRenderer("my-entry-type", (entry, options, theme) => {
 					return null;
 				});
 			}
@@ -398,7 +398,7 @@ describe("extensions discovery", () => {
 
 	it("reports error when extension throws during initialization", async () => {
 		const extCode = `
-			export default function(pi) {
+			export default function(theta) {
 				throw new Error("Initialization failed!");
 			}
 		`;
@@ -413,8 +413,8 @@ describe("extensions discovery", () => {
 
 	it("reports error when extension has no default export", async () => {
 		const extCode = `
-			export function notDefault(pi) {
-				pi.registerCommand("test", { handler: async () => {} });
+			export function notDefault(theta) {
+				theta.registerCommand("test", { handler: async () => {} });
 			}
 		`;
 		fs.writeFileSync(path.join(extensionsDir, "no-default.ts"), extCode);
@@ -447,10 +447,10 @@ describe("extensions discovery", () => {
 
 	it("loads extension with event handlers", async () => {
 		const extCode = `
-			export default function(pi) {
-				pi.on("agent_start", async () => {});
-				pi.on("tool_call", async (event) => undefined);
-				pi.on("agent_end", async () => {});
+			export default function(theta) {
+				theta.on("agent_start", async () => {});
+				theta.on("tool_call", async (event) => undefined);
+				theta.on("agent_end", async () => {});
 			}
 		`;
 		fs.writeFileSync(path.join(extensionsDir, "with-handlers.ts"), extCode);
@@ -466,8 +466,8 @@ describe("extensions discovery", () => {
 
 	it("loads extension with shortcuts", async () => {
 		const extCode = `
-			export default function(pi) {
-				pi.registerShortcut("ctrl+t", {
+			export default function(theta) {
+				theta.registerShortcut("ctrl+t", {
 					description: "Test shortcut",
 					handler: async (ctx) => {},
 				});
@@ -484,8 +484,8 @@ describe("extensions discovery", () => {
 
 	it("loads extension with flags", async () => {
 		const extCode = `
-			export default function(pi) {
-				pi.registerFlag("my-flag", {
+			export default function(theta) {
+				theta.registerFlag("my-flag", {
 					description: "My custom flag",
 					handler: async (value) => {},
 				});
@@ -530,3 +530,4 @@ describe("extensions discovery", () => {
 		expect(result.extensions).toHaveLength(0);
 	});
 });
+

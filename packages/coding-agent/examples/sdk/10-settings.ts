@@ -4,7 +4,7 @@
  * Override settings using SettingsManager.
  */
 
-import { createAgentSession, SessionManager, SettingsManager } from "@earendil-works/pi-coding-agent";
+import { createAgentSession, SessionManager, SettingsManager } from "@theta/coding-agent";
 
 const cwd = process.cwd();
 
@@ -51,3 +51,4 @@ const { session: testSession } = await createAgentSession({
 });
 console.log("Test session created with in-memory settings");
 testSession.dispose();
+

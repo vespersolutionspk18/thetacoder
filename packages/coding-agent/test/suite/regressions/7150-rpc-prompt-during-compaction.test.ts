@@ -1,4 +1,4 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, getMessageText, getUserTexts, type Harness } from "../harness.ts";
 
@@ -24,8 +24,8 @@ describe("issue #7150: RPC prompt during manual compaction", () => {
 		const harness = await createHarness({
 			settings: { compaction: { keepRecentTokens: 1 } },
 			extensionFactories: [
-				(pi) => {
-					pi.on("session_before_compact", async (event) => {
+				(theta) => {
+					theta.on("session_before_compact", async (event) => {
 						markCompactionStarted();
 						await compactionReleased;
 						return {
@@ -89,3 +89,4 @@ describe("issue #7150: RPC prompt during manual compaction", () => {
 		expect(harness.eventsOfType("agent_settled")).toHaveLength(0);
 	});
 });
+

@@ -145,13 +145,13 @@ describe("runtime terminal cleanup mechanics", () => {
 		const writes = await operationCleanupWrites(session, operationId, state, BACKGROUND_CONTEXT);
 
 		expect(writes.map(address)).toEqual([
-			"value:delete:pi.op.meta:run",
-			"value:delete:pi.op.state:run",
-			"value:delete:pi.op.tool_args:run:step:0",
-			"value:delete:pi.op.tool_memo:run:invocation:memo",
-			"value:delete:pi.op.preparation:run:task",
-			"value:delete:pi.pending.tool_output:run:invocation",
-			"list:delete:pi.pending.assistant_frame:run:response",
+			"value:delete:theta.op.meta:run",
+			"value:delete:theta.op.state:run",
+			"value:delete:theta.op.tool_args:run:step:0",
+			"value:delete:theta.op.tool_memo:run:invocation:memo",
+			"value:delete:theta.op.preparation:run:task",
+			"value:delete:theta.pending.tool_output:run:invocation",
+			"list:delete:theta.pending.assistant_frame:run:response",
 		]);
 		await commit(session, writes);
 		for (const id of ["steer", "follow", "write", "next"]) {
@@ -205,8 +205,8 @@ describe("runtime terminal cleanup mechanics", () => {
 
 		const writes = await operationCleanupWrites(session, operationId, state, BACKGROUND_CONTEXT);
 
-		expect(writes.map(address)).toContain("value:delete:pi.pending.entry:staged");
-		expect(writes.map(address)).not.toContain("value:delete:pi.pending.entry:placed");
+		expect(writes.map(address)).toContain("value:delete:theta.pending.entry:staged");
+		expect(writes.map(address)).not.toContain("value:delete:theta.pending.entry:placed");
 	});
 
 	it.each([
@@ -233,12 +233,12 @@ describe("runtime terminal cleanup mechanics", () => {
 		const writes = await operationCleanupWrites(session, operationId, state, BACKGROUND_CONTEXT);
 
 		expect(writes.map(address)).toEqual([
-			`value:delete:pi.op.meta:${operationId}`,
-			`value:delete:pi.op.state:${operationId}`,
-			`value:delete:pi.op.tool_args:${operationId}:step:0`,
-			`value:delete:pi.op.tool_memo:${operationId}:invocation:memo`,
-			`value:delete:pi.op.preparation:${operationId}:task`,
-			`value:delete:pi.pending.tool_output:${operationId}:invocation`,
+			`value:delete:theta.op.meta:${operationId}`,
+			`value:delete:theta.op.state:${operationId}`,
+			`value:delete:theta.op.tool_args:${operationId}:step:0`,
+			`value:delete:theta.op.tool_memo:${operationId}:invocation:memo`,
+			`value:delete:theta.op.preparation:${operationId}:task`,
+			`value:delete:theta.pending.tool_output:${operationId}:invocation`,
 		]);
 	});
 });
@@ -287,3 +287,4 @@ describe("runtime operation result records", () => {
 		);
 	});
 });
+

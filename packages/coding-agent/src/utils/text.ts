@@ -7,3 +7,4 @@ export function splitBom(content: string): { bom: string; text: string } {
 export function stripBom(content: string): string {
 	return splitBom(content).text;
 }
+

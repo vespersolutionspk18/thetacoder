@@ -1,8 +1,9 @@
 {
-	"name": "@earendil-works/pi-client",
+	"name": "@theta/client",
 	"version": "0.85.1",
-	"description": "Transport-neutral client for remote pi sessions over framed CBOR bytes",
+	"description": "Transport-neutral client for remote theta sessions over framed CBOR bytes",
 	"type": "module",
+	"private": true,
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
@@ -26,29 +27,22 @@
 		"clean": "shx rm -rf dist",
 		"build": "tsgo -p tsconfig.build.json",
 		"test": "vitest --run",
-		"typecheck": "tsgo -p tsconfig.test.json",
-		"prepublishOnly": "npm run clean && npm run build"
-	},
+		"typecheck": "tsgo -p tsconfig.test.json"
+},
 	"keywords": [
-		"pi",
+		"theta",
 		"client",
 		"protocol",
 		"cbor",
 		"binary"
 	],
-	"author": "Earendil Works",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
-		"directory": "packages/client"
-	},
-	"engines": {
+		"license": "UNLICENSED",
+		"engines": {
 		"node": ">=22.19.0"
 	},
 	"dependencies": {
-		"@earendil-works/chord": "^0.85.1",
-		"@earendil-works/pi-protocol": "^0.85.1"
+		"@theta/chord": "^0.85.1",
+		"@theta/protocol": "^0.85.1"
 	},
 	"devDependencies": {
 		"shx": "0.4.0",

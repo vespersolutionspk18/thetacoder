@@ -6,8 +6,8 @@ import {
 	type JsonlSessionMetadata,
 	JsonlSessionRepo,
 	laneConfig,
-} from "@earendil-works/pi-agent-core";
-import { NodeExecutionEnv } from "@earendil-works/pi-agent-core/node";
+} from "@theta/agent-core";
+import { NodeExecutionEnv } from "@theta/agent-core/node";
 
 export async function createExperimentalSessions(
 	sessionsRoot: string,
@@ -65,3 +65,4 @@ export async function readExperimentalSessionState(
 		await fileSystem.cleanup(BACKGROUND_CONTEXT);
 	}
 }
+

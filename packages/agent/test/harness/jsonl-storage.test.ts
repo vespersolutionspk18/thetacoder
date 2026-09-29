@@ -246,3 +246,4 @@ describe("JsonlStorage torn tail", () => {
 		await expect(JsonlStorage.open(options, BACKGROUND_CONTEXT)).rejects.toThrow(/missing header/);
 	});
 });
+

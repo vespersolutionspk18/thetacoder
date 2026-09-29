@@ -9,13 +9,14 @@ import {
 	type Model,
 	type Models,
 	type Usage,
-} from "@earendil-works/pi-ai";
+} from "@theta/ai";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
 	type CompactionPreparation,
 	type CompactionSettings,
 	calculateContextTokens,
 	compact,
+	compactWithRequest,
 	DEFAULT_COMPACTION_SETTINGS,
 	estimateContextTokens,
 	estimateTokens,
@@ -25,6 +26,7 @@ import {
 	generateSummaryWithUsage,
 	getLastAssistantUsage,
 	prepareCompaction,
+	type SummaryRequest,
 	serializeConversation,
 	shouldCompact,
 } from "../../src/harness/compaction/compaction.ts";
@@ -759,6 +761,26 @@ describe("harness compaction", () => {
 		expect(seenOptions[0]).toMatchObject({ reasoning: "high" });
 	});
 
+	it("preserves previousSummary in split-turn with empty history", async () => {
+		const messages: AgentMessage[] = [createUserMessage("prefix user"), createAssistantMessage("prefix assistant")];
+		const preparation: CompactionPreparation = {
+			messagesToSummarize: [],
+			turnPrefixMessages: messages,
+			retainedTail: messages,
+			isSplitTurn: true,
+			tokensBefore: 100,
+			previousSummary: "S_old important decision",
+			fileOps: { read: new Set(), written: new Set(), edited: new Set() },
+			settings: { enabled: true, reserveTokens: 2000, keepRecentTokens: 20 },
+		};
+		const { model } = createFauxModel(false);
+		const request: SummaryRequest = async () => fauxAssistantMessage("## Goal\nTest summary");
+
+		const result = getOrThrow(await compactWithRequest(preparation, { model }, request, BACKGROUND_CONTEXT));
+
+		expect(result.summary).toContain("S_old important decision");
+	});
+
 	it("returns turn-prefix compaction errors without throwing", async () => {
 		const messages: AgentMessage[] = [createUserMessage("Summarize this.")];
 		const preparation: CompactionPreparation = {
@@ -825,3 +847,4 @@ describe("harness compaction", () => {
 function convertMessages(messages: Message[]): Message[] {
 	return messages;
 }
+

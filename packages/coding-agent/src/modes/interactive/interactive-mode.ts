@@ -7,9 +7,9 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentMessage, ThinkingLevel } from "@earendil-works/pi-agent-core";
-import type { AuthEvent, AuthPrompt } from "@earendil-works/pi-ai";
-import type { AssistantMessage, ImageContent, Message, Model, Usage } from "@earendil-works/pi-ai/compat";
+import type { AgentMessage, ThinkingLevel } from "@theta/agent-core";
+import type { AuthEvent, AuthPrompt } from "@theta/ai";
+import type { AssistantMessage, ImageContent, Message, Model, Usage } from "@theta/ai/compat";
 import type {
 	AutocompleteItem,
 	AutocompleteProvider,
@@ -21,8 +21,8 @@ import type {
 	OverlayOptions,
 	SlashCommand,
 	TuiMainScreenRenderState,
-} from "@earendil-works/pi-tui";
-import * as TuiLayouts from "@earendil-works/pi-tui";
+} from "@theta/tui";
+import * as TuiLayouts from "@theta/tui";
 import {
 	CombinedAutocompleteProvider,
 	type Component,
@@ -41,7 +41,7 @@ import {
 	TuiAltScreen,
 	TuiMainScreen,
 	visibleWidth,
-} from "@earendil-works/pi-tui";
+} from "@theta/tui";
 import chalk from "chalk";
 import { spawn } from "child_process";
 import {
@@ -105,9 +105,9 @@ import { copyToClipboard, readClipboardText } from "../../utils/clipboard.ts";
 import { extensionForImageMimeType, readClipboardImage } from "../../utils/clipboard-image.ts";
 import { parseGitUrl } from "../../utils/git.ts";
 import { getCwdRelativePath } from "../../utils/paths.ts";
-import { getPiUserAgent } from "../../utils/pi-user-agent.ts";
 import { killTrackedDetachedChildren } from "../../utils/shell.ts";
 import { loadAllHighlightLanguages } from "../../utils/syntax-highlight.ts";
+import { getThetaUserAgent } from "../../utils/theta-user-agent.ts";
 import { ensureTool, type ToolStatus } from "../../utils/tools-manager.ts";
 import { checkForNewPiVersion, type LatestPiRelease } from "../../utils/version-check.ts";
 import { createChatViewport } from "./chat-viewport.ts";
@@ -121,7 +121,6 @@ import { CustomEntryComponent } from "./components/custom-entry.ts";
 import { CustomMessageComponent } from "./components/custom-message.ts";
 import { DaxnutsComponent } from "./components/daxnuts.ts";
 import { DynamicBorder } from "./components/dynamic-border.ts";
-import { EarendilAnnouncementComponent } from "./components/earendil-announcement.ts";
 import { ExtensionEditorComponent } from "./components/extension-editor.ts";
 import { ExtensionInputComponent } from "./components/extension-input.ts";
 import { ExtensionSelectorComponent } from "./components/extension-selector.ts";
@@ -356,7 +355,7 @@ export interface InteractiveModeOptions {
 	startupDiagnostics?: AgentSessionRuntimeDiagnostic[];
 	/** Warning message if session model couldn't be restored */
 	modelFallbackMessage?: string;
-	/** Cwd to trust after reload if it gained a .pi directory during this implicitly trusted session. */
+	/** Cwd to trust after reload if it gained a .theta directory during this implicitly trusted session. */
 	autoTrustOnReloadCwd?: string;
 	/** Initial message to send on startup (can include @file content) */
 	initialMessage?: string;
@@ -949,7 +948,7 @@ export class InteractiveMode {
 			);
 			const onboarding = theme.fg(
 				"dim",
-				`Pi can explain its own features and look up its docs. Ask it how to use or extend Pi.`,
+				`Theta can explain its own features and look up its docs. Ask it how to use or extend Theta.`,
 			);
 			this.builtInHeader = new ExpandableText(
 				() => `${logo}\n${compactInstructions}\n${compactOnboarding}\n\n${onboarding}`,
@@ -1059,7 +1058,7 @@ export class InteractiveMode {
 			})
 			.finally(() => {
 				// On Windows, npm can overwrite the shared console title while checking
-				// extension package versions. Restore Pi's title after the startup check.
+				// extension package versions. Restore Theta's title after the startup check.
 				if (process.platform === "win32" && this.isInitialized) {
 					this.updateTerminalTitle();
 				}
@@ -1199,7 +1198,7 @@ export class InteractiveMode {
 		}
 
 		if (extendedKeysFormat === "xterm") {
-			return "tmux extended-keys-format is xterm. Pi works best with csi-u. Add `set -g extended-keys-format csi-u` to ~/.tmux.conf and restart tmux.";
+			return "tmux extended-keys-format is xterm. Theta works best with csi-u. Add `set -g extended-keys-format csi-u` to ~/.tmux.conf and restart tmux.";
 		}
 
 		return undefined;
@@ -1245,9 +1244,9 @@ export class InteractiveMode {
 			return;
 		}
 
-		void fetch(`https://pi.dev/api/report-install?version=${encodeURIComponent(version)}`, {
+		void fetch(`https://theta.local/api/report-install?version=${encodeURIComponent(version)}`, {
 			headers: {
-				"User-Agent": getPiUserAgent(version),
+				"User-Agent": getThetaUserAgent(version),
 			},
 			signal: AbortSignal.timeout(5000),
 		})
@@ -2937,7 +2936,7 @@ export class InteractiveMode {
 			if (image) {
 				const tmpDir = os.tmpdir();
 				const ext = extensionForImageMimeType(image.mimeType) ?? "png";
-				const fileName = `pi-clipboard-${crypto.randomUUID()}.${ext}`;
+				const fileName = `theta-clipboard-${crypto.randomUUID()}.${ext}`;
 				const filePath = path.join(tmpDir, fileName);
 				fs.writeFileSync(filePath, Buffer.from(image.bytes));
 
@@ -3083,11 +3082,6 @@ export class InteractiveMode {
 			}
 			if (text === "/arminsayshi") {
 				this.handleArminSaysHi();
-				this.editor.setText("");
-				return;
-			}
-			if (text === "/dementedelves") {
-				this.handleDementedDelves();
 				this.editor.setText("");
 				return;
 			}
@@ -3897,7 +3891,7 @@ export class InteractiveMode {
 			new Text(
 				theme.fg(
 					"warning",
-					`This project is not trusted. Project ${CONFIG_DIR_NAME} resources and packages are ignored. Use /trust to save a trust decision, then restart pi.`,
+					`This project is not trusted. Project ${CONFIG_DIR_NAME} resources and packages are ignored. Use /trust to save a trust decision, then restart theta.`,
 				),
 				1,
 				0,
@@ -4072,7 +4066,7 @@ export class InteractiveMode {
 
 		// Restore the terminal before the process dies on any uncaught throw.
 		// Without this, an unhandled exception from extension code (or anywhere
-		// in pi) leaves the terminal in raw mode with no cursor.
+		// in theta) leaves the terminal in raw mode with no cursor.
 		const uncaughtExceptionHandler = (error: Error) => this.uncaughtCrash(error);
 		process.prependListener("uncaughtException", uncaughtExceptionHandler);
 		this.signalCleanupHandlers.push(() => process.off("uncaughtException", uncaughtExceptionHandler));
@@ -4285,7 +4279,7 @@ export class InteractiveMode {
 	showNewVersionNotification(release: LatestPiRelease): void {
 		const action = theme.fg("accent", `${APP_NAME} update`);
 		const updateInstruction = theme.fg("muted", `New version ${release.version} is available. Run `) + action;
-		const changelogUrl = "https://pi.dev/changelog";
+		const changelogUrl = "https://theta.local/changelog";
 		const changelogLink = getCapabilities().hyperlinks
 			? hyperlink(theme.fg("accent", changelogUrl), changelogUrl)
 			: theme.fg("accent", changelogUrl);
@@ -6483,12 +6477,6 @@ export class InteractiveMode {
 		this.ui.requestRender();
 	}
 
-	private handleDementedDelves(): void {
-		this.chatContainer.addChild(new Spacer(1));
-		this.chatContainer.addChild(new EarendilAnnouncementComponent());
-		this.ui.requestRender();
-	}
-
 	private handleDaxnuts(): void {
 		this.chatContainer.addChild(new Spacer(1));
 		this.chatContainer.addChild(new DaxnutsComponent(this.ui));
@@ -6618,3 +6606,4 @@ export class InteractiveMode {
 		this.unregisterSignalHandlers();
 	}
 }
+

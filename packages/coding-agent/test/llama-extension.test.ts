@@ -1,7 +1,7 @@
 import { once } from "node:events";
 import { createServer, type RequestListener, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
-import type { AuthContext, AuthPrompt, ModelsPublication, ModelsStoreEntry } from "@earendil-works/pi-ai";
+import type { AuthContext, AuthPrompt, ModelsPublication, ModelsStoreEntry } from "@theta/ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { createEventBus } from "../src/core/event-bus.ts";
 import { createExtensionRuntime, loadExtensionFromFactory } from "../src/core/extensions/loader.ts";
@@ -81,12 +81,14 @@ describe("llama.cpp extension", () => {
 				id: "loaded",
 				baseUrl: "http://localhost:8080/v1",
 				contextWindow: 65536,
-				maxTokens: 65536,
+				maxTokens: 16384,
 				input: ["text", "image"],
 			}),
 			expect.objectContaining({
 				id: "sleeping",
 				baseUrl: "http://localhost:8080/v1",
+				contextWindow: 128000,
+				maxTokens: 16384,
 			}),
 		]);
 	});
@@ -372,3 +374,4 @@ describe("llama.cpp extension", () => {
 		});
 	});
 });
+

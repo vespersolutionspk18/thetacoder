@@ -1,4 +1,4 @@
-import { uuidv7 } from "@earendil-works/pi-ai/utils/uuid";
+import { uuidv7 } from "@theta/ai/utils/uuid";
 import type { Context } from "../../context.ts";
 import type { FileInfo, FileSystem } from "../../types.ts";
 import { StorageBackedSession } from "../session.ts";
@@ -387,3 +387,4 @@ export class JsonlSessionRepo
 		if (this.closed) throw new Error("JsonlSessionRepo is closed");
 	}
 }
+

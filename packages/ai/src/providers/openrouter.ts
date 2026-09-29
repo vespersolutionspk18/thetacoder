@@ -25,3 +25,4 @@ export function openrouterProvider(): Provider<"anthropic-messages" | "openai-co
 		},
 	});
 }
+

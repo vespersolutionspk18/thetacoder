@@ -82,7 +82,7 @@ async function main(): Promise<void> {
 	if (!command || command === "help" || command === "--help" || command === "-h") {
 		const providerList = PROVIDERS.map((provider) => `  ${provider.id.padEnd(20)} ${provider.name}`).join("\n");
 		console.log(
-			`Usage: npx @earendil-works/pi-ai <command> [provider]\n\nCommands:\n  login [provider]  Login to an OAuth provider\n  list              List available providers\n\nProviders:\n${providerList}`,
+			`Usage: npx @theta/ai <command> [provider]\n\nCommands:\n  login [provider]  Login to an OAuth provider\n  list              List available providers\n\nProviders:\n${providerList}`,
 		);
 		return;
 	}
@@ -117,3 +117,4 @@ main().catch((error: unknown) => {
 	console.error("Error:", error instanceof Error ? error.message : String(error));
 	process.exit(1);
 });
+

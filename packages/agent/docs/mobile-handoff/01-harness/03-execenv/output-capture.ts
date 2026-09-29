@@ -192,3 +192,4 @@ function trimToLastBytes(text: string, bytes: number): string {
 }
 
 export type { TruncationResult };
+

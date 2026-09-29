@@ -49,3 +49,4 @@ console.table(
 		"external MiB": mebibytes(result.externalBytes),
 	})),
 );
+
